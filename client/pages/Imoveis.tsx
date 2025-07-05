@@ -465,7 +465,7 @@ export default function Imoveis() {
                             <SelectValue placeholder="Selecione o tipo" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Todos os tipos</SelectItem>
+                            <SelectItem value="all">Todos os tipos</SelectItem>
                             <SelectItem value={TipoImovel.CASA}>
                               Casa
                             </SelectItem>
