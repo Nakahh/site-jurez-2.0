@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "@loadable/component",
+    "react-window",
+    "react-window-infinite-loader",
+    "react-intersection-observer",
+    "web-vitals"
+  ]
+}
