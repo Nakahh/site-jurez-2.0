@@ -24,6 +24,9 @@ import {
 } from "lucide-react";
 import { Imovel, TipoImovel, Finalidade } from "@shared/types";
 import { ChatBubble } from "@/components/ChatBubble";
+import { EnhancedSearch } from "@/components/EnhancedSearch";
+import { PropertyCardSkeleton } from "@/components/LoadingSkeleton";
+import { NotificationSystem } from "@/components/NotificationSystem";
 
 export default function Index() {
   const [imoveisDestaque, setImoveisDestaque] = useState<Imovel[]>([]);
@@ -191,64 +194,8 @@ export default function Index() {
             Goiânia com excelência e confiança
           </p>
 
-          {/* Busca rápida */}
-          <Card className="p-6 bg-white/95 backdrop-blur-sm border-0 shadow-2xl animate-slide-up">
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-              <div className="md:col-span-2">
-                <Input
-                  placeholder="Buscar por bairro..."
-                  value={filtros.bairro}
-                  onChange={(e) =>
-                    setFiltros({ ...filtros, bairro: e.target.value })
-                  }
-                  className="h-12 border-0 bg-muted/50"
-                />
-              </div>
-              <select
-                value={filtros.tipo}
-                onChange={(e) =>
-                  setFiltros({ ...filtros, tipo: e.target.value })
-                }
-                className="h-12 px-3 rounded-md border-0 bg-muted/50 text-foreground"
-              >
-                <option value="">Tipo</option>
-                <option value={TipoImovel.CASA}>Casa</option>
-                <option value={TipoImovel.APARTAMENTO}>Apartamento</option>
-                <option value={TipoImovel.TERRENO}>Terreno</option>
-                <option value={TipoImovel.COMERCIAL}>Comercial</option>
-              </select>
-              <select
-                value={filtros.finalidade}
-                onChange={(e) =>
-                  setFiltros({ ...filtros, finalidade: e.target.value })
-                }
-                className="h-12 px-3 rounded-md border-0 bg-muted/50 text-foreground"
-              >
-                <option value="">Finalidade</option>
-                <option value={Finalidade.VENDA}>Venda</option>
-                <option value={Finalidade.ALUGUEL}>Aluguel</option>
-              </select>
-              <select
-                value={filtros.quartos}
-                onChange={(e) =>
-                  setFiltros({ ...filtros, quartos: e.target.value })
-                }
-                className="h-12 px-3 rounded-md border-0 bg-muted/50 text-foreground"
-              >
-                <option value="">Quartos</option>
-                <option value="1">1+</option>
-                <option value="2">2+</option>
-                <option value="3">3+</option>
-                <option value="4">4+</option>
-              </select>
-              <Button className="h-12 bg-primary hover:bg-primary/90" asChild>
-                <Link to="/imoveis">
-                  <Search className="mr-2 h-4 w-4" />
-                  Buscar
-                </Link>
-              </Button>
-            </div>
-          </Card>
+          {/* Enhanced Search */}
+          <EnhancedSearch />
         </div>
       </section>
 
