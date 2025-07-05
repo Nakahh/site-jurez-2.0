@@ -239,9 +239,7 @@ export default function MarketingDashboard() {
               <Users className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-900">
-                {formatNumber(stats.totalLeads)}
-              </div>
+              <div className="text-2xl font-bold text-purple-900">285</div>
               <p className="text-xs text-green-600 flex items-center">
                 <ArrowUp className="w-3 h-3 mr-1" />
                 +12% vs mês anterior
