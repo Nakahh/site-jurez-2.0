@@ -495,7 +495,7 @@ export default function Imoveis() {
                             <SelectValue placeholder="Selecione a finalidade" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Todas</SelectItem>
+                            <SelectItem value="all">Todas</SelectItem>
                             <SelectItem value={Finalidade.VENDA}>
                               Venda
                             </SelectItem>
