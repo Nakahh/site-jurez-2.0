@@ -6,6 +6,19 @@ import { LoginRequest, LoginResponse, Papel } from "@shared/types";
 
 const prisma = new PrismaClient();
 
+// Helper function for JWT
+const createToken = (usuario: any) => {
+  return jwt.sign(
+    {
+      userId: usuario.id,
+      email: usuario.email,
+      papel: usuario.papel,
+    },
+    process.env.JWT_SECRET!,
+    { expiresIn: process.env.JWT_EXPIRES_IN || "7d" } as SignOptions,
+  );
+};
+
 export const login: RequestHandler = async (req, res) => {
   try {
     const { email, senha }: LoginRequest = req.body;
