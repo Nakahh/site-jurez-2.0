@@ -1,0 +1,296 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id            String   @id @default(cuid())
+  nome          String
+  email         String   @unique
+  senha         String?
+  whatsapp      String?
+  ativo         Boolean  @default(true)
+  papel         Papel    @default(CLIENTE)
+  googleId      String?  @unique
+  avatar        String?
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
+
+  // Relacionamentos
+  leads         Lead[]         @relation("CorretorLeads")
+  imoveis       Imovel[]       @relation("CorretorImoveis")
+  visitas       Visita[]       @relation("ClienteVisitas")
+  favoritos     Favorito[]
+  contratos     Contrato[]
+  mensagens     Mensagem[]
+  notificacoes  Notificacao[]
+  logSistema    LogSistema[]
+  comissoes     Comissao[]
+
+  @@map("usuarios")
+}
+
+model Imovel {
+  id                String         @id @default(cuid())
+  titulo           String
+  descricao        String
+  tipo             TipoImovel
+  finalidade       Finalidade
+  preco            Decimal
+  area             Decimal
+  quartos          Int
+  banheiros        Int
+  vagas            Int?
+  endereco         String
+  bairro           String
+  cidade           String         @default("Goiânia")
+  estado           String         @default("GO")
+  cep              String?
+  latitude         Decimal?
+  longitude        Decimal?
+  fotos            String[]
+  status           StatusImovel   @default(DISPONIVEL)
+  destaque         Boolean        @default(false)
+  corretorId       String
+  criadoEm         DateTime       @default(now())
+  atualizadoEm     DateTime       @updatedAt
+
+  // Relacionamentos
+  corretor         Usuario        @relation("CorretorImoveis", fields: [corretorId], references: [id])
+  visitas          Visita[]
+  favoritos        Favorito[]
+  leads            Lead[]
+  contratos        Contrato[]
+  historicosPreco  HistoricoPreco[]
+
+  @@map("imoveis")
+}
+
+model Lead {
+  id           String      @id @default(cuid())
+  nome         String
+  telefone     String
+  email        String?
+  mensagem     String
+  origem       String      @default("SITE")
+  status       StatusLead  @default(PENDENTE)
+  corretorId   String?
+  imovelId     String?
+  respostaIa   String?
+  criadoEm     DateTime    @default(now())
+  atualizadoEm DateTime    @updatedAt
+
+  // Relacionamentos
+  corretor     Usuario?    @relation("CorretorLeads", fields: [corretorId], references: [id])
+  imovel       Imovel?     @relation(fields: [imovelId], references: [id])
+  mensagens    Mensagem[]
+
+  @@map("leads")
+}
+
+model Visita {
+  id           String       @id @default(cuid())
+  dataHora     DateTime
+  status       StatusVisita @default(AGENDADA)
+  observacoes  String?
+  clienteId    String
+  imovelId     String
+  criadoEm     DateTime     @default(now())
+  atualizadoEm DateTime     @updatedAt
+
+  // Relacionamentos
+  cliente      Usuario      @relation("ClienteVisitas", fields: [clienteId], references: [id])
+  imovel       Imovel       @relation(fields: [imovelId], references: [id])
+
+  @@map("visitas")
+}
+
+model Favorito {
+  id        String   @id @default(cuid())
+  usuarioId String
+  imovelId  String
+  criadoEm  DateTime @default(now())
+
+  // Relacionamentos
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  imovel    Imovel   @relation(fields: [imovelId], references: [id])
+
+  @@unique([usuarioId, imovelId])
+  @@map("favoritos")
+}
+
+model Contrato {
+  id            String        @id @default(cuid())
+  tipo          TipoContrato
+  valor         Decimal
+  dataInicio    DateTime
+  dataFim       DateTime?
+  status        StatusContrato @default(ATIVO)
+  termos        String
+  clienteId     String
+  imovelId      String
+  corretorId    String
+  criadoEm      DateTime      @default(now())
+  atualizadoEm  DateTime      @updatedAt
+
+  // Relacionamentos
+  cliente       Usuario       @relation(fields: [clienteId], references: [id])
+  imovel        Imovel        @relation(fields: [imovelId], references: [id])
+  comissoes     Comissao[]
+
+  @@map("contratos")
+}
+
+model Comissao {
+  id           String         @id @default(cuid())
+  valor        Decimal
+  percentual   Decimal
+  status       StatusComissao @default(PENDENTE)
+  dataPagamento DateTime?
+  corretorId   String
+  contratoId   String
+  criadoEm     DateTime       @default(now())
+  atualizadoEm DateTime       @updatedAt
+
+  // Relacionamentos
+  corretor     Usuario        @relation(fields: [corretorId], references: [id])
+  contrato     Contrato       @relation(fields: [contratoId], references: [id])
+
+  @@map("comissoes")
+}
+
+model Mensagem {
+  id           String   @id @default(cuid())
+  conteudo     String
+  remetente    String
+  destinatario String?
+  leadId       String?
+  lida         Boolean  @default(false)
+  criadoEm     DateTime @default(now())
+
+  // Relacionamentos
+  usuario      Usuario? @relation(fields: [remetente], references: [id])
+  lead         Lead?    @relation(fields: [leadId], references: [id])
+
+  @@map("mensagens")
+}
+
+model Notificacao {
+  id           String           @id @default(cuid())
+  titulo       String
+  mensagem     String
+  tipo         TipoNotificacao
+  lida         Boolean          @default(false)
+  usuarioId    String
+  criadoEm     DateTime         @default(now())
+
+  // Relacionamentos
+  usuario      Usuario          @relation(fields: [usuarioId], references: [id])
+
+  @@map("notificacoes")
+}
+
+model LogSistema {
+  id           String    @id @default(cuid())
+  acao         String
+  detalhes     String?
+  ip           String?
+  userAgent    String?
+  usuarioId    String?
+  criadoEm     DateTime  @default(now())
+
+  // Relacionamentos
+  usuario      Usuario?  @relation(fields: [usuarioId], references: [id])
+
+  @@map("logs_sistema")
+}
+
+model HistoricoPreco {
+  id           String   @id @default(cuid())
+  precoAnterior Decimal
+  precoNovo    Decimal
+  motivo       String?
+  imovelId     String
+  criadoEm     DateTime @default(now())
+
+  // Relacionamentos
+  imovel       Imovel   @relation(fields: [imovelId], references: [id])
+
+  @@map("historico_precos")
+}
+
+// Enums
+enum Papel {
+  ADMIN
+  CORRETOR
+  ASSISTENTE
+  CLIENTE
+  MARKETING
+  DESENVOLVEDOR
+}
+
+enum TipoImovel {
+  CASA
+  APARTAMENTO
+  TERRENO
+  COMERCIAL
+  RURAL
+}
+
+enum Finalidade {
+  VENDA
+  ALUGUEL
+  AMBOS
+}
+
+enum StatusImovel {
+  DISPONIVEL
+  VENDIDO
+  ALUGADO
+  RESERVADO
+  INATIVO
+}
+
+enum StatusLead {
+  PENDENTE
+  ASSUMIDO
+  EXPIRADO
+  CONVERTIDO
+  PERDIDO
+}
+
+enum StatusVisita {
+  AGENDADA
+  REALIZADA
+  CANCELADA
+  REAGENDADA
+}
+
+enum TipoContrato {
+  VENDA
+  ALUGUEL
+}
+
+enum StatusContrato {
+  ATIVO
+  FINALIZADO
+  CANCELADO
+}
+
+enum StatusComissao {
+  PENDENTE
+  PAGO
+  CANCELADO
+}
+
+enum TipoNotificacao {
+  LEAD
+  VISITA
+  CONTRATO
+  SISTEMA
+  MARKETING
+}
