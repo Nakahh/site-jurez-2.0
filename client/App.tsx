@@ -14,6 +14,7 @@ import Simulador from "./pages/Simulador";
 import Desenvolvedor from "./pages/Desenvolvedor";
 import Blog from "./pages/Blog";
 import Imoveis from "./pages/Imoveis";
+import Imovel from "./pages/Imovel";
 import CorretorDashboard from "./pages/dashboards/CorretorDashboard";
 import AdminDashboard from "./pages/dashboards/AdminDashboard";
 import ClienteDashboard from "./pages/dashboards/ClienteDashboard";
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/desenvolvedor" element={<Desenvolvedor />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/imoveis" element={<Imoveis />} />
+          <Route path="/imovel/:id" element={<Imovel />} />
           <Route path="/dashboard/corretor" element={<CorretorDashboard />} />
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
           <Route path="/dashboard/cliente" element={<ClienteDashboard />} />
