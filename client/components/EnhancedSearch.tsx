@@ -309,7 +309,7 @@ export function EnhancedSearch() {
               <SelectValue placeholder="Quartos" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Qualquer</SelectItem>
+              <SelectItem value="any">Qualquer</SelectItem>
               <SelectItem value="1">1+ quarto</SelectItem>
               <SelectItem value="2">2+ quartos</SelectItem>
               <SelectItem value="3">3+ quartos</SelectItem>
