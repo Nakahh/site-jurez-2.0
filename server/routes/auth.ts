@@ -12,7 +12,7 @@ const createToken = (usuario: any) => {
     {
       userId: usuario.id,
       email: usuario.email,
-      papel: usuario.papel,
+      papel: usuario.papel as Papel,
     },
     process.env.JWT_SECRET!,
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" } as SignOptions,
