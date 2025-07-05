@@ -1,7 +1,7 @@
 import { createServer } from "./index";
 
 const app = createServer();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.ADMIN_PORT || 3001;
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor backend rodando na porta ${PORT}`);
