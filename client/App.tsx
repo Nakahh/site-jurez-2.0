@@ -54,27 +54,33 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Login />} />
-          <Route path="/sobre" element={<Sobre />} />
-          <Route path="/contato" element={<Contato />} />
-          <Route path="/simulador" element={<Simulador />} />
-          <Route path="/desenvolvedor" element={<Desenvolvedor />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/imoveis" element={<Imoveis />} />
-          <Route path="/imovel/:id" element={<Imovel />} />
-          <Route path="/comparador" element={<Comparador />} />
-          <Route path="/dashboard/corretor" element={<CorretorDashboard />} />
-          <Route path="/dashboard/admin" element={<AdminDashboard />} />
-          <Route path="/dashboard/cliente" element={<ClienteDashboard />} />
-          <Route path="/dashboard/marketing" element={<MarketingDashboard />} />
+          <Route path="/" element={<LazyIndex />} />
+          <Route path="/login" element={<LazyLogin />} />
+          <Route path="/register" element={<LazyLogin />} />
+          <Route path="/sobre" element={<LazySobre />} />
+          <Route path="/contato" element={<LazyContato />} />
+          <Route path="/simulador" element={<LazySimulador />} />
+          <Route path="/desenvolvedor" element={<LazyDesenvolvedor />} />
+          <Route path="/blog" element={<LazyBlog />} />
+          <Route path="/imoveis" element={<LazyImoveis />} />
+          <Route path="/imovel/:id" element={<LazyImovel />} />
+          <Route path="/comparador" element={<LazyComparador />} />
+          <Route
+            path="/dashboard/corretor"
+            element={<LazyCorretorDashboard />}
+          />
+          <Route path="/dashboard/admin" element={<LazyAdminDashboard />} />
+          <Route path="/dashboard/cliente" element={<LazyClienteDashboard />} />
+          <Route
+            path="/dashboard/marketing"
+            element={<LazyMarketingDashboard />}
+          />
           <Route
             path="/dashboard/desenvolvedor"
-            element={<DesenvolvedorDashboard />}
+            element={<LazyDesenvolvedorDashboard />}
           />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<LazyNotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
