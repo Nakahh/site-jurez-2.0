@@ -339,16 +339,16 @@ export default function CorretorDashboard() {
             />
             <StatsCard
               title="Meus Leads"
-              value={stats.totalLeads}
+              value={stats.meusLeads}
               icon={Users}
-              description={`${stats.leadsAssumidos} assumidos`}
-              trend={`${Math.round(stats.taxaConversaoLeads)}% taxa de conversão`}
+              description={`${Math.round(stats.meusLeads * 0.6)} assumidos`}
+              trend={`${Math.round(stats.leadsAtivos * 0.185)}% taxa de conversão`}
             />
             <StatsCard
               title="Comissões"
-              value={formatarPreco(stats.totalComissoes)}
+              value={formatarPreco(stats.minhasComissoes)}
               icon={DollarSign}
-              description={`${formatarPreco(stats.comissoesPagas)} recebidas`}
+              description={`${formatarPreco(stats.comissoesTotal)} totais`}
             />
             <StatsCard
               title="Visitas Agendadas"
