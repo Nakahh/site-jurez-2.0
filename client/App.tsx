@@ -6,24 +6,46 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import Sobre from "./pages/Sobre";
-import Contato from "./pages/Contato";
-import Simulador from "./pages/Simulador";
-import Desenvolvedor from "./pages/Desenvolvedor";
-import Blog from "./pages/Blog";
-import Imoveis from "./pages/Imoveis";
-import Imovel from "./pages/Imovel";
-import Comparador from "./pages/Comparador";
-import CorretorDashboard from "./pages/dashboards/CorretorDashboard";
-import AdminDashboard from "./pages/dashboards/AdminDashboard";
-import ClienteDashboard from "./pages/dashboards/ClienteDashboard";
-import MarketingDashboard from "./pages/dashboards/MarketingDashboard";
-import DesenvolvedorDashboard from "./pages/dashboards/DesenvolvedorDashboard";
-import NotFound from "./pages/NotFound";
+import { initPerformanceMonitoring } from "@/lib/performance";
+import {
+  LazyIndex,
+  LazyLogin,
+  LazySobre,
+  LazyContato,
+  LazySimulador,
+  LazyDesenvolvedor,
+  LazyBlog,
+  LazyImoveis,
+  LazyImovel,
+  LazyComparador,
+  LazyCorretorDashboard,
+  LazyAdminDashboard,
+  LazyClienteDashboard,
+  LazyMarketingDashboard,
+  LazyDesenvolvedorDashboard,
+  LazyNotFound,
+} from "./components/LazyRoutes";
 
-const queryClient = new QueryClient();
+// Optimized QueryClient configuration
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+      retry: 1,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
+
+// Initialize performance monitoring
+if (typeof window !== "undefined" && process.env.NODE_ENV === "production") {
+  initPerformanceMonitoring();
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
