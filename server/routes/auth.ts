@@ -49,7 +49,7 @@ export const login: RequestHandler = async (req, res) => {
         email: usuario.email,
         whatsapp: usuario.whatsapp,
         ativo: usuario.ativo,
-        papel: usuario.papel,
+        papel: usuario.papel as Papel,
         avatar: usuario.avatar,
         criadoEm: usuario.criadoEm,
       },
