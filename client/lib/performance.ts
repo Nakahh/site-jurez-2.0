@@ -1,15 +1,15 @@
-import { getCLS, getFID, getFCP, getLCP, getTTFB } from "web-vitals";
+import { onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
 
 // Performance monitoring
 export const initPerformanceMonitoring = () => {
   if (typeof window === "undefined") return;
 
   // Measure Core Web Vitals
-  getCLS(console.log);
-  getFID(console.log);
-  getFCP(console.log);
-  getLCP(console.log);
-  getTTFB(console.log);
+  onCLS(console.log);
+  onINP(console.log); // INP replaces FID in newer versions
+  onFCP(console.log);
+  onLCP(console.log);
+  onTTFB(console.log);
 };
 
 // Image lazy loading with Intersection Observer
