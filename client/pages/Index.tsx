@@ -179,10 +179,10 @@ export default function Index() {
       {/* Hero Section */}
       <section className="relative h-[70vh] bg-gradient-to-r from-primary/90 to-primary/70 flex items-center justify-center overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
           style={{
             backgroundImage:
-              "url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')",
+              "url('https://cdn.builder.io/o/assets%2Ff2a517b8d4884b66a8a5c1be8bd00feb%2F024ab83026b24724b5d807b621fddb43?alt=media&token=bfa483e0-f3df-415e-bfda-10acbcac68e2&apiKey=f2a517b8d4884b66a8a5c1be8bd00feb')",
           }}
         />
         <div className="relative text-center text-white space-y-8 max-w-5xl px-4 z-10">
