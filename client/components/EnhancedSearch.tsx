@@ -255,7 +255,7 @@ export function EnhancedSearch() {
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos os tipos</SelectItem>
+              <SelectItem value="all">Todos os tipos</SelectItem>
               <SelectItem value={TipoImovel.CASA}>
                 <div className="flex items-center space-x-2">
                   <Home className="w-4 h-4" />
