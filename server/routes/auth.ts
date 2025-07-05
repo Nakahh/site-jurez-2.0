@@ -102,15 +102,7 @@ export const register: RequestHandler = async (req, res) => {
     });
 
     // Gerar token
-    const token = jwt.sign(
-      {
-        userId: usuario.id,
-        email: usuario.email,
-        papel: usuario.papel,
-      },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN },
-    );
+    const token = createToken(usuario);
 
     const response: LoginResponse = {
       token,
