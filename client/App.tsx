@@ -14,6 +14,9 @@ import Simulador from "./pages/Simulador";
 import Desenvolvedor from "./pages/Desenvolvedor";
 import CorretorDashboard from "./pages/dashboards/CorretorDashboard";
 import AdminDashboard from "./pages/dashboards/AdminDashboard";
+import ClienteDashboard from "./pages/dashboards/ClienteDashboard";
+import MarketingDashboard from "./pages/dashboards/MarketingDashboard";
+import DesenvolvedorDashboard from "./pages/dashboards/DesenvolvedorDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +37,12 @@ const App = () => (
           <Route path="/desenvolvedor" element={<Desenvolvedor />} />
           <Route path="/dashboard/corretor" element={<CorretorDashboard />} />
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
+          <Route path="/dashboard/cliente" element={<ClienteDashboard />} />
+          <Route path="/dashboard/marketing" element={<MarketingDashboard />} />
+          <Route
+            path="/dashboard/desenvolvedor"
+            element={<DesenvolvedorDashboard />}
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
