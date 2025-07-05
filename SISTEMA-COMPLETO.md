@@ -75,6 +75,39 @@ Todas as funcionalidades solicitadas foram implementadas com sucesso! O sistema 
 - Depoimentos de clientes
 - Contatos diretos
 
+✅ **Blog (`/blog`)**
+
+- Artigos sobre mercado imobiliário
+- Dicas de investimento e financiamento
+- Tendências do mercado
+- Sistema de busca e categorias
+- Newsletter integrada
+
+✅ **Catálogo de Imóveis (`/imoveis`)**
+
+- Listagem completa com filtros avançados
+- Busca inteligente por localização, preço, tipo
+- Visualização em grid ou lista
+- Ordenação por diversos critérios
+- Sistema de favoritos e compartilhamento
+
+✅ **Página Individual do Imóvel (`/imovel/:id`)**
+
+- Galeria de fotos interativa
+- Descrição completa e características
+- Mapa de localização
+- Formulários de contato e agendamento
+- Informações do corretor responsável
+- Botões de ação (favoritar, compartilhar, agendar)
+
+✅ **Comparador de Imóveis (`/comparador`)**
+
+- Comparação lado a lado de até 3 imóveis
+- Tabela detalhada de características
+- Análise de características e comodidades
+- Interface intuitiva de seleção
+- Botões de ação para próximos passos
+
 ### 🔐 Sistema de Autenticação
 
 ✅ **Login/Register (`/login`, `/register`)**
