@@ -1,0 +1,793 @@
+{
+  "name": "Fluxo Completo Imobiliária Siqueira Campos - WhatsApp + IA + PostgreSQL",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-site",
+        "options": {
+          "noResponseBody": false
+        }
+      },
+      "id": "webhook-lead-site",
+      "name": "📥 Webhook Lead Site",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300],
+      "webhookId": "lead-site"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO leads (nome, telefone, mensagem, status, origem) VALUES ('{{ $json.nome }}', '{{ $json.telefone }}', '{{ $json.mensagem }}', 'PENDENTE', 'SITE') RETURNING id;",
+        "options": {}
+      },
+      "id": "salvar-lead-postgres",
+      "name": "�� Salvar Lead PostgreSQL",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-siqueira-campos",
+          "name": "PostgreSQL Siqueira Campos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, nome, whatsapp FROM usuarios WHERE ativo = true AND whatsapp IS NOT NULL AND whatsapp != '' AND papel IN ('CORRETOR', 'ASSISTENTE');",
+        "options": {}
+      },
+      "id": "buscar-corretores-ativos",
+      "name": "👥 Buscar Corretores Ativos",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [700, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-siqueira-campos",
+          "name": "PostgreSQL Siqueira Campos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Verificar se há corretores ativos\nconst leadData = items[0].json;\nconst corretores = items[1].json;\n\nif (!corretores || corretores.length === 0) {\n  return [{\n    json: {\n      lead: leadData,\n      semCorretores: true,\n      message: 'Nenhum corretor ativo no momento'\n    }\n  }];\n}\n\n// Preparar dados para envio aos corretores\nreturn corretores.map(corretor => ({\n  json: {\n    leadId: leadData.id,\n    leadNome: leadData.nome,\n    leadTelefone: leadData.telefone,\n    leadMensagem: leadData.mensagem,\n    corretorId: corretor.id,\n    corretorNome: corretor.nome,\n    corretorWhatsApp: corretor.whatsapp\n  }\n}));"
+      },
+      "id": "processar-corretores",
+      "name": "⚙️ Processar Corretores",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [950, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-3.5-turbo",
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 150
+        },
+        "messages": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "Você é um assistente virtual da Siqueira Campos Imóveis. Gere uma resposta cordial e profissional para o cliente, informando que um corretor especializado entrará em contato em breve. Use o nome do cliente na resposta."
+            },
+            {
+              "role": "user",
+              "content": "Cliente: {{ $json.leadNome }}, Mensagem: {{ $json.leadMensagem }}"
+            }
+          ]
+        }
+      },
+      "id": "gerar-resposta-ia",
+      "name": "🤖 Gerar Resposta IA",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [1200, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-siqueira-campos",
+          "name": "OpenAI Siqueira Campos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.evolutionApiUrl || 'https://api.evolution.whatsapp' }}/message/sendText/{{ $json.instance || 'siqueira' }}",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "apikey",
+              "value": "{{ $json.apiKey || $credentials.evolutionApi.apiKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.corretorWhatsApp }}"
+            },
+            {
+              "name": "text",
+              "value": "🏠 *Novo lead no site!*\\n\\n👤 *Nome:* {{ $json.leadNome }}\\n📞 *Telefone:* {{ $json.leadTelefone }}\\n��� *Mensagem:* \"{{ $json.leadMensagem }}\"\\n\\n➡️ Responda *ASSUMIR* para ficar responsável pelo atendimento."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "enviar-whatsapp-corretor",
+      "name": "📱 Enviar WhatsApp Corretor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1450, 400],
+      "credentials": {
+        "evolutionApi": {
+          "id": "evolution-siqueira-campos",
+          "name": "Evolution API Siqueira Campos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.chatBubbleUrl || 'https://chat.siqueicamposimoveis.com.br' }}/api/send-response",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "telefone",
+              "value": "={{ $json.leadTelefone }}"
+            },
+            {
+              "name": "mensagem",
+              "value": "={{ $node['Gerar Resposta IA'].json.choices[0].message.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "enviar-resposta-cliente",
+      "name": "💬 Enviar Resposta Cliente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1450, 200]
+    },
+    {
+      "parameters": {
+        "amount": 15,
+        "unit": "minutes"
+      },
+      "id": "aguardar-15-minutos",
+      "name": "⏰ Aguardar 15 Minutos",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1700, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT status FROM leads WHERE id = {{ $json.leadId }};",
+        "options": {}
+      },
+      "id": "verificar-status-lead",
+      "name": "🔍 Verificar Status Lead",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1950, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-siqueira-campos",
+          "name": "PostgreSQL Siqueira Campos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.status }}",
+              "operation": "equal",
+              "value2": "PENDENTE"
+            }
+          ]
+        }
+      },
+      "id": "if-lead-pendente",
+      "name": "❓ Lead Ainda Pendente?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [2200, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE leads SET status = 'EXPIRADO' WHERE id = {{ $json.leadId }};",
+        "options": {}
+      },
+      "id": "marcar-lead-expirado",
+      "name": "⏰ Marcar Lead Expirado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [2450, 200],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-siqueira-campos",
+          "name": "PostgreSQL Siqueira Campos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.evolutionApiUrl || 'https://api.evolution.whatsapp' }}/message/sendText/{{ $json.instance || 'siqueira' }}",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "apikey",
+              "value": "{{ $json.apiKey || $credentials.evolutionApi.apiKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.leadTelefone }}"
+            },
+            {
+              "name": "text",
+              "value": "Olá {{ $json.leadNome }}! 😊\\n\\nNo momento nossos corretores estão ocupados, mas entraremos em contato em breve para atendê-lo.\\n\\nObrigado pela preferência!\\n\\n*Siqueira Campos Imóveis*"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "enviar-fallback-cliente",
+      "name": "📞 Enviar Fallback Cliente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2700, 200],
+      "credentials": {
+        "evolutionApi": {
+          "id": "evolution-siqueira-campos",
+          "name": "Evolution API Siqueira Campos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "system@siqueicamposimoveis.com.br",
+        "toEmail": "gerente@siqueicamposimoveis.com.br",
+        "subject": "⚠️ Lead não atendido - Siqueira Campos Imóveis",
+        "text": "Lead não foi atendido em 15 minutos:\\n\\n👤 Nome: {{ $json.leadNome }}\\n📞 Telefone: {{ $json.leadTelefone }}\\n💬 Mensagem: {{ $json.leadMensagem }}\\n⏰ Horário: {{ $now.format('DD/MM/YYYY HH:mm') }}\\n\\nPor favor, verifique a disponibilidade dos corretores.",
+        "options": {}
+      },
+      "id": "email-gerente-lead-nao-atendido",
+      "name": "📧 Email Gerente - Lead Não Atendido",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [2950, 200],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-siqueira-campos",
+          "name": "SMTP Siqueira Campos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "resposta-corretor",
+        "options": {}
+      },
+      "id": "webhook-resposta-corretor",
+      "name": "📥 Webhook Resposta Corretor",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 700],
+      "webhookId": "resposta-corretor"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Verificar se a mensagem contém 'ASSUMIR'\nconst mensagem = items[0].json.mensagem || items[0].json.text || '';\nconst mensagemLower = mensagem.toLowerCase();\n\nif (mensagemLower.includes('assumir')) {\n  return [{\n    json: {\n      ...items[0].json,\n      assumir: true,\n      action: 'ASSUMIR_LEAD'\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    ...items[0].json,\n    assumir: false,\n    action: 'MENSAGEM_IGNORADA'\n  }\n}];"
+      },
+      "id": "verificar-assumir",
+      "name": "🔍 Verificar 'ASSUMIR'",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [450, 700]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.assumir }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "if-assumir",
+      "name": "❓ Quer Assumir?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [700, 700]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE leads SET status = 'ASSUMIDO', corretor_id = '{{ $json.corretorId }}' WHERE id = '{{ $json.leadId }}' AND status = 'PENDENTE' RETURNING *;",
+        "options": {}
+      },
+      "id": "assumir-lead-postgres",
+      "name": "✅ Assumir Lead PostgreSQL",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [950, 600],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-siqueira-campos",
+          "name": "PostgreSQL Siqueira Campos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.evolutionApiUrl || 'https://api.evolution.whatsapp' }}/message/sendText/{{ $json.instance || 'siqueira' }}",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "apikey",
+              "value": "{{ $json.apiKey || $credentials.evolutionApi.apiKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.corretorWhatsApp }}"
+            },
+            {
+              "name": "text",
+              "value": "✅ *Lead assumido com sucesso!*\\n\\nVocê agora é responsável pelo atendimento do cliente {{ $json.leadNome }}.\\n\\n📞 Telefone: {{ $json.leadTelefone }}\\n💬 Mensagem: {{ $json.leadMensagem }}\\n\\nBom atendimento! 😊"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "confirmar-assumir-corretor",
+      "name": "✅ Confirmar Assumir - Corretor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1200, 600],
+      "credentials": {
+        "evolutionApi": {
+          "id": "evolution-siqueira-campos",
+          "name": "Evolution API Siqueira Campos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, nome, whatsapp FROM usuarios WHERE ativo = true AND whatsapp IS NOT NULL AND whatsapp != '' AND papel IN ('CORRETOR', 'ASSISTENTE') AND id != '{{ $json.corretorId }}';",
+        "options": {}
+      },
+      "id": "buscar-outros-corretores",
+      "name": "👥 Buscar Outros Corretores",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1200, 750],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-siqueira-campos",
+          "name": "PostgreSQL Siqueira Campos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Preparar notificação para outros corretores\nconst outrosCorretores = items[0].json;\nconst leadData = items[1].json;\n\nif (!outrosCorretores || outrosCorretores.length === 0) {\n  return [];\n}\n\nreturn outrosCorretores.map(corretor => ({\n  json: {\n    corretorWhatsApp: corretor.whatsapp,\n    corretorNome: corretor.nome,\n    leadNome: leadData.leadNome,\n    corretorQueAssumiu: leadData.corretorNome || 'Um corretor'\n  }\n}));"
+      },
+      "id": "preparar-notificacao-outros",
+      "name": "📝 Preparar Notificação Outros",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1450, 750]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.evolutionApiUrl || 'https://api.evolution.whatsapp' }}/message/sendText/{{ $json.instance || 'siqueira' }}",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "apikey",
+              "value": "{{ $json.apiKey || $credentials.evolutionApi.apiKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.corretorWhatsApp }}"
+            },
+            {
+              "name": "text",
+              "value": "ℹ️ *Lead já foi assumido*\\n\\nO lead de {{ $json.leadNome }} já foi assumido por {{ $json.corretorQueAssumiu }}.\\n\\nObrigado pela atenção! 😊"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notificar-outros-corretores",
+      "name": "📢 Notificar Outros Corretores",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1700, 750],
+      "credentials": {
+        "evolutionApi": {
+          "id": "evolution-siqueira-campos",
+          "name": "Evolution API Siqueira Campos"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.chatBubbleUrl || 'https://chat.siqueicamposimoveis.com.br' }}/api/send-response",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "telefone",
+              "value": "={{ $json.leadTelefone }}"
+            },
+            {
+              "name": "mensagem",
+              "value": "Olá {{ $json.leadNome }}! 😊\\n\\nSeu atendimento foi direcionado para um de nossos corretores especialistas que entrará em contato em breve.\\n\\nObrigado pela preferência!\\n\\n*Siqueira Campos Imóveis*"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notificar-cliente-assumido",
+      "name": "📞 Notificar Cliente Assumido",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1450, 600]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Resposta para nenhum corretor disponível\nreturn [{\n  json: {\n    telefone: items[0].json.telefone,\n    mensagem: 'Olá! No momento não temos corretores disponíveis. Por favor, tente novamente mais tarde ou entre em contato pelo WhatsApp (62) 9 8556-3505. Obrigado!',\n    semCorretores: true\n  }\n}];"
+      },
+      "id": "resposta-sem-corretores",
+      "name": "🚫 Resposta Sem Corretores",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [950, 150]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.chatBubbleUrl || 'https://chat.siqueicamposimoveis.com.br' }}/api/send-response",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "telefone",
+              "value": "={{ $json.telefone }}"
+            },
+            {
+              "name": "mensagem",
+              "value": "={{ $json.mensagem }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "enviar-resposta-sem-corretores",
+      "name": "📞 Enviar Resposta Sem Corretores",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1200, 150]
+    }
+  ],
+  "connections": {
+    "📥 Webhook Lead Site": {
+      "main": [
+        [
+          {
+            "node": "💾 Salvar Lead PostgreSQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💾 Salvar Lead PostgreSQL": {
+      "main": [
+        [
+          {
+            "node": "👥 Buscar Corretores Ativos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "👥 Buscar Corretores Ativos": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Processar Corretores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Processar Corretores": {
+      "main": [
+        [
+          {
+            "node": "🚫 Resposta Sem Corretores",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🤖 Gerar Resposta IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 Gerar Resposta IA": {
+      "main": [
+        [
+          {
+            "node": "💬 Enviar Resposta Cliente",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📱 Enviar WhatsApp Corretor",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "⏰ Aguardar 15 Minutos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ Aguardar 15 Minutos": {
+      "main": [
+        [
+          {
+            "node": "🔍 Verificar Status Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Verificar Status Lead": {
+      "main": [
+        [
+          {
+            "node": "❓ Lead Ainda Pendente?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ Lead Ainda Pendente?": {
+      "main": [
+        [
+          {
+            "node": "⏰ Marcar Lead Expirado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ Marcar Lead Expirado": {
+      "main": [
+        [
+          {
+            "node": "📞 Enviar Fallback Cliente",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📧 Email Gerente - Lead Não Atendido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📥 Webhook Resposta Corretor": {
+      "main": [
+        [
+          {
+            "node": "🔍 Verificar 'ASSUMIR'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Verificar 'ASSUMIR'": {
+      "main": [
+        [
+          {
+            "node": "❓ Quer Assumir?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ Quer Assumir?": {
+      "main": [
+        [
+          {
+            "node": "✅ Assumir Lead PostgreSQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Assumir Lead PostgreSQL": {
+      "main": [
+        [
+          {
+            "node": "✅ Confirmar Assumir - Corretor",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "👥 Buscar Outros Corretores",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📞 Notificar Cliente Assumido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "👥 Buscar Outros Corretores": {
+      "main": [
+        [
+          {
+            "node": "📝 Preparar Notificação Outros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Preparar Notificação Outros": {
+      "main": [
+        [
+          {
+            "node": "📢 Notificar Outros Corretores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚫 Resposta Sem Corretores": {
+      "main": [
+        [
+          {
+            "node": "📞 Enviar Resposta Sem Corretores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "id": "imobiliaria",
+      "name": "Imobiliária"
+    },
+    {
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "id": "whatsapp",
+      "name": "WhatsApp"
+    },
+    {
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "id": "ia",
+      "name": "Inteligência Artificial"
+    }
+  ],
+  "triggerCount": 2,
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "versionId": "1"
+}
