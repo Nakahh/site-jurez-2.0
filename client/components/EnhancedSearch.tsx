@@ -293,7 +293,7 @@ export function EnhancedSearch() {
               <SelectValue placeholder="Finalidade" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas</SelectItem>
+              <SelectItem value="all">Todas</SelectItem>
               <SelectItem value={Finalidade.VENDA}>Venda</SelectItem>
               <SelectItem value={Finalidade.ALUGUEL}>Aluguel</SelectItem>
             </SelectContent>
