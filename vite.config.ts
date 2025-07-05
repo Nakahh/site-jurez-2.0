@@ -5,8 +5,9 @@ import path from "path";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
-    port: 8080,
+    host: "localhost",
+    port: 3000,
+    strictPort: true,
   },
   build: {
     outDir: "dist/spa",
@@ -27,11 +28,15 @@ function expressPlugin(): Plugin {
     name: "express-plugin",
     apply: "serve", // Only apply during development (serve mode)
     async configureServer(server) {
-      const { createServer: createExpressServer } = await import("./server");
-      const app = createExpressServer();
+      try {
+        const { createServer: createExpressServer } = await import("./server");
+        const app = createExpressServer();
 
-      // Add Express app as middleware to Vite dev server
-      server.middlewares.use(app);
+        // Add Express app as middleware to Vite dev server
+        server.middlewares.use("/api", app);
+      } catch (error) {
+        console.warn("Failed to load Express server:", error);
+      }
     },
   };
 }
