@@ -522,7 +522,7 @@ export default function Imoveis() {
                           <SelectValue placeholder="Selecione o bairro" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Todos os bairros</SelectItem>
+                          <SelectItem value="all">Todos os bairros</SelectItem>
                           {bairros.map((bairro) => (
                             <SelectItem key={bairro} value={bairro}>
                               {bairro}
