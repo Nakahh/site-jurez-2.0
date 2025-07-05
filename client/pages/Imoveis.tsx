@@ -609,7 +609,7 @@ export default function Imoveis() {
                             <SelectValue placeholder="Banheiros" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Qualquer</SelectItem>
+                            <SelectItem value="any">Qualquer</SelectItem>
                             <SelectItem value="1">1+</SelectItem>
                             <SelectItem value="2">2+</SelectItem>
                             <SelectItem value="3">3+</SelectItem>
