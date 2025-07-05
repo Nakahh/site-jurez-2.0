@@ -39,7 +39,7 @@ import {
   CheckCircle,
   Clock,
   Cpu,
-  Memory,
+  MemoryStick,
   HardDrive,
   Network,
   Shield,
@@ -389,7 +389,7 @@ export default function DesenvolvedorDashboard() {
           <Card className="border-slate-200 shadow-md">
             <CardHeader>
               <CardTitle className="text-slate-900 flex items-center">
-                <Memory className="w-5 h-5 mr-2" />
+                <MemoryStick className="w-5 h-5 mr-2" />
                 Memory Usage
               </CardTitle>
             </CardHeader>
