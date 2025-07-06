@@ -370,6 +370,9 @@ export function NotificationProvider({
         markAllAsRead,
         removeNotification,
         clearAll,
+        userRole,
+        currentUser,
+        switchUser,
       }}
     >
       {children}
