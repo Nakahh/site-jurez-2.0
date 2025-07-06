@@ -307,7 +307,13 @@ export const getImoveisDestaque: RequestHandler = async (req, res) => {
       },
     });
 
-    res.json(imoveis);
+    // Parse fotos JSON for each imovel
+    const imoveisFormatados = imoveis.map((imovel) => ({
+      ...imovel,
+      fotos: imovel.fotos ? JSON.parse(imovel.fotos) : [],
+    }));
+
+    res.json(imoveisFormatados);
   } catch (error) {
     console.error("Erro ao buscar imóveis em destaque:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
