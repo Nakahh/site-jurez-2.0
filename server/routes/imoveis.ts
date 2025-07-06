@@ -61,8 +61,14 @@ export const getImoveis: RequestHandler = async (req, res) => {
       prisma.imovel.count({ where: filtros }),
     ]);
 
+    // Parse fotos JSON for each imovel
+    const imoveisFormatados = imoveis.map((imovel) => ({
+      ...imovel,
+      fotos: imovel.fotos ? JSON.parse(imovel.fotos) : [],
+    }));
+
     res.json({
-      data: imoveis,
+      data: imoveisFormatados,
       total,
       page: parseInt(page as string),
       limit: parseInt(limit as string),
@@ -241,7 +247,7 @@ export const deleteImovel: RequestHandler = async (req, res) => {
 
     const { id } = req.params;
 
-    // Verificar se o imóvel existe e se o usuário tem permissão
+    // Verificar se o im��vel existe e se o usuário tem permissão
     const imovel = await prisma.imovel.findUnique({
       where: { id },
     });
