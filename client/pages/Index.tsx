@@ -398,15 +398,21 @@ export default function Index() {
                           </span>
                         )}
                       </div>
-                      <div className="flex flex-col space-y-2">
+                      <div className="space-y-3">
+                        {/* Botão principal */}
                         <Button
                           size="sm"
-                          className="bg-primary hover:bg-primary/90"
+                          className="w-full bg-primary hover:bg-primary/90 font-medium"
                           asChild
                         >
-                          <Link to={`/imovel/${imovel.id}`}>Ver Detalhes</Link>
+                          <Link to={`/imovel/${imovel.id}`}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver Detalhes
+                          </Link>
                         </Button>
-                        <div className="flex space-x-2">
+
+                        {/* Botões de ação em linha */}
+                        <div className="grid grid-cols-2 gap-2">
                           <ScheduleVisitSystem
                             propertyId={imovel.id}
                             propertyTitle={imovel.titulo}
@@ -415,6 +421,47 @@ export default function Index() {
                             propertyId={imovel.id}
                             propertyTitle={imovel.titulo}
                           />
+                        </div>
+
+                        {/* Botões de ação secundárias */}
+                        <div className="flex justify-between">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 mr-1"
+                            onClick={() => {
+                              const whatsappMessage = `Olá! Tenho interesse no imóvel: ${imovel.titulo} - ${imovel.endereco}. Valor: ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(imovel.preco)}`;
+                              const whatsappUrl = `https://wa.me/5562985563505?text=${encodeURIComponent(whatsappMessage)}`;
+                              window.open(whatsappUrl, "_blank");
+                            }}
+                          >
+                            <MessageCircle className="h-3 w-3 mr-1" />
+                            WhatsApp
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 ml-1"
+                            onClick={() => {
+                              if (navigator.share) {
+                                navigator.share({
+                                  title: imovel.titulo,
+                                  text: `Confira este imóvel: ${imovel.titulo}`,
+                                  url: `${window.location.origin}/imovel/${imovel.id}`,
+                                });
+                              } else {
+                                navigator.clipboard.writeText(
+                                  `${window.location.origin}/imovel/${imovel.id}`,
+                                );
+                                alert(
+                                  "Link copiado para a área de transferência!",
+                                );
+                              }
+                            }}
+                          >
+                            <Share2 className="h-3 w-3 mr-1" />
+                            Compartilhar
+                          </Button>
                         </div>
                       </div>
                     </div>
