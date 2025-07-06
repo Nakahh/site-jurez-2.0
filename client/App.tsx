@@ -114,6 +114,17 @@ const App = () => {
     };
   }, []);
 
+  // Initialize global optimizations
+  useEffect(() => {
+    // The optimization manager is already initialized globally
+    // Add any app-specific optimizations here
+
+    // Cleanup on unmount (though App never unmounts)
+    return () => {
+      // optimizationManager.destroy();
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
