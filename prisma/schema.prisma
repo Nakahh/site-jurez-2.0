@@ -14,7 +14,7 @@ model Usuario {
   senha         String?
   whatsapp      String?
   ativo         Boolean  @default(true)
-  papel         Papel    @default(CLIENTE)
+  papel         String   @default("CLIENTE") // ADMIN, CORRETOR, ASSISTENTE, CLIENTE, MARKETING, DESENVOLVEDOR
   googleId      String?  @unique
   avatar        String?
   criadoEm      DateTime @default(now())
@@ -38,127 +38,130 @@ model Imovel {
   id                String         @id @default(cuid())
   titulo           String
   descricao        String
-  tipo             TipoImovel
-  finalidade       Finalidade
-  preco            Decimal
-  area             Decimal
+  tipo             String         // CASA, APARTAMENTO, TERRENO, COMERCIAL, RURAL
+  finalidade       String         // VENDA, ALUGUEL, AMBOS
+  preco            Float
+  area             Float
   quartos          Int
   banheiros        Int
   vagas            Int?
   endereco         String
   bairro           String
-  cidade           String         @default("Goiânia")
-  estado           String         @default("GO")
+  cidade           String
+  estado           String
   cep              String?
-  latitude         Decimal?
-  longitude        Decimal?
-  fotos            String[]
-  status           StatusImovel   @default(DISPONIVEL)
+  latitude         Float?
+  longitude        Float?
+  fotos            String?        // JSON string with array of photo URLs
+  status           String         @default("DISPONIVEL") // DISPONIVEL, VENDIDO, ALUGADO, RESERVADO, INATIVO
   destaque         Boolean        @default(false)
-  corretorId       String
-  criadoEm         DateTime       @default(now())
-  atualizadoEm     DateTime       @updatedAt
+  visualizacoes    Int           @default(0)
+  criadoEm         DateTime      @default(now())
+  atualizadoEm     DateTime      @updatedAt
 
   // Relacionamentos
-  corretor         Usuario        @relation("CorretorImoveis", fields: [corretorId], references: [id])
-  visitas          Visita[]
-  favoritos        Favorito[]
+  corretor         Usuario       @relation("CorretorImoveis", fields: [corretorId], references: [id])
+  corretorId       String
   leads            Lead[]
+  favoritos        Favorito[]
+  visitas          Visita[]
   contratos        Contrato[]
-  historicosPreco  HistoricoPreco[]
 
   @@map("imoveis")
 }
 
 model Lead {
-  id           String      @id @default(cuid())
+  id           String    @id @default(cuid())
   nome         String
-  telefone     String
+  telefone     String?
   email        String?
-  mensagem     String
-  origem       String      @default("SITE")
-  status       StatusLead  @default(PENDENTE)
-  corretorId   String?
-  imovelId     String?
-  respostaIa   String?
-  criadoEm     DateTime    @default(now())
-  atualizadoEm DateTime    @updatedAt
+  mensagem     String?
+  origem       String    // SITE, WHATSAPP, TELEFONE, FACEBOOK, INSTAGRAM, INDICACAO
+  status       String    @default("PENDENTE") // PENDENTE, ASSUMIDO, EXPIRADO, CONVERTIDO, PERDIDO
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
 
   // Relacionamentos
-  corretor     Usuario?    @relation("CorretorLeads", fields: [corretorId], references: [id])
-  imovel       Imovel?     @relation(fields: [imovelId], references: [id])
+  corretor     Usuario?  @relation("CorretorLeads", fields: [corretorId], references: [id])
+  corretorId   String?
+  imovel       Imovel?   @relation(fields: [imovelId], references: [id])
+  imovelId     String?
+  visitas      Visita[]
   mensagens    Mensagem[]
 
   @@map("leads")
 }
 
-model Visita {
-  id           String       @id @default(cuid())
-  dataHora     DateTime
-  status       StatusVisita @default(AGENDADA)
-  observacoes  String?
-  clienteId    String
-  imovelId     String
-  criadoEm     DateTime     @default(now())
-  atualizadoEm DateTime     @updatedAt
-
-  // Relacionamentos
-  cliente      Usuario      @relation("ClienteVisitas", fields: [clienteId], references: [id])
-  imovel       Imovel       @relation(fields: [imovelId], references: [id])
-
-  @@map("visitas")
-}
-
 model Favorito {
-  id        String   @id @default(cuid())
-  usuarioId String
-  imovelId  String
-  criadoEm  DateTime @default(now())
+  id         String   @id @default(cuid())
+  criadoEm   DateTime @default(now())
 
   // Relacionamentos
-  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
-  imovel    Imovel   @relation(fields: [imovelId], references: [id])
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId  String
+  imovel     Imovel   @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  imovelId   String
 
   @@unique([usuarioId, imovelId])
   @@map("favoritos")
 }
 
-model Contrato {
-  id            String        @id @default(cuid())
-  tipo          TipoContrato
-  valor         Decimal
-  dataInicio    DateTime
-  dataFim       DateTime?
-  status        StatusContrato @default(ATIVO)
-  termos        String
-  clienteId     String
-  imovelId      String
-  corretorId    String
-  criadoEm      DateTime      @default(now())
-  atualizadoEm  DateTime      @updatedAt
+model Visita {
+  id           String   @id @default(cuid())
+  dataHora     DateTime
+  observacoes  String?
+  status       String   @default("AGENDADA") // AGENDADA, REALIZADA, CANCELADA, REAGENDADA
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
 
   // Relacionamentos
-  cliente       Usuario       @relation(fields: [clienteId], references: [id])
-  imovel        Imovel        @relation(fields: [imovelId], references: [id])
-  comissoes     Comissao[]
+  cliente      Usuario  @relation("ClienteVisitas", fields: [clienteId], references: [id])
+  clienteId    String
+  imovel       Imovel   @relation(fields: [imovelId], references: [id])
+  imovelId     String
+  lead         Lead?    @relation(fields: [leadId], references: [id])
+  leadId       String?
+
+  @@map("visitas")
+}
+
+model Contrato {
+  id                String    @id @default(cuid())
+  numero            String    @unique
+  tipo              String    // VENDA, ALUGUEL
+  valor             Float
+  dataInicio        DateTime
+  dataFim           DateTime?
+  status            String    @default("ATIVO") // ATIVO, FINALIZADO, CANCELADO
+  observacoes       String?
+  criadoEm          DateTime  @default(now())
+  atualizadoEm      DateTime  @updatedAt
+
+  // Relacionamentos
+  cliente           Usuario   @relation(fields: [clienteId], references: [id])
+  clienteId         String
+  imovel            Imovel    @relation(fields: [imovelId], references: [id])
+  imovelId          String
+  comissoes         Comissao[]
 
   @@map("contratos")
 }
 
 model Comissao {
-  id           String         @id @default(cuid())
-  valor        Decimal
-  percentual   Decimal
-  status       StatusComissao @default(PENDENTE)
+  id            String   @id @default(cuid())
+  valor         Float
+  percentual    Float
+  status        String   @default("PENDENTE") // PENDENTE, PAGO, CANCELADO
   dataPagamento DateTime?
-  corretorId   String
-  contratoId   String
-  criadoEm     DateTime       @default(now())
-  atualizadoEm DateTime       @updatedAt
+  observacoes   String?
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
 
   // Relacionamentos
-  corretor     Usuario        @relation(fields: [corretorId], references: [id])
-  contrato     Contrato       @relation(fields: [contratoId], references: [id])
+  corretor      Usuario  @relation(fields: [corretorId], references: [id])
+  corretorId    String
+  contrato      Contrato @relation(fields: [contratoId], references: [id])
+  contratoId    String
 
   @@map("comissoes")
 }
@@ -166,131 +169,45 @@ model Comissao {
 model Mensagem {
   id           String   @id @default(cuid())
   conteudo     String
-  remetente    String
-  destinatario String?
-  leadId       String?
+  tipo         String   // TEXTO, IMAGEM, ARQUIVO
   lida         Boolean  @default(false)
   criadoEm     DateTime @default(now())
 
   // Relacionamentos
-  usuario      Usuario? @relation(fields: [remetente], references: [id])
+  remetente    Usuario  @relation(fields: [remetenteId], references: [id])
+  remetenteId  String
   lead         Lead?    @relation(fields: [leadId], references: [id])
+  leadId       String?
 
   @@map("mensagens")
 }
 
 model Notificacao {
-  id           String           @id @default(cuid())
-  titulo       String
-  mensagem     String
-  tipo         TipoNotificacao
-  lida         Boolean          @default(false)
-  usuarioId    String
-  criadoEm     DateTime         @default(now())
+  id          String   @id @default(cuid())
+  titulo      String
+  mensagem    String
+  tipo        String   // LEAD, VISITA, CONTRATO, SISTEMA, MARKETING
+  lida        Boolean  @default(false)
+  criadoEm    DateTime @default(now())
 
   // Relacionamentos
-  usuario      Usuario          @relation(fields: [usuarioId], references: [id])
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId   String
 
   @@map("notificacoes")
 }
 
 model LogSistema {
-  id           String    @id @default(cuid())
-  acao         String
-  detalhes     String?
-  ip           String?
-  userAgent    String?
-  usuarioId    String?
-  criadoEm     DateTime  @default(now())
+  id          String   @id @default(cuid())
+  acao        String
+  detalhes    String?
+  ip          String?
+  userAgent   String?
+  criadoEm    DateTime @default(now())
 
   // Relacionamentos
-  usuario      Usuario?  @relation(fields: [usuarioId], references: [id])
+  usuario     Usuario? @relation(fields: [usuarioId], references: [id])
+  usuarioId   String?
 
   @@map("logs_sistema")
-}
-
-model HistoricoPreco {
-  id           String   @id @default(cuid())
-  precoAnterior Decimal
-  precoNovo    Decimal
-  motivo       String?
-  imovelId     String
-  criadoEm     DateTime @default(now())
-
-  // Relacionamentos
-  imovel       Imovel   @relation(fields: [imovelId], references: [id])
-
-  @@map("historico_precos")
-}
-
-// Enums
-enum Papel {
-  ADMIN
-  CORRETOR
-  ASSISTENTE
-  CLIENTE
-  MARKETING
-  DESENVOLVEDOR
-}
-
-enum TipoImovel {
-  CASA
-  APARTAMENTO
-  TERRENO
-  COMERCIAL
-  RURAL
-}
-
-enum Finalidade {
-  VENDA
-  ALUGUEL
-  AMBOS
-}
-
-enum StatusImovel {
-  DISPONIVEL
-  VENDIDO
-  ALUGADO
-  RESERVADO
-  INATIVO
-}
-
-enum StatusLead {
-  PENDENTE
-  ASSUMIDO
-  EXPIRADO
-  CONVERTIDO
-  PERDIDO
-}
-
-enum StatusVisita {
-  AGENDADA
-  REALIZADA
-  CANCELADA
-  REAGENDADA
-}
-
-enum TipoContrato {
-  VENDA
-  ALUGUEL
-}
-
-enum StatusContrato {
-  ATIVO
-  FINALIZADO
-  CANCELADO
-}
-
-enum StatusComissao {
-  PENDENTE
-  PAGO
-  CANCELADO
-}
-
-enum TipoNotificacao {
-  LEAD
-  VISITA
-  CONTRATO
-  SISTEMA
-  MARKETING
 }
