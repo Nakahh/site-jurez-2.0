@@ -340,9 +340,12 @@ export default function Blog() {
                       <Button
                         variant="outline"
                         className="border-amber-300 text-amber-700 hover:bg-amber-50"
+                        asChild
                       >
-                        Ler mais
-                        <ArrowRight className="w-4 h-4 ml-2" />
+                        <Link to={`/blog/post/${article.id}`}>
+                          Ler mais
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Link>
                       </Button>
                     </div>
                   </CardContent>
