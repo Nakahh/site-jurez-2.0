@@ -450,9 +450,12 @@ export default function Blog() {
                       size="sm"
                       variant="outline"
                       className="w-full border-amber-300 text-amber-700 hover:bg-amber-50"
+                      asChild
                     >
-                      <FileText className="w-3 h-3 mr-2" />
-                      Ler artigo completo
+                      <Link to={`/blog/post/${article.id}`}>
+                        <FileText className="w-3 h-3 mr-2" />
+                        Ler artigo completo
+                      </Link>
                     </Button>
                   </CardContent>
                 </Card>
