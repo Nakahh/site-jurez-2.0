@@ -20,7 +20,7 @@ export interface PerformanceOptions {
 
 export const useAdvancedPerformance = (
   componentName: string,
-  options: PerformanceOptions = {}
+  options: PerformanceOptions = {},
 ) => {
   const {
     trackMemory = false,
@@ -64,7 +64,7 @@ export const useAdvancedPerformance = (
     const getPageLoadMetrics = () => {
       if (typeof window !== "undefined" && window.performance) {
         const navigation = performance.getEntriesByType(
-          "navigation"
+          "navigation",
         )[0] as PerformanceNavigationTiming;
 
         if (navigation) {
@@ -98,7 +98,10 @@ export const useAdvancedPerformance = (
       try {
         const clsObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            if (entry.entryType === "layout-shift" && !(entry as any).hadRecentInput) {
+            if (
+              entry.entryType === "layout-shift" &&
+              !(entry as any).hadRecentInput
+            ) {
               clsValue += (entry as any).value;
             }
           }
@@ -179,8 +182,7 @@ export const useAdvancedPerformance = (
       const connection = (navigator as any).connection;
       connection.addEventListener("change", updateNetworkInfo);
 
-      return () =>
-        connection.removeEventListener("change", updateNetworkInfo);
+      return () => connection.removeEventListener("change", updateNetworkInfo);
     }
   }, [trackNetwork]);
 
@@ -190,17 +192,29 @@ export const useAdvancedPerformance = (
       reportIntervalRef.current = setInterval(() => {
         console.group(`🔍 Performance Report - ${componentName}`);
         console.log("📊 Metrics:", metrics);
-        console.log("⏱️ Component Mount Time:", `${metrics.componentMountTime}ms`);
+        console.log(
+          "⏱️ Component Mount Time:",
+          `${metrics.componentMountTime}ms`,
+        );
         console.log("🔄 Render Count:", metrics.renderCount);
         console.log("📄 Page Load Time:", `${metrics.pageLoadTime}ms`);
         if (metrics.memoryUsage) {
-          console.log("💾 Memory Usage:", `${metrics.memoryUsage.toFixed(2)} MB`);
+          console.log(
+            "💾 Memory Usage:",
+            `${metrics.memoryUsage.toFixed(2)} MB`,
+          );
         }
         if (metrics.connectionType) {
           console.log("🌐 Connection Type:", metrics.connectionType);
         }
-        console.log("⚡ Time to Interactive:", `${metrics.timeToInteractive}ms`);
-        console.log("📏 Cumulative Layout Shift:", metrics.cumulativeLayoutShift.toFixed(4));
+        console.log(
+          "⚡ Time to Interactive:",
+          `${metrics.timeToInteractive}ms`,
+        );
+        console.log(
+          "📏 Cumulative Layout Shift:",
+          metrics.cumulativeLayoutShift.toFixed(4),
+        );
         console.groupEnd();
       }, reportInterval);
 
@@ -217,25 +231,25 @@ export const useAdvancedPerformance = (
     if (process.env.NODE_ENV === "development") {
       if (metrics.componentMountTime > 1000) {
         console.warn(
-          `⚠️ Slow component mount detected in ${componentName}: ${metrics.componentMountTime}ms`
+          `⚠️ Slow component mount detected in ${componentName}: ${metrics.componentMountTime}ms`,
         );
       }
 
       if (metrics.renderCount > 10) {
         console.warn(
-          `⚠️ High render count detected in ${componentName}: ${metrics.renderCount} renders`
+          `⚠️ High render count detected in ${componentName}: ${metrics.renderCount} renders`,
         );
       }
 
       if (metrics.memoryUsage && metrics.memoryUsage > 50) {
         console.warn(
-          `⚠️ High memory usage detected in ${componentName}: ${metrics.memoryUsage.toFixed(2)} MB`
+          `⚠️ High memory usage detected in ${componentName}: ${metrics.memoryUsage.toFixed(2)} MB`,
         );
       }
 
       if (metrics.cumulativeLayoutShift > 0.1) {
         console.warn(
-          `⚠️ High Cumulative Layout Shift detected in ${componentName}: ${metrics.cumulativeLayoutShift.toFixed(4)}`
+          `⚠️ High Cumulative Layout Shift detected in ${componentName}: ${metrics.cumulativeLayoutShift.toFixed(4)}`,
         );
       }
     }
@@ -268,11 +282,11 @@ export const useAdvancedPerformance = (
 export const withPerformanceTracking = <P extends object>(
   Component: React.ComponentType<P>,
   componentName: string,
-  options?: PerformanceOptions
+  options?: PerformanceOptions,
 ) => {
   return function PerformanceTrackedComponent(props: P) {
     useAdvancedPerformance(componentName, options);
-    return <Component {...props} />;
+    return React.createElement(Component, props);
   };
 };
 
