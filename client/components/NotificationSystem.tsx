@@ -235,7 +235,7 @@ export function NotificationProvider({
         id: "6",
         type: "NOVO_LEAD",
         title: "Lead Qualificado",
-        message: "Cliente com pré-aprovação bancária - Roberto Silva",
+        message: "Cliente com pré-aprovaç��o bancária - Roberto Silva",
         timestamp: new Date(Date.now() - 75 * 60 * 1000), // 1h15 atrás
         read: false,
         priority: "URGENT",
@@ -523,7 +523,10 @@ export function NotificationBell() {
       >
         <div className="p-4 border-b">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold">Notificações</h3>
+            <div>
+              <h3 className="font-semibold">Notificações</h3>
+              <p className="text-xs text-muted-foreground">Papel: {userRole}</p>
+            </div>
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
