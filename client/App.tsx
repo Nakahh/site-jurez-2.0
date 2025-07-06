@@ -29,6 +29,11 @@ import {
   preloadRoute,
 } from "./components/LazyRoutes";
 
+// Import individual pages for corretor
+import { lazy, Suspense } from "react";
+const LazyCorretorLeads = lazy(() => import("./pages/CorretorLeads"));
+const LazyCorretorImoveis = lazy(() => import("./pages/CorretorImoveis"));
+
 // Optimized QueryClient configuration
 const queryClient = new QueryClient({
   defaultOptions: {
