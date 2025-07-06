@@ -119,38 +119,42 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LazyIndex />} />
-          <Route path="/login" element={<LazyLogin />} />
-          <Route path="/register" element={<LazyLogin />} />
-          <Route path="/sobre" element={<LazySobre />} />
-          <Route path="/contato" element={<LazyContato />} />
-          <Route path="/simulador" element={<LazySimulador />} />
-          <Route path="/desenvolvedor" element={<LazyDesenvolvedor />} />
-          <Route path="/blog" element={<LazyBlog />} />
-          <Route path="/imoveis" element={<LazyImoveis />} />
-          <Route path="/imovel/:id" element={<LazyImovel />} />
-          <Route path="/comparador" element={<LazyComparador />} />
-          <Route
-            path="/dashboard/corretor"
-            element={<LazyCorretorDashboard />}
-          />
-          <Route path="/dashboard/admin" element={<LazyAdminDashboard />} />
-          <Route path="/dashboard/cliente" element={<LazyClienteDashboard />} />
-          <Route
-            path="/dashboard/marketing"
-            element={<LazyMarketingDashboard />}
-          />
-          <Route
-            path="/dashboard/desenvolvedor"
-            element={<LazyDesenvolvedorDashboard />}
-          />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<LazyNotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+          <Routes>
+            <Route path="/" element={<LazyIndex />} />
+            <Route path="/login" element={<LazyLogin />} />
+            <Route path="/register" element={<LazyLogin />} />
+            <Route path="/sobre" element={<LazySobre />} />
+            <Route path="/contato" element={<LazyContato />} />
+            <Route path="/simulador" element={<LazySimulador />} />
+            <Route path="/desenvolvedor" element={<LazyDesenvolvedor />} />
+            <Route path="/blog" element={<LazyBlog />} />
+            <Route path="/imoveis" element={<LazyImoveis />} />
+            <Route path="/imovel/:id" element={<LazyImovel />} />
+            <Route path="/comparador" element={<LazyComparador />} />
+            <Route
+              path="/dashboard/corretor"
+              element={<LazyCorretorDashboard />}
+            />
+            <Route path="/dashboard/admin" element={<LazyAdminDashboard />} />
+            <Route
+              path="/dashboard/cliente"
+              element={<LazyClienteDashboard />}
+            />
+            <Route
+              path="/dashboard/marketing"
+              element={<LazyMarketingDashboard />}
+            />
+            <Route
+              path="/dashboard/desenvolvedor"
+              element={<LazyDesenvolvedorDashboard />}
+            />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<LazyNotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 createRoot(document.getElementById("root")!).render(<App />);
