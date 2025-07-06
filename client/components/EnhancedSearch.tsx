@@ -124,12 +124,26 @@ export function EnhancedSearch() {
 
   const handleSearch = async () => {
     setIsSearching(true);
-    // Simular busca
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSearching(false);
 
-    // Aqui integraria com a API real de busca
-    console.log("Buscando com filtros:", filters);
+    try {
+      // Redirecionar para a página de imóveis com os filtros
+      const searchParams = new URLSearchParams();
+
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value && value !== "all" && value !== "any") {
+          searchParams.append(key, value);
+        }
+      });
+
+      const queryString = searchParams.toString();
+      const url = queryString ? `/imoveis?${queryString}` : "/imoveis";
+
+      window.location.href = url;
+    } catch (error) {
+      console.error("Erro na busca:", error);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const clearFilters = () => {
@@ -256,25 +270,25 @@ export function EnhancedSearch() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os tipos</SelectItem>
-              <SelectItem value={TipoImovel.CASA}>
+              <SelectItem value="CASA">
                 <div className="flex items-center space-x-2">
                   <Home className="w-4 h-4" />
                   <span>Casa</span>
                 </div>
               </SelectItem>
-              <SelectItem value={TipoImovel.APARTAMENTO}>
+              <SelectItem value="APARTAMENTO">
                 <div className="flex items-center space-x-2">
                   <Building className="w-4 h-4" />
                   <span>Apartamento</span>
                 </div>
               </SelectItem>
-              <SelectItem value={TipoImovel.TERRENO}>
+              <SelectItem value="TERRENO">
                 <div className="flex items-center space-x-2">
                   <TreePine className="w-4 h-4" />
                   <span>Terreno</span>
                 </div>
               </SelectItem>
-              <SelectItem value={TipoImovel.COMERCIAL}>
+              <SelectItem value="COMERCIAL">
                 <div className="flex items-center space-x-2">
                   <Store className="w-4 h-4" />
                   <span>Comercial</span>
@@ -294,8 +308,8 @@ export function EnhancedSearch() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas</SelectItem>
-              <SelectItem value={Finalidade.VENDA}>Venda</SelectItem>
-              <SelectItem value={Finalidade.ALUGUEL}>Aluguel</SelectItem>
+              <SelectItem value="VENDA">Venda</SelectItem>
+              <SelectItem value="ALUGUEL">Aluguel</SelectItem>
             </SelectContent>
           </Select>
 
