@@ -38,6 +38,7 @@ import { ShareButton } from "@/components/ShareButton";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { NotificationBell } from "@/components/NotificationSystem";
 import { FAQ } from "@/components/FAQ";
+import { ChatSystem, ScheduleVisitSystem } from "@/components/ChatSystem";
 
 export default function Index() {
   const [imoveisDestaque, setImoveisDestaque] = useState<Imovel[]>([]);
@@ -402,18 +403,14 @@ export default function Index() {
                           <Link to={`/imovel/${imovel.id}`}>Ver Detalhes</Link>
                         </Button>
                         <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="hover:bg-primary hover:text-primary-foreground"
-                          >
-                            <Calendar className="h-4 w-4 mr-1" />
-                            Agendar
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <MessageCircle className="h-4 w-4 mr-1" />
-                            Contato
-                          </Button>
+                          <ScheduleVisitSystem
+                            propertyId={imovel.id}
+                            propertyTitle={imovel.titulo}
+                          />
+                          <ChatSystem
+                            propertyId={imovel.id}
+                            propertyTitle={imovel.titulo}
+                          />
                         </div>
                       </div>
                     </div>

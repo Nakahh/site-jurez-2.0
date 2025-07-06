@@ -45,6 +45,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ShareButton } from "@/components/ShareButton";
 import { useToast } from "@/hooks/use-toast";
+import { ChatSystem, ScheduleVisitSystem } from "@/components/ChatSystem";
 
 interface ImovelDetalhes {
   id: string;
@@ -571,22 +572,15 @@ export default function ImovelPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <Button
-                    className="w-full"
-                    onClick={() => setContatoCorretor(true)}
-                  >
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Falar com Corretor
-                  </Button>
+                  <ChatSystem
+                    propertyId={imovel.id}
+                    propertyTitle={imovel.titulo}
+                  />
 
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setAgendarVisita(true)}
-                  >
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Agendar Visita
-                  </Button>
+                  <ScheduleVisitSystem
+                    propertyId={imovel.id}
+                    propertyTitle={imovel.titulo}
+                  />
 
                   <Button
                     variant="outline"
