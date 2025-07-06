@@ -25,6 +25,7 @@ import {
   LazyMarketingDashboard,
   LazyDesenvolvedorDashboard,
   LazyNotFound,
+  PageLoader,
 } from "./components/LazyRoutes";
 
 // Optimized QueryClient configuration
