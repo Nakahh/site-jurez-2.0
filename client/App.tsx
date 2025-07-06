@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { initPerformanceMonitoring } from "@/lib/performance";
+import { optimizationManager } from "@/lib/optimizationManager";
 import {
   LazyIndex,
   LazyLogin,
