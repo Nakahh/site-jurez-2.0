@@ -36,6 +36,7 @@ import { NotificationSystem } from "@/components/NotificationSystem";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ShareButton } from "@/components/ShareButton";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { NotificationBell } from "@/components/NotificationSystem";
 import { FAQ } from "@/components/FAQ";
 
 export default function Index() {
@@ -189,6 +190,7 @@ export default function Index() {
           </nav>
 
           <div className="flex items-center space-x-2">
+            <NotificationBell />
             <ThemeToggle />
             <Button
               variant="outline"
