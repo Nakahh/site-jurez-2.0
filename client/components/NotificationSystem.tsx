@@ -390,6 +390,51 @@ export function useNotifications() {
   return context;
 }
 
+// Componente para alternar entre usuários (demonstração)
+export function UserSwitcher() {
+  const { userRole, currentUser, switchUser } = useNotifications();
+
+  const userRoles = [
+    { key: "ADMIN" as const, label: "Administrador", icon: "👑" },
+    { key: "CORRETOR" as const, label: "Corretor", icon: "🏠" },
+    { key: "ASSISTENTE" as const, label: "Assistente", icon: "📋" },
+    { key: "MARKETING" as const, label: "Marketing", icon: "📱" },
+    { key: "DESENVOLVEDOR" as const, label: "Desenvolvedor", icon: "💻" },
+    { key: "CLIENTE" as const, label: "Cliente", icon: "👤" },
+  ];
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2">
+          <img
+            src={currentUser.avatar}
+            alt={currentUser.name}
+            className="w-5 h-5 rounded-full"
+          />
+          <span className="hidden md:inline">{currentUser.name}</span>
+          <ChevronDown className="h-3 w-3" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel>Trocar Usuário (Demo)</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {userRoles.map((role) => (
+          <DropdownMenuItem
+            key={role.key}
+            onClick={() => switchUser(role.key)}
+            className={userRole === role.key ? "bg-primary/10" : ""}
+          >
+            <span className="mr-2">{role.icon}</span>
+            {role.label}
+            {userRole === role.key && <Check className="ml-auto h-4 w-4" />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function NotificationBell() {
   const {
     notifications,
@@ -397,6 +442,7 @@ export function NotificationBell() {
     markAsRead,
     markAllAsRead,
     removeNotification,
+    userRole,
   } = useNotifications();
 
   useEffect(() => {
