@@ -273,10 +273,12 @@ export const CONTATOS = {
 };
 
 export const SUBDOMINIOS = {
-  admin: "admin.siqueicamposimoveis.com.br",
-  corretor: "corretor.siqueicamposimoveis.com.br",
+  main: "www.siqueicamposimoveis.com.br",
   cliente: "cliente.siqueicamposimoveis.com.br",
-  marketing: "mkt.siqueicamposimoveis.com.br",
-  desenvolvedor: "dev.siqueicamposimoveis.com.br",
   app: "app.siqueicamposimoveis.com.br",
+  // Private subdomains - não devem aparecer na interface
+  _admin: "admin.siqueicamposimoveis.com.br", // Admin interno
+  _corretor: "corretor.siqueicamposimoveis.com.br", // Corretor/Assistente interno
+  _marketing: "mkt.siqueicamposimoveis.com.br", // Marketing interno
+  _dev: "dev.siqueicamposimoveis.com.br", // Desenvolvimento interno
 };

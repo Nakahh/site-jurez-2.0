@@ -43,21 +43,20 @@ export default function Login() {
         const { papel } = data.usuario;
         switch (papel) {
           case "ADMIN":
-            window.location.href = "https://admin.siqueicamposimoveis.com.br";
+            navigate("/dashboard/admin");
             break;
           case "CORRETOR":
           case "ASSISTENTE":
-            window.location.href =
-              "https://corretor.siqueicamposimoveis.com.br";
+            navigate("/dashboard/corretor");
             break;
           case "CLIENTE":
-            window.location.href = "https://cliente.siqueicamposimoveis.com.br";
+            navigate("/dashboard/cliente");
             break;
           case "MARKETING":
-            window.location.href = "https://mkt.siqueicamposimoveis.com.br";
+            navigate("/dashboard/marketing");
             break;
           case "DESENVOLVEDOR":
-            window.location.href = "https://dev.siqueicamposimoveis.com.br";
+            navigate("/dashboard/desenvolvedor");
             break;
           default:
             navigate("/");
@@ -85,14 +84,14 @@ export default function Login() {
         {/* Logo */}
         <div className="text-center mb-8">
           <img
-            src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=250"
+            src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=350"
             alt="Siqueira Campos Imóveis"
-            className="h-16 w-auto mx-auto mb-4 dark:hidden"
+            className="h-24 w-auto mx-auto mb-6 dark:hidden"
           />
           <img
-            src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-escuro-e97fe8?format=webp&width=250"
+            src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-escuro-e97fe8?format=webp&width=350"
             alt="Siqueira Campos Imóveis"
-            className="hidden h-16 w-auto mx-auto mb-4 dark:block"
+            className="hidden h-24 w-auto mx-auto mb-6 dark:block"
           />
           <h1 className="text-2xl font-bold text-foreground">
             Acesse sua conta

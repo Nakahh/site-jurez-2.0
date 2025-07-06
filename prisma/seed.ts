@@ -134,10 +134,10 @@ async function main() {
       cidade: "Goiânia",
       estado: "GO",
       cep: "74210-060",
-      fotos: [
+      fotos: JSON.stringify([
         "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
         "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      ],
+      ]),
       status: "DISPONIVEL",
       destaque: true,
       corretorId: juarez.id,
@@ -158,10 +158,10 @@ async function main() {
       cidade: "Goiânia",
       estado: "GO",
       cep: "74805-120",
-      fotos: [
+      fotos: JSON.stringify([
         "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
         "https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      ],
+      ]),
       status: "DISPONIVEL",
       destaque: true,
       corretorId: corretor.id,
@@ -182,9 +182,9 @@ async function main() {
       cidade: "Goiânia",
       estado: "GO",
       cep: "74110-010",
-      fotos: [
+      fotos: JSON.stringify([
         "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      ],
+      ]),
       status: "DISPONIVEL",
       destaque: true,
       corretorId: assistente.id,
@@ -205,9 +205,9 @@ async function main() {
       cidade: "Goiânia",
       estado: "GO",
       cep: "74080-100",
-      fotos: [
+      fotos: JSON.stringify([
         "https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      ],
+      ]),
       status: "DISPONIVEL",
       destaque: false,
       corretorId: juarez.id,
@@ -228,10 +228,10 @@ async function main() {
       cidade: "Goiânia",
       estado: "GO",
       cep: "74255-030",
-      fotos: [
+      fotos: JSON.stringify([
         "https://images.unsplash.com/photo-1613490493576-7fde63acd811?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
         "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      ],
+      ]),
       status: "DISPONIVEL",
       destaque: true,
       corretorId: corretor.id,

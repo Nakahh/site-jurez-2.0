@@ -210,9 +210,14 @@ export default function AdminDashboard() {
               Configurações
             </Button>
             <img
-              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=150"
+              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=250"
               alt="Siqueira Campos Imóveis"
-              className="h-10 w-auto dark:hidden"
+              className="h-14 w-auto dark:hidden"
+            />
+            <img
+              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-escuro-e97fe8?format=webp&width=250"
+              alt="Siqueira Campos Imóveis"
+              className="hidden h-14 w-auto dark:block"
             />
           </div>
         </div>
@@ -510,42 +515,647 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          {/* Outros tabs (placeholder) */}
-          <TabsContent value="imoveis">
+          {/* Gestão de Imóveis */}
+          <TabsContent value="imoveis" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Gestão de Imóveis</h2>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm">
+                  <Search className="h-4 w-4 mr-2" />
+                  Buscar
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtrar
+                </Button>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Imóvel
+                </Button>
+              </div>
+            </div>
+
+            {/* Status dos Imóveis */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Total de Imóveis
+                      </p>
+                      <p className="text-3xl font-bold">
+                        {stats?.totalImoveis}
+                      </p>
+                    </div>
+                    <Home className="h-12 w-12 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Disponíveis
+                      </p>
+                      <p className="text-3xl font-bold text-green-600">
+                        {stats?.imoveisDisponiveis}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <Activity className="h-6 w-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Vendidos
+                      </p>
+                      <p className="text-3xl font-bold text-blue-600">
+                        {stats?.imoveisVendidos}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <DollarSign className="h-6 w-6 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Alugados
+                      </p>
+                      <p className="text-3xl font-bold text-orange-600">
+                        {stats?.imoveisAlugados}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center">
+                      <Calendar className="h-6 w-6 text-orange-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Lista de Imóveis */}
             <Card>
               <CardHeader>
-                <CardTitle>Gestão de Imóveis</CardTitle>
+                <CardTitle>Imóveis Recentes</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
-                  Módulo de gestão de imóveis em desenvolvimento...
-                </p>
+                <div className="space-y-4">
+                  {[
+                    {
+                      id: "1",
+                      titulo: "Apartamento Moderno no Setor Bueno",
+                      endereco: "Rua T-30, 1234 - Setor Bueno",
+                      preco: 650000,
+                      tipo: "APARTAMENTO",
+                      status: "DISPONIVEL",
+                      corretor: "Juarez Siqueira",
+                      visualizacoes: 45,
+                    },
+                    {
+                      id: "2",
+                      titulo: "Casa Térrea no Jardim Goiás",
+                      endereco: "Rua das Flores, 567 - Jardim Goiás",
+                      preco: 450000,
+                      tipo: "CASA",
+                      status: "VENDIDO",
+                      corretor: "Carlos Silva",
+                      visualizacoes: 123,
+                    },
+                    {
+                      id: "3",
+                      titulo: "Apartamento para Aluguel no Setor Oeste",
+                      endereco: "Avenida T-1, 890 - Setor Oeste",
+                      preco: 2500,
+                      tipo: "APARTAMENTO",
+                      status: "ALUGADO",
+                      corretor: "Maria Santos",
+                      visualizacoes: 78,
+                    },
+                  ].map((imovel) => (
+                    <div
+                      key={imovel.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                          <Home className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="font-bold">{imovel.titulo}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {imovel.endereco}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Corretor: {imovel.corretor} • {imovel.visualizacoes}{" "}
+                            visualizações
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                          <p className="font-bold text-primary">
+                            {formatCurrency(imovel.preco)}
+                            {imovel.preco < 5000 && (
+                              <span className="text-sm font-normal">/mês</span>
+                            )}
+                          </p>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="outline">{imovel.tipo}</Badge>
+                            <Badge
+                              variant={
+                                imovel.status === "DISPONIVEL"
+                                  ? "default"
+                                  : imovel.status === "VENDIDO"
+                                    ? "secondary"
+                                    : "destructive"
+                              }
+                            >
+                              {imovel.status}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="outline">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="usuarios">
+          {/* Gestão de Usuários */}
+          <TabsContent value="usuarios" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Gestão de Usuários</h2>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm">
+                  <Search className="h-4 w-4 mr-2" />
+                  Buscar
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtrar por Papel
+                </Button>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Usuário
+                </Button>
+              </div>
+            </div>
+
+            {/* Estatísticas de Usuários */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Total Usuários
+                      </p>
+                      <p className="text-3xl font-bold">
+                        {stats?.totalUsuarios}
+                      </p>
+                    </div>
+                    <Users className="h-12 w-12 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Corretores Ativos
+                      </p>
+                      <p className="text-3xl font-bold text-green-600">
+                        {stats?.corretoresAtivos}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <Shield className="h-6 w-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Clientes
+                      </p>
+                      <p className="text-3xl font-bold text-blue-600">
+                        {stats
+                          ? stats?.totalUsuarios - stats?.corretoresAtivos - 2
+                          : 0}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Users className="h-6 w-6 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Novos (Este Mês)
+                      </p>
+                      <p className="text-3xl font-bold text-orange-600">23</p>
+                    </div>
+                    <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center">
+                      <TrendingUp className="h-6 w-6 text-orange-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Lista de Usuários */}
             <Card>
               <CardHeader>
-                <CardTitle>Gestão de Usuários</CardTitle>
+                <CardTitle>Usuários do Sistema</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
-                  Módulo de gestão de usuários em desenvolvimento...
-                </p>
+                <div className="space-y-4">
+                  {[
+                    {
+                      id: "1",
+                      nome: "Administrador",
+                      email: "admin@siqueicamposimoveis.com.br",
+                      papel: "ADMIN",
+                      ativo: true,
+                      ultimoLogin: "Hoje às 09:30",
+                      avatar: "A",
+                    },
+                    {
+                      id: "2",
+                      nome: "Juarez Siqueira Campos",
+                      email: "juarez@siqueicamposimoveis.com.br",
+                      papel: "CORRETOR",
+                      ativo: true,
+                      ultimoLogin: "Hoje às 14:20",
+                      avatar: "J",
+                    },
+                    {
+                      id: "3",
+                      nome: "Carlos Silva",
+                      email: "corretor@siqueicamposimoveis.com.br",
+                      papel: "CORRETOR",
+                      ativo: true,
+                      ultimoLogin: "Ontem às 16:45",
+                      avatar: "C",
+                    },
+                    {
+                      id: "4",
+                      nome: "Maria Santos",
+                      email: "assistente@siqueicamposimoveis.com.br",
+                      papel: "ASSISTENTE",
+                      ativo: true,
+                      ultimoLogin: "Hoje às 11:15",
+                      avatar: "M",
+                    },
+                    {
+                      id: "5",
+                      nome: "João da Silva",
+                      email: "cliente@siqueicamposimoveis.com.br",
+                      papel: "CLIENTE",
+                      ativo: true,
+                      ultimoLogin: "Há 2 dias",
+                      avatar: "J",
+                    },
+                    {
+                      id: "6",
+                      nome: "Ana Marketing",
+                      email: "marketing@siqueicamposimoveis.com.br",
+                      papel: "MARKETING",
+                      ativo: true,
+                      ultimoLogin: "Hoje às 08:30",
+                      avatar: "A",
+                    },
+                  ].map((usuario) => (
+                    <div
+                      key={usuario.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                          <span className="font-bold text-primary">
+                            {usuario.avatar}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-bold">{usuario.nome}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {usuario.email}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Último login: {usuario.ultimoLogin}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                          <Badge
+                            variant={
+                              usuario.papel === "ADMIN"
+                                ? "destructive"
+                                : usuario.papel === "CORRETOR"
+                                  ? "default"
+                                  : usuario.papel === "ASSISTENTE"
+                                    ? "secondary"
+                                    : usuario.papel === "MARKETING"
+                                      ? "outline"
+                                      : "secondary"
+                            }
+                          >
+                            {usuario.papel}
+                          </Badge>
+                          <div className="flex items-center mt-1">
+                            <div
+                              className={`w-2 h-2 rounded-full mr-2 ${
+                                usuario.ativo ? "bg-green-500" : "bg-red-500"
+                              }`}
+                            ></div>
+                            <span className="text-xs text-muted-foreground">
+                              {usuario.ativo ? "Ativo" : "Inativo"}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="outline">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Settings className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="relatorios">
+          {/* Relatórios Avançados */}
+          <TabsContent value="relatorios" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Relatórios Avançados</h2>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Período
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtros
+                </Button>
+                <Button size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar
+                </Button>
+              </div>
+            </div>
+
+            {/* Relatórios Disponíveis */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                {
+                  titulo: "Relatório de Vendas",
+                  descricao:
+                    "Análise completa de vendas por período, corretor e região",
+                  icon: BarChart3,
+                  color: "bg-blue-100 text-blue-600",
+                  stats: "45 vendas este mês",
+                },
+                {
+                  titulo: "Performance de Corretores",
+                  descricao: "Ranking e métricas de performance dos corretores",
+                  icon: Users,
+                  color: "bg-green-100 text-green-600",
+                  stats: "8 corretores ativos",
+                },
+                {
+                  titulo: "Análise Financeira",
+                  descricao: "Receitas, despesas, comissões e lucratividade",
+                  icon: DollarSign,
+                  color: "bg-yellow-100 text-yellow-600",
+                  stats: formatCurrency(380000) + " faturamento",
+                },
+                {
+                  titulo: "Leads e Conversões",
+                  descricao:
+                    "Taxa de conversão, origem dos leads e efetividade",
+                  icon: TrendingUp,
+                  color: "bg-purple-100 text-purple-600",
+                  stats: "23% taxa de conversão",
+                },
+                {
+                  titulo: "Análise de Mercado",
+                  descricao:
+                    "Tendências de preços, demanda e oferta por região",
+                  icon: PieChart,
+                  color: "bg-orange-100 text-orange-600",
+                  stats: "156 imóveis cadastrados",
+                },
+                {
+                  titulo: "Relatório de Visitas",
+                  descricao: "Agendamentos, realizações e feedback das visitas",
+                  icon: Calendar,
+                  color: "bg-indigo-100 text-indigo-600",
+                  stats: "12 visitas agendadas",
+                },
+              ].map((relatorio, index) => (
+                <Card
+                  key={index}
+                  className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-primary/20"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start space-x-4">
+                      <div className={`p-3 rounded-lg ${relatorio.color}`}>
+                        <relatorio.icon className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold mb-2">{relatorio.titulo}</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          {relatorio.descricao}
+                        </p>
+                        <p className="text-xs font-medium text-primary">
+                          {relatorio.stats}
+                        </p>
+                        <Button size="sm" className="mt-4 w-full">
+                          Gerar Relatório
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Relatórios Recentes */}
             <Card>
               <CardHeader>
-                <CardTitle>Relatórios Avançados</CardTitle>
+                <CardTitle>Relatórios Gerados Recentemente</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
-                  Módulo de relatórios em desenvolvimento...
-                </p>
+                <div className="space-y-4">
+                  {[
+                    {
+                      id: "1",
+                      nome: "Relatório de Vendas - Dezembro 2024",
+                      tipo: "Vendas",
+                      dataGeracao: "06/01/2025 às 10:30",
+                      geradoPor: "Administrador",
+                      tamanho: "2.3 MB",
+                      formato: "PDF",
+                    },
+                    {
+                      id: "2",
+                      nome: "Performance Corretores - Q4 2024",
+                      tipo: "Performance",
+                      dataGeracao: "05/01/2025 às 14:15",
+                      geradoPor: "Juarez Siqueira",
+                      tamanho: "1.8 MB",
+                      formato: "Excel",
+                    },
+                    {
+                      id: "3",
+                      nome: "Análise Financeira - Anual 2024",
+                      tipo: "Financeiro",
+                      dataGeracao: "03/01/2025 às 09:45",
+                      geradoPor: "Administrador",
+                      tamanho: "4.1 MB",
+                      formato: "PDF",
+                    },
+                    {
+                      id: "4",
+                      nome: "Leads e Conversões - Dezembro",
+                      tipo: "Leads",
+                      dataGeracao: "02/01/2025 às 16:20",
+                      geradoPor: "Maria Santos",
+                      tamanho: "1.2 MB",
+                      formato: "Excel",
+                    },
+                  ].map((relatorio) => (
+                    <div
+                      key={relatorio.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <BarChart3 className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-bold">{relatorio.nome}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Gerado por {relatorio.geradoPor} em{" "}
+                            {relatorio.dataGeracao}
+                          </p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <Badge variant="outline">{relatorio.tipo}</Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {relatorio.tamanho} • {relatorio.formato}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button size="sm" variant="outline">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Agendamento de Relatórios */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Relatórios Automáticos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-bold">Relatório Mensal de Vendas</h4>
+                      <Badge variant="default">Ativo</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Enviado todo dia 1º do mês para
+                      admin@siqueicamposimoveis.com.br
+                    </p>
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="outline">
+                        <Edit className="h-4 w-4 mr-1" />
+                        Editar
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Settings className="h-4 w-4 mr-1" />
+                        Config
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-bold">Performance Semanal</h4>
+                      <Badge variant="secondary">Pausado</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Enviado toda segunda-feira para toda equipe de corretores
+                    </p>
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="outline">
+                        <Edit className="h-4 w-4 mr-1" />
+                        Editar
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Activity className="h-4 w-4 mr-1" />
+                        Ativar
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
