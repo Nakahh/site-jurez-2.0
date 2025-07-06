@@ -89,7 +89,7 @@ export function ChatBubble() {
       <div className="fixed bottom-6 right-6 z-50">
         <Button
           onClick={() => setIsOpen(true)}
-          className="rounded-full h-16 w-16 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse"
+          className="rounded-full h-16 w-16 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
         >
           <MessageCircle className="h-8 w-8 text-white" />
         </Button>
