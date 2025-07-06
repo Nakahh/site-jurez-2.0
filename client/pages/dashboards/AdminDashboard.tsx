@@ -210,9 +210,14 @@ export default function AdminDashboard() {
               Configurações
             </Button>
             <img
-              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=150"
+              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=250"
               alt="Siqueira Campos Imóveis"
-              className="h-10 w-auto dark:hidden"
+              className="h-14 w-auto dark:hidden"
+            />
+            <img
+              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-escuro-e97fe8?format=webp&width=250"
+              alt="Siqueira Campos Imóveis"
+              className="hidden h-14 w-auto dark:block"
             />
           </div>
         </div>
