@@ -130,10 +130,22 @@ export default function Contato() {
               Imóveis
             </Link>
             <Link
-              to="/sobre"
+              to="/blog"
               className="text-foreground hover:text-primary transition-colors"
             >
-              Sobre
+              Blog
+            </Link>
+            <Link
+              to="/comparador"
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Comparador
+            </Link>
+            <Link
+              to="/simulador"
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Simulador
             </Link>
             <Link
               to="/contato"
@@ -142,10 +154,10 @@ export default function Contato() {
               Contato
             </Link>
             <Link
-              to="/simulador"
+              to="/sobre"
               className="text-foreground hover:text-primary transition-colors"
             >
-              Simulador
+              Sobre
             </Link>
           </nav>
 
