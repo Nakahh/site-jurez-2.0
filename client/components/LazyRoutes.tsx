@@ -36,13 +36,7 @@ const ErrorFallback = ({ error }: { error: Error }) => (
 
 // Create lazy components with loading states
 const createLazyComponent = (importFunc: () => Promise<any>) => {
-  const LazyComponent = lazy(importFunc);
-
-  return (props: any) => (
-    <Suspense fallback={<PageLoader />}>
-      <LazyComponent {...props} />
-    </Suspense>
-  );
+  return lazy(importFunc);
 };
 
 // Lazy load all pages for optimal performance
