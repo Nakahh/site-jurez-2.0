@@ -229,8 +229,25 @@ export function ChatSystem({
     const whatsappUrl = `https://wa.me/55${selectedRoom.brokerPhone.replace(/\D/g, "")}?text=${encodeURIComponent(whatsappMessage)}`;
     window.open(whatsappUrl, "_blank");
 
-    // Notificar corretor
+    // Notificar corretor sobre nova mensagem
     notifyNewMessage(selectedRoom.clientName, selectedRoom.propertyTitle);
+
+    // Simular notificação para outros sistemas
+    setTimeout(() => {
+      // Notificar assistente sobre mensagem não respondida
+      if (Math.random() > 0.5) {
+        const { addNotification } = useNotificationActions();
+        addNotification({
+          type: "MENSAGEM_CHAT",
+          title: "Mensagem Não Respondida",
+          message: `Cliente ${selectedRoom.clientName} aguarda resposta há 5 minutos`,
+          priority: "MEDIUM",
+          userRole: "ASSISTENTE",
+          actionUrl: "/chat",
+          actionLabel: "Verificar Chat",
+        });
+      }
+    }, 5000); // Simular atraso de 5 segundos
 
     // Simular resposta automática
     setTimeout(() => {
