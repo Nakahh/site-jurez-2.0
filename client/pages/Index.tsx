@@ -284,15 +284,15 @@ export default function Index() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative h-[80vh] bg-gradient-to-r from-primary/90 to-primary/70 flex items-center justify-center overflow-hidden">
+      <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage:
               "url('https://images.pexels.com/photos/8134821/pexels-photo-8134821.jpeg')",
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary/60"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-black/20"></div>
         <div className="relative text-center text-white space-y-8 max-w-5xl px-4 z-10">
           <h1 className="text-4xl md:text-7xl font-bold tracking-tight animate-fade-in">
             Encontre seu próximo lar
@@ -391,22 +391,28 @@ export default function Index() {
                           </span>
                         )}
                       </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="hover:bg-primary hover:text-primary-foreground"
-                        >
-                          <Calendar className="h-4 w-4 mr-1" />
-                          Agendar
-                        </Button>
+                      <div className="flex flex-col space-y-2">
                         <Button
                           size="sm"
                           className="bg-primary hover:bg-primary/90"
+                          asChild
                         >
-                          <MessageCircle className="h-4 w-4 mr-1" />
-                          Contato
+                          <Link to={`/imovel/${imovel.id}`}>Ver Detalhes</Link>
                         </Button>
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="hover:bg-primary hover:text-primary-foreground"
+                          >
+                            <Calendar className="h-4 w-4 mr-1" />
+                            Agendar
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <MessageCircle className="h-4 w-4 mr-1" />
+                            Contato
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
