@@ -197,7 +197,7 @@ export default function AdminDashboard() {
               Dashboard Administrativo
             </h1>
             <p className="text-muted-foreground">
-              Controle total do seu negócio imobili��rio
+              Controle total do seu negócio imobiliário
             </p>
           </div>
           <div className="flex items-center space-x-4">
@@ -703,15 +703,225 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="usuarios">
+          {/* Gestão de Usuários */}
+          <TabsContent value="usuarios" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Gestão de Usuários</h2>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm">
+                  <Search className="h-4 w-4 mr-2" />
+                  Buscar
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtrar por Papel
+                </Button>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Usuário
+                </Button>
+              </div>
+            </div>
+
+            {/* Estatísticas de Usuários */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Total Usuários
+                      </p>
+                      <p className="text-3xl font-bold">
+                        {stats?.totalUsuarios}
+                      </p>
+                    </div>
+                    <Users className="h-12 w-12 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Corretores Ativos
+                      </p>
+                      <p className="text-3xl font-bold text-green-600">
+                        {stats?.corretoresAtivos}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <Shield className="h-6 w-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Clientes
+                      </p>
+                      <p className="text-3xl font-bold text-blue-600">
+                        {stats
+                          ? stats?.totalUsuarios - stats?.corretoresAtivos - 2
+                          : 0}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Users className="h-6 w-6 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Novos (Este Mês)
+                      </p>
+                      <p className="text-3xl font-bold text-orange-600">23</p>
+                    </div>
+                    <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center">
+                      <TrendingUp className="h-6 w-6 text-orange-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Lista de Usuários */}
             <Card>
               <CardHeader>
-                <CardTitle>Gestão de Usuários</CardTitle>
+                <CardTitle>Usuários do Sistema</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
-                  Módulo de gestão de usuários em desenvolvimento...
-                </p>
+                <div className="space-y-4">
+                  {[
+                    {
+                      id: "1",
+                      nome: "Administrador",
+                      email: "admin@siqueicamposimoveis.com.br",
+                      papel: "ADMIN",
+                      ativo: true,
+                      ultimoLogin: "Hoje às 09:30",
+                      avatar: "A",
+                    },
+                    {
+                      id: "2",
+                      nome: "Juarez Siqueira Campos",
+                      email: "juarez@siqueicamposimoveis.com.br",
+                      papel: "CORRETOR",
+                      ativo: true,
+                      ultimoLogin: "Hoje às 14:20",
+                      avatar: "J",
+                    },
+                    {
+                      id: "3",
+                      nome: "Carlos Silva",
+                      email: "corretor@siqueicamposimoveis.com.br",
+                      papel: "CORRETOR",
+                      ativo: true,
+                      ultimoLogin: "Ontem às 16:45",
+                      avatar: "C",
+                    },
+                    {
+                      id: "4",
+                      nome: "Maria Santos",
+                      email: "assistente@siqueicamposimoveis.com.br",
+                      papel: "ASSISTENTE",
+                      ativo: true,
+                      ultimoLogin: "Hoje às 11:15",
+                      avatar: "M",
+                    },
+                    {
+                      id: "5",
+                      nome: "João da Silva",
+                      email: "cliente@siqueicamposimoveis.com.br",
+                      papel: "CLIENTE",
+                      ativo: true,
+                      ultimoLogin: "Há 2 dias",
+                      avatar: "J",
+                    },
+                    {
+                      id: "6",
+                      nome: "Ana Marketing",
+                      email: "marketing@siqueicamposimoveis.com.br",
+                      papel: "MARKETING",
+                      ativo: true,
+                      ultimoLogin: "Hoje às 08:30",
+                      avatar: "A",
+                    },
+                  ].map((usuario) => (
+                    <div
+                      key={usuario.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                          <span className="font-bold text-primary">
+                            {usuario.avatar}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-bold">{usuario.nome}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {usuario.email}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Último login: {usuario.ultimoLogin}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                          <Badge
+                            variant={
+                              usuario.papel === "ADMIN"
+                                ? "destructive"
+                                : usuario.papel === "CORRETOR"
+                                  ? "default"
+                                  : usuario.papel === "ASSISTENTE"
+                                    ? "secondary"
+                                    : usuario.papel === "MARKETING"
+                                      ? "outline"
+                                      : "secondary"
+                            }
+                          >
+                            {usuario.papel}
+                          </Badge>
+                          <div className="flex items-center mt-1">
+                            <div
+                              className={`w-2 h-2 rounded-full mr-2 ${
+                                usuario.ativo ? "bg-green-500" : "bg-red-500"
+                              }`}
+                            ></div>
+                            <span className="text-xs text-muted-foreground">
+                              {usuario.ativo ? "Ativo" : "Inativo"}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="outline">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Settings className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
