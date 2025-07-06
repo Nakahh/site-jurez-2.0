@@ -197,7 +197,7 @@ export default function AdminDashboard() {
               Dashboard Administrativo
             </h1>
             <p className="text-muted-foreground">
-              Controle total do seu negócio imobiliário
+              Controle total do seu negócio imobili��rio
             </p>
           </div>
           <div className="flex items-center space-x-4">
@@ -510,16 +510,195 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          {/* Outros tabs (placeholder) */}
-          <TabsContent value="imoveis">
+          {/* Gestão de Imóveis */}
+          <TabsContent value="imoveis" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Gestão de Imóveis</h2>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm">
+                  <Search className="h-4 w-4 mr-2" />
+                  Buscar
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtrar
+                </Button>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Imóvel
+                </Button>
+              </div>
+            </div>
+
+            {/* Status dos Imóveis */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Total de Imóveis
+                      </p>
+                      <p className="text-3xl font-bold">
+                        {stats?.totalImoveis}
+                      </p>
+                    </div>
+                    <Home className="h-12 w-12 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Disponíveis
+                      </p>
+                      <p className="text-3xl font-bold text-green-600">
+                        {stats?.imoveisDisponiveis}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <Activity className="h-6 w-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Vendidos
+                      </p>
+                      <p className="text-3xl font-bold text-blue-600">
+                        {stats?.imoveisVendidos}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <DollarSign className="h-6 w-6 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Alugados
+                      </p>
+                      <p className="text-3xl font-bold text-orange-600">
+                        {stats?.imoveisAlugados}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center">
+                      <Calendar className="h-6 w-6 text-orange-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Lista de Imóveis */}
             <Card>
               <CardHeader>
-                <CardTitle>Gestão de Imóveis</CardTitle>
+                <CardTitle>Imóveis Recentes</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
-                  Módulo de gestão de imóveis em desenvolvimento...
-                </p>
+                <div className="space-y-4">
+                  {[
+                    {
+                      id: "1",
+                      titulo: "Apartamento Moderno no Setor Bueno",
+                      endereco: "Rua T-30, 1234 - Setor Bueno",
+                      preco: 650000,
+                      tipo: "APARTAMENTO",
+                      status: "DISPONIVEL",
+                      corretor: "Juarez Siqueira",
+                      visualizacoes: 45,
+                    },
+                    {
+                      id: "2",
+                      titulo: "Casa Térrea no Jardim Goiás",
+                      endereco: "Rua das Flores, 567 - Jardim Goiás",
+                      preco: 450000,
+                      tipo: "CASA",
+                      status: "VENDIDO",
+                      corretor: "Carlos Silva",
+                      visualizacoes: 123,
+                    },
+                    {
+                      id: "3",
+                      titulo: "Apartamento para Aluguel no Setor Oeste",
+                      endereco: "Avenida T-1, 890 - Setor Oeste",
+                      preco: 2500,
+                      tipo: "APARTAMENTO",
+                      status: "ALUGADO",
+                      corretor: "Maria Santos",
+                      visualizacoes: 78,
+                    },
+                  ].map((imovel) => (
+                    <div
+                      key={imovel.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                          <Home className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="font-bold">{imovel.titulo}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {imovel.endereco}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Corretor: {imovel.corretor} • {imovel.visualizacoes}{" "}
+                            visualizações
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                          <p className="font-bold text-primary">
+                            {formatCurrency(imovel.preco)}
+                            {imovel.preco < 5000 && (
+                              <span className="text-sm font-normal">/mês</span>
+                            )}
+                          </p>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="outline">{imovel.tipo}</Badge>
+                            <Badge
+                              variant={
+                                imovel.status === "DISPONIVEL"
+                                  ? "default"
+                                  : imovel.status === "VENDIDO"
+                                    ? "secondary"
+                                    : "destructive"
+                              }
+                            >
+                              {imovel.status}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="outline">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
