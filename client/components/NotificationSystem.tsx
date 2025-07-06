@@ -27,6 +27,9 @@ import {
   Phone,
   Clock,
   CheckCircle,
+  ChevronDown,
+  UserPlus,
+  Megaphone,
   AlertTriangle,
   Info,
 } from "lucide-react";
