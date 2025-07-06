@@ -926,15 +926,231 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="relatorios">
+          {/* Relatórios Avançados */}
+          <TabsContent value="relatorios" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Relatórios Avançados</h2>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Período
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtros
+                </Button>
+                <Button size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar
+                </Button>
+              </div>
+            </div>
+
+            {/* Relatórios Disponíveis */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                {
+                  titulo: "Relatório de Vendas",
+                  descricao:
+                    "Análise completa de vendas por período, corretor e região",
+                  icon: BarChart3,
+                  color: "bg-blue-100 text-blue-600",
+                  stats: "45 vendas este mês",
+                },
+                {
+                  titulo: "Performance de Corretores",
+                  descricao: "Ranking e métricas de performance dos corretores",
+                  icon: Users,
+                  color: "bg-green-100 text-green-600",
+                  stats: "8 corretores ativos",
+                },
+                {
+                  titulo: "Análise Financeira",
+                  descricao: "Receitas, despesas, comissões e lucratividade",
+                  icon: DollarSign,
+                  color: "bg-yellow-100 text-yellow-600",
+                  stats: formatCurrency(380000) + " faturamento",
+                },
+                {
+                  titulo: "Leads e Conversões",
+                  descricao:
+                    "Taxa de conversão, origem dos leads e efetividade",
+                  icon: TrendingUp,
+                  color: "bg-purple-100 text-purple-600",
+                  stats: "23% taxa de conversão",
+                },
+                {
+                  titulo: "Análise de Mercado",
+                  descricao:
+                    "Tendências de preços, demanda e oferta por região",
+                  icon: PieChart,
+                  color: "bg-orange-100 text-orange-600",
+                  stats: "156 imóveis cadastrados",
+                },
+                {
+                  titulo: "Relatório de Visitas",
+                  descricao: "Agendamentos, realizações e feedback das visitas",
+                  icon: Calendar,
+                  color: "bg-indigo-100 text-indigo-600",
+                  stats: "12 visitas agendadas",
+                },
+              ].map((relatorio, index) => (
+                <Card
+                  key={index}
+                  className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-primary/20"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start space-x-4">
+                      <div className={`p-3 rounded-lg ${relatorio.color}`}>
+                        <relatorio.icon className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold mb-2">{relatorio.titulo}</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          {relatorio.descricao}
+                        </p>
+                        <p className="text-xs font-medium text-primary">
+                          {relatorio.stats}
+                        </p>
+                        <Button size="sm" className="mt-4 w-full">
+                          Gerar Relatório
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Relatórios Recentes */}
             <Card>
               <CardHeader>
-                <CardTitle>Relatórios Avançados</CardTitle>
+                <CardTitle>Relatórios Gerados Recentemente</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
-                  Módulo de relatórios em desenvolvimento...
-                </p>
+                <div className="space-y-4">
+                  {[
+                    {
+                      id: "1",
+                      nome: "Relatório de Vendas - Dezembro 2024",
+                      tipo: "Vendas",
+                      dataGeracao: "06/01/2025 às 10:30",
+                      geradoPor: "Administrador",
+                      tamanho: "2.3 MB",
+                      formato: "PDF",
+                    },
+                    {
+                      id: "2",
+                      nome: "Performance Corretores - Q4 2024",
+                      tipo: "Performance",
+                      dataGeracao: "05/01/2025 às 14:15",
+                      geradoPor: "Juarez Siqueira",
+                      tamanho: "1.8 MB",
+                      formato: "Excel",
+                    },
+                    {
+                      id: "3",
+                      nome: "Análise Financeira - Anual 2024",
+                      tipo: "Financeiro",
+                      dataGeracao: "03/01/2025 às 09:45",
+                      geradoPor: "Administrador",
+                      tamanho: "4.1 MB",
+                      formato: "PDF",
+                    },
+                    {
+                      id: "4",
+                      nome: "Leads e Conversões - Dezembro",
+                      tipo: "Leads",
+                      dataGeracao: "02/01/2025 às 16:20",
+                      geradoPor: "Maria Santos",
+                      tamanho: "1.2 MB",
+                      formato: "Excel",
+                    },
+                  ].map((relatorio) => (
+                    <div
+                      key={relatorio.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <BarChart3 className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-bold">{relatorio.nome}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Gerado por {relatorio.geradoPor} em{" "}
+                            {relatorio.dataGeracao}
+                          </p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <Badge variant="outline">{relatorio.tipo}</Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {relatorio.tamanho} • {relatorio.formato}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button size="sm" variant="outline">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Agendamento de Relatórios */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Relatórios Automáticos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-bold">Relatório Mensal de Vendas</h4>
+                      <Badge variant="default">Ativo</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Enviado todo dia 1º do mês para
+                      admin@siqueicamposimoveis.com.br
+                    </p>
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="outline">
+                        <Edit className="h-4 w-4 mr-1" />
+                        Editar
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Settings className="h-4 w-4 mr-1" />
+                        Config
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-bold">Performance Semanal</h4>
+                      <Badge variant="secondary">Pausado</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Enviado toda segunda-feira para toda equipe de corretores
+                    </p>
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="outline">
+                        <Edit className="h-4 w-4 mr-1" />
+                        Editar
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Activity className="h-4 w-4 mr-1" />
+                        Ativar
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
