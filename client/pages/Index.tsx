@@ -36,7 +36,10 @@ import { NotificationSystem } from "@/components/NotificationSystem";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ShareButton } from "@/components/ShareButton";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { NotificationBell } from "@/components/NotificationSystem";
+import {
+  NotificationBell,
+  UserSwitcher,
+} from "@/components/NotificationSystem";
 import { FAQ } from "@/components/FAQ";
 import { ChatSystem, ScheduleVisitSystem } from "@/components/ChatSystem";
 
@@ -191,6 +194,7 @@ export default function Index() {
           </nav>
 
           <div className="flex items-center space-x-2">
+            <UserSwitcher />
             <NotificationBell />
             <ThemeToggle />
             <Button
