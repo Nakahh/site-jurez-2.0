@@ -182,9 +182,9 @@ async function main() {
       cidade: "Goiânia",
       estado: "GO",
       cep: "74110-010",
-      fotos: [
+      fotos: JSON.stringify([
         "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      ],
+      ]),
       status: "DISPONIVEL",
       destaque: true,
       corretorId: assistente.id,
