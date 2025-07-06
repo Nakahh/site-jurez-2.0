@@ -171,10 +171,10 @@ export default function Index() {
               Comparador
             </Link>
             <Link
-              to="/sobre"
+              to="/simulador"
               className="text-foreground hover:text-primary transition-colors"
             >
-              Sobre
+              Simulador
             </Link>
             <Link
               to="/contato"
@@ -183,10 +183,10 @@ export default function Index() {
               Contato
             </Link>
             <Link
-              to="/simulador"
+              to="/sobre"
               className="text-foreground hover:text-primary transition-colors"
             >
-              Simulador
+              Sobre
             </Link>
           </nav>
 
@@ -249,11 +249,11 @@ export default function Index() {
                 Comparador
               </Link>
               <Link
-                to="/sobre"
+                to="/simulador"
                 className="block py-2 text-foreground hover:text-primary transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Sobre
+                Simulador
               </Link>
               <Link
                 to="/contato"
@@ -263,11 +263,11 @@ export default function Index() {
                 Contato
               </Link>
               <Link
-                to="/simulador"
+                to="/sobre"
                 className="block py-2 text-foreground hover:text-primary transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Simulador
+                Sobre
               </Link>
               <div className="pt-4 border-t border-border/50 space-y-2">
                 <Button variant="outline" className="w-full" asChild>
@@ -802,16 +802,16 @@ export default function Index() {
                   Imóveis
                 </Link>
                 <Link
-                  to="/sobre"
+                  to="/blog"
                   className="block text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Sobre nós
+                  Blog
                 </Link>
                 <Link
-                  to="/contato"
+                  to="/comparador"
                   className="block text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Contato
+                  Comparador
                 </Link>
                 <Link
                   to="/simulador"
@@ -820,10 +820,16 @@ export default function Index() {
                   Simulador
                 </Link>
                 <Link
-                  to="/blog"
+                  to="/contato"
                   className="block text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Blog
+                  Contato
+                </Link>
+                <Link
+                  to="/sobre"
+                  className="block text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Sobre nós
                 </Link>
               </div>
             </div>
