@@ -484,16 +484,19 @@ export default function Index() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <Card className="p-8 text-center hover:shadow-lg transition-shadow border-0 bg-card/50">
               <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
                 <Home className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold mb-4">Compra e Venda</h3>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground mb-4">
                 Assessoria completa para compra e venda de imóveis com toda
                 segurança jurídica e transparência.
               </p>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/imoveis">Ver Imóveis</Link>
+              </Button>
             </Card>
 
             <Card className="p-8 text-center hover:shadow-lg transition-shadow border-0 bg-card/50">
@@ -501,10 +504,13 @@ export default function Index() {
                 <Building className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold mb-4">Locação</h3>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground mb-4">
                 Gestão completa de locação com contratos seguros e
                 acompanhamento personalizado.
               </p>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/imoveis">Ver Aluguéis</Link>
+              </Button>
             </Card>
 
             <Card className="p-8 text-center hover:shadow-lg transition-shadow border-0 bg-card/50">
@@ -512,10 +518,27 @@ export default function Index() {
                 <DollarSign className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold mb-4">Financiamento</h3>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground mb-4">
                 Parcerias com os principais bancos para as melhores condições de
                 financiamento.
               </p>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/simulador">Simular</Link>
+              </Button>
+            </Card>
+
+            <Card className="p-8 text-center hover:shadow-lg transition-shadow border-0 bg-card/50">
+              <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                <Scale className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">Comparador</h3>
+              <p className="text-muted-foreground mb-4">
+                Compare diferentes imóveis lado a lado para tomar a melhor
+                decisão de compra.
+              </p>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/comparador">Comparar</Link>
+              </Button>
             </Card>
           </div>
         </div>
