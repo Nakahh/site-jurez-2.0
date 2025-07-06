@@ -1,442 +1,1019 @@
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Heart,
-  Calendar,
-  FileText,
-  MessageCircle,
-  MapPin,
-  Phone,
-  User,
-  Clock,
   Home,
-  ChevronRight,
+  Search,
+  Filter,
+  Calendar,
+  MessageSquare,
   Star,
+  Eye,
+  MapPin,
+  Bed,
+  Bath,
+  Car,
+  DollarSign,
+  Plus,
+  Settings,
+  Bell,
+  User,
+  FileText,
+  BarChart3,
+  Clock,
+  CheckCircle,
+  Target,
+  TrendingUp,
+  Activity,
+  Mail,
+  Phone,
+  Edit,
+  Trash2,
+  Share2,
+  BookmarkPlus,
+  CalendarDays,
+  AlertCircle,
+  Download,
+  Camera,
 } from "lucide-react";
-import { ChatBubble } from "@/components/ChatBubble";
 
-interface DashboardStats {
-  favoritos: number;
-  visitas: number;
-  contratos: number;
-  mensagens: number;
-}
-
-interface Favorito {
+// Types
+interface Imovel {
   id: string;
-  imovel: {
-    id: string;
-    titulo: string;
-    preco: number;
-    endereco: string;
-    bairro: string;
-    tipo: string;
-    fotos: string[];
-  };
-}
-
-interface Visita {
-  id: string;
-  dataHora: string;
+  titulo: string;
+  tipo: string;
+  finalidade: string;
+  preco: number;
+  area: number;
+  quartos: number;
+  banheiros: number;
+  vagas?: number;
+  endereco: string;
+  bairro: string;
+  cidade: string;
+  fotos: string[];
   status: string;
-  imovel: {
-    titulo: string;
-    endereco: string;
-  };
   corretor: {
     nome: string;
-    whatsapp: string;
+    telefone: string;
+    avatar?: string;
+  };
+  favoritadoEm?: Date;
+  visualizadoEm?: Date;
+}
+
+interface Agendamento {
+  id: string;
+  imovel: Imovel;
+  dataHora: Date;
+  status: string;
+  observacoes?: string;
+  corretor: {
+    nome: string;
+    telefone: string;
   };
 }
 
-interface Contrato {
+interface Avaliacao {
   id: string;
-  tipo: string;
-  valor: number;
-  status: string;
-  dataInicio: string;
-  imovel: {
-    titulo: string;
-    endereco: string;
+  imovel: Imovel;
+  nota: number;
+  comentario: string;
+  data: Date;
+  aprovada: boolean;
+}
+
+interface BuscaSalva {
+  id: string;
+  nome: string;
+  filtros: {
+    tipo?: string;
+    finalidade?: string;
+    precoMin?: number;
+    precoMax?: number;
+    quartos?: number;
+    bairro?: string;
   };
+  alertasAtivos: boolean;
+  criadaEm: Date;
+  ultimaNotificacao?: Date;
+}
+
+function StatsCard({
+  title,
+  value,
+  icon: Icon,
+  description,
+  color = "primary",
+  trend,
+}: {
+  title: string;
+  value: string | number;
+  icon: any;
+  description?: string;
+  color?: string;
+  trend?: string;
+}) {
+  return (
+    <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <p className="text-3xl font-bold text-foreground">{value}</p>
+            {description && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {description}
+              </p>
+            )}
+          </div>
+          <div
+            className={`h-12 w-12 bg-${color}/10 rounded-full flex items-center justify-center`}
+          >
+            <Icon className={`h-6 w-6 text-${color}`} />
+          </div>
+        </div>
+        {trend && (
+          <div className="flex items-center mt-4 pt-4 border-t">
+            <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+            <span className="text-sm text-green-600 font-medium">{trend}</span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Modal para comparar imóveis
+function ComparadorModal({
+  isOpen,
+  onClose,
+  imoveis,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  imoveis: Imovel[];
+}) {
+  const [imoveisSelecionados, setImoveisSelecionados] = useState<Imovel[]>([]);
+
+  const formatarPreco = (preco: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+      maximumFractionDigits: 0,
+    }).format(preco);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Comparar Imóveis</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Seleção de Imóveis */}
+          <div>
+            <h3 className="font-bold mb-4">
+              Selecione até 4 imóveis para comparar:
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {imoveis.slice(0, 8).map((imovel) => (
+                <div
+                  key={imovel.id}
+                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                    imoveisSelecionados.find((i) => i.id === imovel.id)
+                      ? "border-primary bg-primary/5"
+                      : "hover:border-primary/50"
+                  }`}
+                  onClick={() => {
+                    if (imoveisSelecionados.find((i) => i.id === imovel.id)) {
+                      setImoveisSelecionados((prev) =>
+                        prev.filter((i) => i.id !== imovel.id),
+                      );
+                    } else if (imoveisSelecionados.length < 4) {
+                      setImoveisSelecionados((prev) => [...prev, imovel]);
+                    }
+                  }}
+                >
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={imovel.fotos[0]}
+                      alt={imovel.titulo}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                    <div className="flex-1">
+                      <p className="font-medium">{imovel.titulo}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {imovel.bairro}
+                      </p>
+                      <p className="text-sm font-bold text-primary">
+                        {formatarPreco(imovel.preco)}
+                      </p>
+                    </div>
+                    {imoveisSelecionados.find((i) => i.id === imovel.id) && (
+                      <CheckCircle className="h-6 w-6 text-primary" />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Comparação */}
+          {imoveisSelecionados.length >= 2 && (
+            <div>
+              <h3 className="font-bold mb-4">Comparação:</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-muted">
+                      <th className="border border-gray-300 p-2 text-left">
+                        Característica
+                      </th>
+                      {imoveisSelecionados.map((imovel) => (
+                        <th
+                          key={imovel.id}
+                          className="border border-gray-300 p-2 text-center min-w-[200px]"
+                        >
+                          <div>
+                            <img
+                              src={imovel.fotos[0]}
+                              alt={imovel.titulo}
+                              className="w-full h-24 object-cover rounded mb-2"
+                            />
+                            <p className="text-sm font-medium">
+                              {imovel.titulo}
+                            </p>
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="border border-gray-300 p-2 font-medium">
+                        Preço
+                      </td>
+                      {imoveisSelecionados.map((imovel) => (
+                        <td
+                          key={imovel.id}
+                          className="border border-gray-300 p-2 text-center"
+                        >
+                          <span className="font-bold text-primary">
+                            {formatarPreco(imovel.preco)}
+                          </span>
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2 font-medium">
+                        Tipo
+                      </td>
+                      {imoveisSelecionados.map((imovel) => (
+                        <td
+                          key={imovel.id}
+                          className="border border-gray-300 p-2 text-center"
+                        >
+                          {imovel.tipo}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2 font-medium">
+                        Área
+                      </td>
+                      {imoveisSelecionados.map((imovel) => (
+                        <td
+                          key={imovel.id}
+                          className="border border-gray-300 p-2 text-center"
+                        >
+                          {imovel.area}m²
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2 font-medium">
+                        Quartos
+                      </td>
+                      {imoveisSelecionados.map((imovel) => (
+                        <td
+                          key={imovel.id}
+                          className="border border-gray-300 p-2 text-center"
+                        >
+                          {imovel.quartos}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2 font-medium">
+                        Banheiros
+                      </td>
+                      {imoveisSelecionados.map((imovel) => (
+                        <td
+                          key={imovel.id}
+                          className="border border-gray-300 p-2 text-center"
+                        >
+                          {imovel.banheiros}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2 font-medium">
+                        Vagas
+                      </td>
+                      {imoveisSelecionados.map((imovel) => (
+                        <td
+                          key={imovel.id}
+                          className="border border-gray-300 p-2 text-center"
+                        >
+                          {imovel.vagas || 0}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2 font-medium">
+                        Bairro
+                      </td>
+                      {imoveisSelecionados.map((imovel) => (
+                        <td
+                          key={imovel.id}
+                          className="border border-gray-300 p-2 text-center"
+                        >
+                          {imovel.bairro}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2 font-medium">
+                        Preço/m²
+                      </td>
+                      {imoveisSelecionados.map((imovel) => (
+                        <td
+                          key={imovel.id}
+                          className="border border-gray-300 p-2 text-center"
+                        >
+                          {formatarPreco(imovel.preco / imovel.area)}
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export default function ClienteDashboard() {
-  const [stats, setStats] = useState<DashboardStats>({
-    favoritos: 0,
-    visitas: 0,
-    contratos: 0,
-    mensagens: 0,
-  });
-
-  const [favoritos, setFavoritos] = useState<Favorito[]>([]);
-  const [visitas, setVisitas] = useState<Visita[]>([]);
-  const [contratos, setContratos] = useState<Contrato[]>([]);
+  const [favoritos, setFavoritos] = useState<Imovel[]>([]);
+  const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
+  const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
+  const [buscasSalvas, setBuscasSalvas] = useState<BuscaSalva[]>([]);
+  const [recentementeVistos, setRecentementeVistos] = useState<Imovel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [showComparador, setShowComparador] = useState(false);
 
   useEffect(() => {
-    // Simular dados do cliente
-    setTimeout(() => {
-      setStats({
-        favoritos: 8,
-        visitas: 3,
-        contratos: 1,
-        mensagens: 12,
-      });
+    carregarDados();
+  }, []);
 
-      setFavoritos([
+  const carregarDados = async () => {
+    try {
+      // Dados simulados ultra-robustos
+      const favoritosSimulados: Imovel[] = [
         {
           id: "1",
-          imovel: {
-            id: "1",
-            titulo: "Apartamento 3 Quartos - Setor Oeste",
-            preco: 450000,
-            endereco: "Rua das Flores, 123",
-            bairro: "Setor Oeste",
-            tipo: "APARTAMENTO",
-            fotos: [
-              "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400",
-            ],
+          titulo: "Apartamento Moderno no Setor Bueno",
+          tipo: "APARTAMENTO",
+          finalidade: "VENDA",
+          preco: 650000,
+          area: 120.5,
+          quartos: 3,
+          banheiros: 2,
+          vagas: 2,
+          endereco: "Rua T-30, 1234",
+          bairro: "Setor Bueno",
+          cidade: "Goiânia",
+          fotos: [
+            "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          ],
+          status: "DISPONIVEL",
+          corretor: {
+            nome: "Juarez Siqueira",
+            telefone: "(62) 9 8556-3505",
+          },
+          favoritadoEm: new Date("2025-01-05T14:30:00"),
+        },
+        {
+          id: "2",
+          titulo: "Casa Térrea no Jardim Goiás",
+          tipo: "CASA",
+          finalidade: "VENDA",
+          preco: 450000,
+          area: 250.0,
+          quartos: 4,
+          banheiros: 3,
+          vagas: 3,
+          endereco: "Rua das Flores, 567",
+          bairro: "Jardim Goiás",
+          cidade: "Goiânia",
+          fotos: [
+            "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          ],
+          status: "DISPONIVEL",
+          corretor: {
+            nome: "Carlos Silva",
+            telefone: "(62) 9 9999-8888",
+          },
+          favoritadoEm: new Date("2025-01-04T10:15:00"),
+        },
+      ];
+
+      const agendamentosSimulados: Agendamento[] = [
+        {
+          id: "1",
+          imovel: favoritosSimulados[0],
+          dataHora: new Date("2025-01-08T14:00:00"),
+          status: "AGENDADA",
+          observacoes: "Interessado em conhecer a área de lazer",
+          corretor: {
+            nome: "Juarez Siqueira",
+            telefone: "(62) 9 8556-3505",
           },
         },
         {
           id: "2",
-          imovel: {
-            id: "2",
-            titulo: "Casa 4 Quartos - Jardim Goiás",
-            preco: 650000,
-            endereco: "Avenida Central, 456",
-            bairro: "Jardim Goiás",
-            tipo: "CASA",
-            fotos: [
-              "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400",
-            ],
-          },
-        },
-      ]);
-
-      setVisitas([
-        {
-          id: "1",
-          dataHora: "2024-01-20T14:00:00Z",
-          status: "AGENDADA",
-          imovel: {
-            titulo: "Apartamento 3 Quartos - Setor Oeste",
-            endereco: "Rua das Flores, 123",
-          },
+          imovel: favoritosSimulados[1],
+          dataHora: new Date("2025-01-10T10:30:00"),
+          status: "CONFIRMADA",
+          observacoes: "Visita com a família",
           corretor: {
-            nome: "João Silva",
-            whatsapp: "62985563505",
+            nome: "Carlos Silva",
+            telefone: "(62) 9 9999-8888",
           },
         },
-      ]);
+      ];
 
-      setContratos([
+      const avaliacoesSimuladas: Avaliacao[] = [
         {
           id: "1",
-          tipo: "ALUGUEL",
-          valor: 2500,
-          status: "ATIVO",
-          dataInicio: "2024-01-01T00:00:00Z",
-          imovel: {
-            titulo: "Apartamento 2 Quartos - Centro",
-            endereco: "Rua do Centro, 789",
-          },
+          imovel: favoritosSimulados[0],
+          nota: 5,
+          comentario:
+            "Apartamento excelente, muito bem localizado e com ótimo acabamento!",
+          data: new Date("2025-01-03T16:20:00"),
+          aprovada: true,
         },
-      ]);
+      ];
 
+      const buscasSalvasSimuladas: BuscaSalva[] = [
+        {
+          id: "1",
+          nome: "Apartamentos Setor Bueno",
+          filtros: {
+            tipo: "APARTAMENTO",
+            finalidade: "VENDA",
+            precoMin: 400000,
+            precoMax: 800000,
+            quartos: 3,
+            bairro: "Setor Bueno",
+          },
+          alertasAtivos: true,
+          criadaEm: new Date("2024-12-20T09:00:00"),
+          ultimaNotificacao: new Date("2025-01-02T11:30:00"),
+        },
+        {
+          id: "2",
+          nome: "Casas Jardim Goiás",
+          filtros: {
+            tipo: "CASA",
+            finalidade: "VENDA",
+            precoMin: 300000,
+            precoMax: 600000,
+            bairro: "Jardim Goiás",
+          },
+          alertasAtivos: false,
+          criadaEm: new Date("2024-12-15T14:45:00"),
+        },
+      ];
+
+      setFavoritos(favoritosSimulados);
+      setAgendamentos(agendamentosSimulados);
+      setAvaliacoes(avaliacoesSimuladas);
+      setBuscasSalvas(buscasSalvasSimuladas);
+      setRecentementeVistos(favoritosSimulados);
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  };
 
-  const formatPrice = (price: number) => {
+  const formatarPreco = (preco: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
-    }).format(price);
+      maximumFractionDigits: 0,
+    }).format(preco);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const stats = {
+    favoritos: favoritos.length,
+    agendamentos: agendamentos.filter(
+      (a) => a.status === "AGENDADA" || a.status === "CONFIRMADA",
+    ).length,
+    avaliacoes: avaliacoes.length,
+    buscasSalvas: buscasSalvas.length,
+    visitasRealizadas: 8,
+    economiaMedia: 15000,
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-muted/30 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-amber-800">Carregando dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
+    <div className="min-h-screen bg-muted/30">
       {/* Header */}
-      <div className="bg-white border-b border-amber-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-amber-900">
-                Meu Dashboard
-              </h1>
-              <p className="text-amber-700">
-                Gerencie seus imóveis favoritos e contratos
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="outline"
-                className="border-amber-300 text-amber-700 hover:bg-amber-50"
-              >
-                <User className="w-4 h-4 mr-2" />
-                Meu Perfil
-              </Button>
-              <Button className="bg-amber-600 hover:bg-amber-700 text-white">
-                <Phone className="w-4 h-4 mr-2" />
-                Falar com Corretor
-              </Button>
-            </div>
+      <div className="bg-card border-b px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">
+              Dashboard do Cliente
+            </h1>
+            <p className="text-muted-foreground">
+              Gerencie seus imóveis favoritos, agendamentos e muito mais
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Button variant="outline" size="sm">
+              <Bell className="h-4 w-4 mr-2" />
+              Notificações
+            </Button>
+            <Button variant="outline" size="sm">
+              <Settings className="h-4 w-4 mr-2" />
+              Configurações
+            </Button>
+            <img
+              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=250"
+              alt="Siqueira Campos Imóveis"
+              className="h-14 w-auto dark:hidden"
+            />
+            <img
+              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-escuro-e97fe8?format=webp&width=250"
+              alt="Siqueira Campos Imóveis"
+              className="hidden h-14 w-auto dark:block"
+            />
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="border-amber-200 shadow-md hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-amber-800">
-                Favoritos
-              </CardTitle>
-              <Heart className="h-4 w-4 text-red-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-900">
-                {stats.favoritos}
-              </div>
-              <p className="text-xs text-amber-600">Imóveis salvos</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-amber-200 shadow-md hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-amber-800">
-                Visitas
-              </CardTitle>
-              <Calendar className="h-4 w-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-900">
-                {stats.visitas}
-              </div>
-              <p className="text-xs text-amber-600">Agendadas</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-amber-200 shadow-md hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-amber-800">
-                Contratos
-              </CardTitle>
-              <FileText className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-900">
-                {stats.contratos}
-              </div>
-              <p className="text-xs text-amber-600">Ativos</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-amber-200 shadow-md hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-amber-800">
-                Mensagens
-              </CardTitle>
-              <MessageCircle className="h-4 w-4 text-purple-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-900">
-                {stats.mensagens}
-              </div>
-              <p className="text-xs text-amber-600">Não lidas</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Content Tabs */}
-        <Tabs defaultValue="favoritos" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-white border border-amber-200">
-            <TabsTrigger
-              value="favoritos"
-              className="data-[state=active]:bg-amber-100 data-[state=active]:text-amber-900"
-            >
-              <Heart className="w-4 h-4 mr-2" />
-              Favoritos
-            </TabsTrigger>
-            <TabsTrigger
-              value="visitas"
-              className="data-[state=active]:bg-amber-100 data-[state=active]:text-amber-900"
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              Visitas
-            </TabsTrigger>
-            <TabsTrigger
-              value="contratos"
-              className="data-[state=active]:bg-amber-100 data-[state=active]:text-amber-900"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Contratos
-            </TabsTrigger>
+      <div className="p-6">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
+          <TabsList className="grid w-full grid-cols-7">
+            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="favoritos">Favoritos</TabsTrigger>
+            <TabsTrigger value="agendamentos">Agendamentos</TabsTrigger>
+            <TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>
+            <TabsTrigger value="buscas">Buscas Salvas</TabsTrigger>
+            <TabsTrigger value="vistos">Recentes</TabsTrigger>
+            <TabsTrigger value="perfil">Perfil</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="favoritos">
-            <Card className="border-amber-200 shadow-md">
+          {/* Visão Geral */}
+          <TabsContent value="overview" className="space-y-6">
+            {/* Recomendação Personalizada */}
+            <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold mb-2">
+                      🎯 Recomendação Personalizada
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Baseado no seu perfil e preferências, encontramos imóveis
+                      perfeitos para você!
+                    </p>
+                    <div className="flex items-center space-x-4">
+                      <Button>
+                        <Search className="h-4 w-4 mr-2" />
+                        Ver Recomendações
+                      </Button>
+                      <Button variant="outline">
+                        <Target className="h-4 w-4 mr-2" />
+                        Refinar Perfil
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-3xl font-bold text-primary">23</p>
+                    <p className="text-sm text-muted-foreground">
+                      novos imóveis
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <StatsCard
+                title="Imóveis Favoritos"
+                value={stats.favoritos}
+                icon={Heart}
+                description="Suas escolhas salvas"
+                color="red"
+                trend="+2 esta semana"
+              />
+              <StatsCard
+                title="Agendamentos"
+                value={stats.agendamentos}
+                icon={Calendar}
+                description="Próximas visitas"
+                color="blue"
+              />
+              <StatsCard
+                title="Avaliações"
+                value={stats.avaliacoes}
+                icon={Star}
+                description="Suas reviews"
+                color="yellow"
+              />
+              <StatsCard
+                title="Buscas Salvas"
+                value={stats.buscasSalvas}
+                icon={BookmarkPlus}
+                description="Alertas ativos"
+                color="green"
+              />
+              <StatsCard
+                title="Visitas Realizadas"
+                value={stats.visitasRealizadas}
+                icon={CheckCircle}
+                description="Total histórico"
+                color="purple"
+              />
+              <StatsCard
+                title="Economia Média"
+                value={formatarPreco(stats.economiaMedia)}
+                icon={DollarSign}
+                description="Por negociação"
+                color="green"
+                trend="Baseado no histórico"
+              />
+            </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+                <CardContent className="p-6 text-center">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Search className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <h3 className="font-bold mb-2">Buscar Imóveis</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Encontre o imóvel dos seus sonhos
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card
+                className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+                onClick={() => setShowComparador(true)}
+              >
+                <CardContent className="p-6 text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <BarChart3 className="h-8 w-8 text-green-600" />
+                  </div>
+                  <h3 className="font-bold mb-2">Comparar Imóveis</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Compare até 4 imóveis lado a lado
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+                <CardContent className="p-6 text-center">
+                  <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Calendar className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <h3 className="font-bold mb-2">Agendar Visita</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Marque uma visita com corretor
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+                <CardContent className="p-6 text-center">
+                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MessageSquare className="h-8 w-8 text-orange-600" />
+                  </div>
+                  <h3 className="font-bold mb-2">Chat com Corretor</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Tire suas dúvidas em tempo real
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Próximos Agendamentos */}
+            <Card>
               <CardHeader>
-                <CardTitle className="text-amber-900">
-                  Meus Imóveis Favoritos
-                </CardTitle>
-                <CardDescription>
-                  Imóveis que você marcou como favoritos
-                </CardDescription>
+                <CardTitle>Próximas Visitas</CardTitle>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[600px]">
-                  <div className="space-y-4">
-                    {favoritos.map((favorito) => (
-                      <div
-                        key={favorito.id}
-                        className="border border-amber-200 rounded-lg p-4 hover:bg-amber-50 transition-colors"
-                      >
-                        <div className="flex space-x-4">
-                          <img
-                            src={favorito.imovel.fotos[0]}
-                            alt={favorito.imovel.titulo}
-                            className="w-24 h-24 object-cover rounded-lg"
-                          />
-                          <div className="flex-1">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h3 className="font-semibold text-amber-900">
-                                  {favorito.imovel.titulo}
-                                </h3>
-                                <p className="text-sm text-amber-700 flex items-center mt-1">
-                                  <MapPin className="w-4 h-4 mr-1" />
-                                  {favorito.imovel.endereco},{" "}
-                                  {favorito.imovel.bairro}
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-lg font-bold text-amber-900">
-                                  {formatPrice(favorito.imovel.preco)}
-                                </p>
-                                <Badge
-                                  variant="secondary"
-                                  className="bg-amber-100 text-amber-800"
-                                >
-                                  {favorito.imovel.tipo}
-                                </Badge>
-                              </div>
-                            </div>
-                            <div className="flex justify-between items-center mt-3">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-amber-300 text-amber-700 hover:bg-amber-50"
-                              >
-                                <Star className="w-4 h-4 mr-1" />
-                                Remover Favorito
-                              </Button>
-                              <Button
-                                size="sm"
-                                className="bg-amber-600 hover:bg-amber-700 text-white"
-                              >
-                                Ver Detalhes
-                                <ChevronRight className="w-4 h-4 ml-1" />
-                              </Button>
-                            </div>
-                          </div>
+                <div className="space-y-4">
+                  {agendamentos.slice(0, 3).map((agendamento) => (
+                    <div
+                      key={agendamento.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <img
+                          src={agendamento.imovel.fotos[0]}
+                          alt={agendamento.imovel.titulo}
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                        <div>
+                          <p className="font-bold">
+                            {agendamento.imovel.titulo}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            <MapPin className="h-3 w-3 inline mr-1" />
+                            {agendamento.imovel.bairro}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            <Calendar className="h-3 w-3 inline mr-1" />
+                            {agendamento.dataHora.toLocaleDateString(
+                              "pt-BR",
+                            )}{" "}
+                            às{" "}
+                            {agendamento.dataHora.toLocaleTimeString("pt-BR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </ScrollArea>
+                      <div className="text-right">
+                        <Badge
+                          variant={
+                            agendamento.status === "CONFIRMADA"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
+                          {agendamento.status}
+                        </Badge>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {agendamento.corretor.nome}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="visitas">
-            <Card className="border-amber-200 shadow-md">
+          {/* Favoritos */}
+          <TabsContent value="favoritos" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Imóveis Favoritos</h2>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtrar
+                </Button>
+                <Button onClick={() => setShowComparador(true)}>
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Comparar
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {favoritos.map((imovel) => (
+                <Card
+                  key={imovel.id}
+                  className="border-0 shadow-lg overflow-hidden"
+                >
+                  <div className="relative">
+                    <img
+                      src={imovel.fotos[0]}
+                      alt={imovel.titulo}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="absolute top-4 right-4">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="bg-white/90"
+                      >
+                        <Heart className="h-4 w-4 text-red-500 fill-current" />
+                      </Button>
+                    </div>
+                    <div className="absolute bottom-4 left-4">
+                      <Badge variant="default">{imovel.finalidade}</Badge>
+                    </div>
+                  </div>
+                  <CardContent className="p-6">
+                    <h3 className="font-bold text-lg mb-2">{imovel.titulo}</h3>
+                    <p className="text-muted-foreground mb-4">
+                      <MapPin className="h-4 w-4 inline mr-1" />
+                      {imovel.endereco}, {imovel.bairro}
+                    </p>
+
+                    <div className="flex items-center space-x-4 mb-4 text-sm">
+                      <div className="flex items-center">
+                        <Bed className="h-4 w-4 mr-1" />
+                        {imovel.quartos} quartos
+                      </div>
+                      <div className="flex items-center">
+                        <Bath className="h-4 w-4 mr-1" />
+                        {imovel.banheiros} banheiros
+                      </div>
+                      {imovel.vagas && (
+                        <div className="flex items-center">
+                          <Car className="h-4 w-4 mr-1" />
+                          {imovel.vagas} vagas
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-2xl font-bold text-primary">
+                          {formatarPreco(imovel.preco)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Favoritado em{" "}
+                          {imovel.favoritadoEm?.toLocaleDateString("pt-BR")}
+                        </p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button size="sm" variant="outline">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <Calendar className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Agendamentos */}
+          <TabsContent value="agendamentos" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Agendamentos de Visitas</h2>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Visita
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <StatsCard
+                title="Agendadas"
+                value={
+                  agendamentos.filter((a) => a.status === "AGENDADA").length
+                }
+                icon={Clock}
+                color="yellow"
+              />
+              <StatsCard
+                title="Confirmadas"
+                value={
+                  agendamentos.filter((a) => a.status === "CONFIRMADA").length
+                }
+                icon={CheckCircle}
+                color="green"
+              />
+              <StatsCard
+                title="Total Realizadas"
+                value={stats.visitasRealizadas}
+                icon={Calendar}
+                color="blue"
+              />
+            </div>
+
+            <Card>
               <CardHeader>
-                <CardTitle className="text-amber-900">Minhas Visitas</CardTitle>
-                <CardDescription>
-                  Visitas agendadas e realizadas
-                </CardDescription>
+                <CardTitle>Próximas Visitas</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {visitas.map((visita) => (
+                  {agendamentos.map((agendamento) => (
                     <div
-                      key={visita.id}
-                      className="border border-amber-200 rounded-lg p-4"
+                      key={agendamento.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                     >
-                      <div className="flex justify-between items-start">
+                      <div className="flex items-center space-x-4">
+                        <img
+                          src={agendamento.imovel.fotos[0]}
+                          alt={agendamento.imovel.titulo}
+                          className="w-20 h-20 object-cover rounded"
+                        />
                         <div>
-                          <h3 className="font-semibold text-amber-900">
-                            {visita.imovel.titulo}
-                          </h3>
-                          <p className="text-sm text-amber-700 flex items-center mt-1">
-                            <MapPin className="w-4 h-4 mr-1" />
-                            {visita.imovel.endereco}
+                          <p className="font-bold text-lg">
+                            {agendamento.imovel.titulo}
                           </p>
-                          <p className="text-sm text-amber-700 flex items-center mt-1">
-                            <Clock className="w-4 h-4 mr-1" />
-                            {formatDate(visita.dataHora)}
+                          <p className="text-muted-foreground mb-1">
+                            <MapPin className="h-3 w-3 inline mr-1" />
+                            {agendamento.imovel.endereco},{" "}
+                            {agendamento.imovel.bairro}
                           </p>
-                          <p className="text-sm text-amber-700 flex items-center mt-1">
-                            <User className="w-4 h-4 mr-1" />
-                            Corretor: {visita.corretor.nome}
+                          <p className="text-sm text-muted-foreground mb-1">
+                            <Calendar className="h-3 w-3 inline mr-1" />
+                            {agendamento.dataHora.toLocaleDateString(
+                              "pt-BR",
+                            )}{" "}
+                            às{" "}
+                            {agendamento.dataHora.toLocaleTimeString("pt-BR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </p>
+                          <p className="text-sm text-muted-foreground">
+                            <User className="h-3 w-3 inline mr-1" />
+                            Corretor: {agendamento.corretor.nome}
+                          </p>
+                          {agendamento.observacoes && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Obs: {agendamento.observacoes}
+                            </p>
+                          )}
                         </div>
-                        <div className="text-right">
-                          <Badge className="bg-green-100 text-green-800 mb-2">
-                            {visita.status}
-                          </Badge>
-                          <div className="space-x-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="border-amber-300 text-amber-700"
-                            >
-                              Remarcar
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="bg-green-600 hover:bg-green-700 text-white"
-                            >
-                              <Phone className="w-4 h-4 mr-1" />
-                              Ligar
-                            </Button>
-                          </div>
+                      </div>
+                      <div className="text-right space-y-2">
+                        <Badge
+                          variant={
+                            agendamento.status === "CONFIRMADA"
+                              ? "default"
+                              : agendamento.status === "AGENDADA"
+                                ? "secondary"
+                                : "destructive"
+                          }
+                        >
+                          {agendamento.status}
+                        </Badge>
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="outline">
+                            <Phone className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -446,70 +1023,408 @@ export default function ClienteDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="contratos">
-            <Card className="border-amber-200 shadow-md">
+          {/* Avaliações */}
+          <TabsContent value="avaliacoes" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Minhas Avaliações</h2>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Avaliação
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <StatsCard
+                title="Total Avaliações"
+                value={stats.avaliacoes}
+                icon={Star}
+                color="yellow"
+              />
+              <StatsCard
+                title="Nota Média"
+                value="4.8"
+                icon={Star}
+                color="yellow"
+                description="Suas avaliações"
+              />
+              <StatsCard
+                title="Aprovadas"
+                value={avaliacoes.filter((a) => a.aprovada).length}
+                icon={CheckCircle}
+                color="green"
+              />
+            </div>
+
+            <Card>
               <CardHeader>
-                <CardTitle className="text-amber-900">Meus Contratos</CardTitle>
-                <CardDescription>Contratos de aluguel e compra</CardDescription>
+                <CardTitle>Histórico de Avaliações</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {contratos.map((contrato) => (
+                  {avaliacoes.map((avaliacao) => (
                     <div
-                      key={contrato.id}
-                      className="border border-amber-200 rounded-lg p-4"
+                      key={avaliacao.id}
+                      className="flex items-start space-x-4 p-4 border rounded-lg"
                     >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-semibold text-amber-900">
-                            {contrato.imovel.titulo}
-                          </h3>
-                          <p className="text-sm text-amber-700 flex items-center mt-1">
-                            <MapPin className="w-4 h-4 mr-1" />
-                            {contrato.imovel.endereco}
-                          </p>
-                          <p className="text-sm text-amber-700 flex items-center mt-1">
-                            <Calendar className="w-4 h-4 mr-1" />
-                            Desde: {formatDate(contrato.dataInicio)}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-amber-900">
-                            {formatPrice(contrato.valor)}/mês
-                          </p>
-                          <Badge className="bg-green-100 text-green-800 mb-2">
-                            {contrato.status}
-                          </Badge>
-                          <div>
+                      <img
+                        src={avaliacao.imovel.fotos[0]}
+                        alt={avaliacao.imovel.titulo}
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="font-bold">{avaliacao.imovel.titulo}</p>
+                          <div className="flex items-center space-x-2">
+                            <div className="flex">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`h-4 w-4 ${
+                                    i < avaliacao.nota
+                                      ? "text-yellow-400 fill-current"
+                                      : "text-gray-300"
+                                  }`}
+                                />
+                              ))}
+                            </div>
                             <Badge
-                              variant="secondary"
-                              className="bg-blue-100 text-blue-800"
+                              variant={
+                                avaliacao.aprovada ? "default" : "secondary"
+                              }
                             >
-                              {contrato.tipo}
+                              {avaliacao.aprovada ? "APROVADA" : "PENDENTE"}
                             </Badge>
                           </div>
                         </div>
+                        <p className="text-muted-foreground mb-2">
+                          {avaliacao.comentario}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {avaliacao.data.toLocaleDateString("pt-BR")}
+                        </p>
                       </div>
-                      <Separator className="my-3" />
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-amber-300 text-amber-700"
-                        >
-                          <FileText className="w-4 h-4 mr-1" />
-                          Ver Contrato
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Buscas Salvas */}
+          <TabsContent value="buscas" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Buscas Salvas</h2>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Busca
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <StatsCard
+                title="Buscas Ativas"
+                value={buscasSalvas.filter((b) => b.alertasAtivos).length}
+                icon={Bell}
+                color="blue"
+              />
+              <StatsCard
+                title="Total Salvas"
+                value={stats.buscasSalvas}
+                icon={BookmarkPlus}
+                color="green"
+              />
+              <StatsCard
+                title="Novos Resultados"
+                value="12"
+                icon={Target}
+                color="orange"
+                description="Última semana"
+              />
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Suas Buscas Salvas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {buscasSalvas.map((busca) => (
+                    <div
+                      key={busca.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h3 className="font-bold">{busca.nome}</h3>
+                          <Badge
+                            variant={
+                              busca.alertasAtivos ? "default" : "secondary"
+                            }
+                          >
+                            {busca.alertasAtivos ? "ALERTAS ATIVOS" : "PAUSADO"}
+                          </Badge>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {busca.filtros.tipo && (
+                            <Badge variant="outline">
+                              {busca.filtros.tipo}
+                            </Badge>
+                          )}
+                          {busca.filtros.finalidade && (
+                            <Badge variant="outline">
+                              {busca.filtros.finalidade}
+                            </Badge>
+                          )}
+                          {busca.filtros.bairro && (
+                            <Badge variant="outline">
+                              {busca.filtros.bairro}
+                            </Badge>
+                          )}
+                          {busca.filtros.quartos && (
+                            <Badge variant="outline">
+                              {busca.filtros.quartos} quartos
+                            </Badge>
+                          )}
+                          {busca.filtros.precoMin && busca.filtros.precoMax && (
+                            <Badge variant="outline">
+                              {formatarPreco(busca.filtros.precoMin)} -{" "}
+                              {formatarPreco(busca.filtros.precoMax)}
+                            </Badge>
+                          )}
+                        </div>
+
+                        <p className="text-sm text-muted-foreground">
+                          Criada em {busca.criadaEm.toLocaleDateString("pt-BR")}
+                          {busca.ultimaNotificacao && (
+                            <>
+                              {" "}
+                              • Última notificação:{" "}
+                              {busca.ultimaNotificacao.toLocaleDateString(
+                                "pt-BR",
+                              )}
+                            </>
+                          )}
+                        </p>
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <Button size="sm" variant="outline">
+                          <Search className="h-4 w-4" />
                         </Button>
-                        <Button
-                          size="sm"
-                          className="bg-amber-600 hover:bg-amber-700 text-white"
-                        >
-                          <MessageCircle className="w-4 h-4 mr-1" />
-                          Falar com Administração
+                        <Button size="sm" variant="outline">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Recentemente Vistos */}
+          <TabsContent value="vistos" className="space-y-6">
+            <h2 className="text-2xl font-bold">Recentemente Visualizados</h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {recentementeVistos.map((imovel) => (
+                <Card
+                  key={imovel.id}
+                  className="border-0 shadow-lg overflow-hidden"
+                >
+                  <div className="relative">
+                    <img
+                      src={imovel.fotos[0]}
+                      alt={imovel.titulo}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="absolute bottom-4 left-4">
+                      <Badge variant="default">{imovel.finalidade}</Badge>
+                    </div>
+                    <div className="absolute bottom-4 right-4">
+                      <p className="text-white text-xs bg-black/60 rounded px-2 py-1">
+                        Visto há 2 dias
+                      </p>
+                    </div>
+                  </div>
+                  <CardContent className="p-6">
+                    <h3 className="font-bold text-lg mb-2">{imovel.titulo}</h3>
+                    <p className="text-muted-foreground mb-4">
+                      <MapPin className="h-4 w-4 inline mr-1" />
+                      {imovel.endereco}, {imovel.bairro}
+                    </p>
+
+                    <div className="flex items-center space-x-4 mb-4 text-sm">
+                      <div className="flex items-center">
+                        <Bed className="h-4 w-4 mr-1" />
+                        {imovel.quartos} quartos
+                      </div>
+                      <div className="flex items-center">
+                        <Bath className="h-4 w-4 mr-1" />
+                        {imovel.banheiros} banheiros
+                      </div>
+                      {imovel.vagas && (
+                        <div className="flex items-center">
+                          <Car className="h-4 w-4 mr-1" />
+                          {imovel.vagas} vagas
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <p className="text-2xl font-bold text-primary">
+                        {formatarPreco(imovel.preco)}
+                      </p>
+                      <div className="flex space-x-2">
+                        <Button size="sm" variant="outline">
+                          <Heart className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <Calendar className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Perfil */}
+          <TabsContent value="perfil" className="space-y-6">
+            <h2 className="text-2xl font-bold">Meu Perfil</h2>
+
+            {/* Configurações de Perfil */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Informações Pessoais</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Nome Completo</Label>
+                    <Input defaultValue="João da Silva" />
+                  </div>
+                  <div>
+                    <Label>Email</Label>
+                    <Input defaultValue="joao@email.com" />
+                  </div>
+                  <div>
+                    <Label>Telefone</Label>
+                    <Input defaultValue="(62) 9 9999-8888" />
+                  </div>
+                  <div>
+                    <Label>CPF</Label>
+                    <Input defaultValue="000.000.000-00" />
+                  </div>
+                </div>
+                <Button>Salvar Alterações</Button>
+              </CardContent>
+            </Card>
+
+            {/* Preferências */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Preferências de Busca</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Tipo Preferido</Label>
+                    <Select defaultValue="APARTAMENTO">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="CASA">Casa</SelectItem>
+                        <SelectItem value="APARTAMENTO">Apartamento</SelectItem>
+                        <SelectItem value="TERRENO">Terreno</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Finalidade</Label>
+                    <Select defaultValue="VENDA">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="VENDA">Venda</SelectItem>
+                        <SelectItem value="ALUGUEL">Aluguel</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Faixa de Preço Mínima</Label>
+                    <Input placeholder="R$ 200.000" />
+                  </div>
+                  <div>
+                    <Label>Faixa de Preço Máxima</Label>
+                    <Input placeholder="R$ 800.000" />
+                  </div>
+                  <div>
+                    <Label>Bairros de Interesse</Label>
+                    <Textarea
+                      placeholder="Setor Bueno, Jardim Goiás, Centro..."
+                      rows={3}
+                    />
+                  </div>
+                </div>
+                <Button>Salvar Preferências</Button>
+              </CardContent>
+            </Card>
+
+            {/* Notificações */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Configurações de Notificação</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Novos Imóveis</p>
+                    <p className="text-sm text-muted-foreground">
+                      Receber notificação quando houver novos imóveis que
+                      correspondam às suas buscas
+                    </p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Mudanças de Preço</p>
+                    <p className="text-sm text-muted-foreground">
+                      Ser notificado quando imóveis favoritos tiverem mudança de
+                      preço
+                    </p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Lembretes de Visita</p>
+                    <p className="text-sm text-muted-foreground">
+                      Receber lembretes sobre visitas agendadas
+                    </p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Newsletter</p>
+                    <p className="text-sm text-muted-foreground">
+                      Receber newsletter semanal com dicas e novidades do
+                      mercado
+                    </p>
+                  </div>
+                  <Switch />
                 </div>
               </CardContent>
             </Card>
@@ -517,7 +1432,12 @@ export default function ClienteDashboard() {
         </Tabs>
       </div>
 
-      <ChatBubble />
+      {/* Modal Comparador */}
+      <ComparadorModal
+        isOpen={showComparador}
+        onClose={() => setShowComparador(false)}
+        imoveis={[...favoritos, ...recentementeVistos]}
+      />
     </div>
   );
 }
