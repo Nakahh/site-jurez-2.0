@@ -246,10 +246,23 @@ export default function Blog() {
                 Início
               </Link>
               <Link
-                to="/sobre"
+                to="/imoveis"
                 className="text-amber-700 hover:text-amber-900 transition-colors"
               >
-                Sobre
+                Imóveis
+              </Link>
+              <span className="text-amber-900 font-medium">Blog</span>
+              <Link
+                to="/comparador"
+                className="text-amber-700 hover:text-amber-900 transition-colors"
+              >
+                Comparador
+              </Link>
+              <Link
+                to="/simulador"
+                className="text-amber-700 hover:text-amber-900 transition-colors"
+              >
+                Simulador
               </Link>
               <Link
                 to="/contato"
@@ -257,7 +270,12 @@ export default function Blog() {
               >
                 Contato
               </Link>
-              <span className="text-amber-900 font-medium">Blog</span>
+              <Link
+                to="/sobre"
+                className="text-amber-700 hover:text-amber-900 transition-colors"
+              >
+                Sobre
+              </Link>
             </nav>
             <Button className="bg-amber-600 hover:bg-amber-700 text-white">
               <Home className="w-4 h-4 mr-2" />
