@@ -1,168 +1,330 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, createContext, useContext } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Bell,
   X,
   Check,
-  Info,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  User,
-  Home,
+  AlertCircle,
+  MessageSquare,
   Calendar,
-  MessageCircle,
+  Home,
   DollarSign,
+  Users,
+  Settings,
+  TrendingUp,
+  Mail,
+  Phone,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  Info,
 } from "lucide-react";
 
-interface Notification {
+export interface Notification {
   id: string;
-  type: "info" | "success" | "warning" | "error";
+  type:
+    | "NOVO_LEAD"
+    | "VISITA_AGENDADA"
+    | "VISITA_CONFIRMADA"
+    | "VENDA_REALIZADA"
+    | "MENSAGEM_CHAT"
+    | "SISTEMA"
+    | "MARKETING"
+    | "FINANCEIRO"
+    | "URGENTE";
   title: string;
   message: string;
   timestamp: Date;
   read: boolean;
-  category: "lead" | "visit" | "contract" | "system" | "marketing";
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  userId?: string;
+  userRole:
+    | "ADMIN"
+    | "CORRETOR"
+    | "CLIENTE"
+    | "MARKETING"
+    | "DESENVOLVEDOR"
+    | "ASSISTENTE"
+    | "ALL";
   actionUrl?: string;
+  actionLabel?: string;
+  metadata?: {
+    leadId?: string;
+    imovelId?: string;
+    agendamentoId?: string;
+    corretorId?: string;
+    valor?: number;
+  };
 }
 
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "info",
-    title: "Novo Lead Recebido",
-    message: "Maria Silva demonstrou interesse em apartamento no Jardim Goiás",
-    timestamp: new Date(Date.now() - 300000), // 5 min ago
-    read: false,
-    category: "lead",
-    actionUrl: "/leads/1",
-  },
-  {
-    id: "2",
-    type: "success",
-    title: "Visita Agendada",
-    message: "João Santos agendou visita para amanhã às 14h",
-    timestamp: new Date(Date.now() - 1800000), // 30 min ago
-    read: false,
-    category: "visit",
-    actionUrl: "/visitas/2",
-  },
-  {
-    id: "3",
-    type: "warning",
-    title: "Contrato Vencendo",
-    message: "Contrato de locação #123 vence em 30 dias",
-    timestamp: new Date(Date.now() - 3600000), // 1 hour ago
-    read: true,
-    category: "contract",
-    actionUrl: "/contratos/123",
-  },
-  {
-    id: "4",
-    type: "info",
-    title: "Nova Campanha Ativa",
-    message: "Campanha 'Apartamentos Setor Oeste' foi ativada",
-    timestamp: new Date(Date.now() - 7200000), // 2 hours ago
-    read: true,
-    category: "marketing",
-    actionUrl: "/marketing/campanhas/4",
-  },
-];
+interface NotificationContextType {
+  notifications: Notification[];
+  unreadCount: number;
+  addNotification: (
+    notification: Omit<Notification, "id" | "timestamp" | "read">,
+  ) => void;
+  markAsRead: (id: string) => void;
+  markAllAsRead: () => void;
+  removeNotification: (id: string) => void;
+  clearAll: () => void;
+}
 
-export function NotificationSystem() {
-  const [notifications, setNotifications] =
-    useState<Notification[]>(mockNotifications);
-  const [isOpen, setIsOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+const NotificationContext = createContext<NotificationContextType | undefined>(
+  undefined,
+);
+
+export function NotificationProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [userRole, setUserRole] = useState<string>("CLIENTE"); // Simular papel do usuário
 
   useEffect(() => {
-    const count = notifications.filter((n) => !n.read).length;
-    setUnreadCount(count);
-  }, [notifications]);
+    // Simular notificações iniciais baseadas no papel do usuário
+    const initialNotifications: Notification[] = [
+      {
+        id: "1",
+        type: "NOVO_LEAD",
+        title: "Novo Lead Recebido",
+        message:
+          "Maria Silva demonstrou interesse em apartamento no Setor Bueno",
+        timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 min atrás
+        read: false,
+        priority: "HIGH",
+        userRole: "CORRETOR",
+        actionUrl: "/dashboard/corretor",
+        actionLabel: "Ver Lead",
+        metadata: { leadId: "lead-123" },
+      },
+      {
+        id: "2",
+        type: "VISITA_AGENDADA",
+        title: "Visita Agendada",
+        message:
+          "João Santos agendou visita para amanhã às 10h - Casa Jardim Goiás",
+        timestamp: new Date(Date.now() - 15 * 60 * 1000), // 15 min atrás
+        read: false,
+        priority: "MEDIUM",
+        userRole: "CORRETOR",
+        actionUrl: "/corretor/agendamentos",
+        actionLabel: "Ver Agendamento",
+        metadata: { agendamentoId: "ag-456", imovelId: "im-789" },
+      },
+      {
+        id: "3",
+        type: "SISTEMA",
+        title: "Backup Concluído",
+        message: "Backup automático realizado com sucesso às 02:00",
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2h atrás
+        read: true,
+        priority: "LOW",
+        userRole: "DESENVOLVEDOR",
+        metadata: {},
+      },
+      {
+        id: "4",
+        type: "MARKETING",
+        title: "Campanha Performance",
+        message: "Campanha 'Lançamento Jardim Goiás' atingiu 100 leads!",
+        timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 min atrás
+        read: false,
+        priority: "MEDIUM",
+        userRole: "MARKETING",
+        actionUrl: "/dashboard/marketing",
+        actionLabel: "Ver Campanha",
+      },
+      {
+        id: "5",
+        type: "VENDA_REALIZADA",
+        title: "🎉 Venda Realizada!",
+        message:
+          "Apartamento Setor Bueno vendido por R$ 650.000 - Corretor: Juarez",
+        timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1h atrás
+        read: false,
+        priority: "HIGH",
+        userRole: "ALL",
+        actionUrl: "/dashboard/admin",
+        actionLabel: "Ver Detalhes",
+        metadata: { valor: 650000, corretorId: "juarez" },
+      },
+    ];
 
-  useEffect(() => {
-    // Simular notificações em tempo real
+    setNotifications(initialNotifications);
+
+    // Simular chegada de novas notificações
     const interval = setInterval(() => {
       const randomNotifications = [
         {
-          id: Date.now().toString(),
-          type: "info" as const,
-          title: "Novo Interesse",
-          message: "Cliente interessado em casa no Setor Oeste",
-          timestamp: new Date(),
-          read: false,
-          category: "lead" as const,
+          type: "MENSAGEM_CHAT" as const,
+          title: "Nova Mensagem",
+          message: "Cliente enviou mensagem sobre apartamento",
+          priority: "MEDIUM" as const,
+          userRole: "CORRETOR" as const,
+          actionUrl: "/chat",
         },
         {
-          id: Date.now().toString(),
-          type: "success" as const,
-          title: "Lead Convertido",
-          message: "Lead convertido em venda!",
-          timestamp: new Date(),
-          read: false,
-          category: "contract" as const,
+          type: "NOVO_LEAD" as const,
+          title: "Lead Urgente",
+          message: "Lead VIP interessado em casa de alto padrão",
+          priority: "URGENT" as const,
+          userRole: "CORRETOR" as const,
+          actionUrl: "/dashboard/corretor",
         },
       ];
 
-      if (Math.random() > 0.7) {
-        // 30% chance
-        const randomNotification =
+      if (Math.random() < 0.3) {
+        // 30% de chance a cada intervalo
+        const randomNotif =
           randomNotifications[
             Math.floor(Math.random() * randomNotifications.length)
           ];
-        setNotifications((prev) => [randomNotification, ...prev.slice(0, 9)]); // Keep last 10
+        addNotification(randomNotif);
       }
-    }, 30000); // Every 30 seconds
+    }, 30000); // A cada 30 segundos
 
     return () => clearInterval(interval);
   }, []);
 
+  const addNotification = (
+    notification: Omit<Notification, "id" | "timestamp" | "read">,
+  ) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: Date.now().toString(),
+      timestamp: new Date(),
+      read: false,
+    };
+
+    setNotifications((prev) => [newNotification, ...prev]);
+
+    // Mostrar notificação nativa do browser
+    if (Notification.permission === "granted") {
+      new Notification(notification.title, {
+        body: notification.message,
+        icon: "/favicon.ico",
+        tag: newNotification.id,
+      });
+    }
+  };
+
   const markAsRead = (id: string) => {
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif)),
     );
   };
 
   const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
   };
 
   const removeNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    setNotifications((prev) => prev.filter((notif) => notif.id !== id));
   };
 
-  const getNotificationIcon = (category: string) => {
-    switch (category) {
-      case "lead":
-        return <User className="w-4 h-4" />;
-      case "visit":
-        return <Calendar className="w-4 h-4" />;
-      case "contract":
-        return <DollarSign className="w-4 h-4" />;
-      case "marketing":
-        return <MessageCircle className="w-4 h-4" />;
-      default:
-        return <Info className="w-4 h-4" />;
+  const clearAll = () => {
+    setNotifications([]);
+  };
+
+  const unreadCount = notifications.filter(
+    (n) => !n.read && (n.userRole === userRole || n.userRole === "ALL"),
+  ).length;
+
+  return (
+    <NotificationContext.Provider
+      value={{
+        notifications: notifications.filter(
+          (n) => n.userRole === userRole || n.userRole === "ALL",
+        ),
+        unreadCount,
+        addNotification,
+        markAsRead,
+        markAllAsRead,
+        removeNotification,
+        clearAll,
+      }}
+    >
+      {children}
+    </NotificationContext.Provider>
+  );
+}
+
+export function useNotifications() {
+  const context = useContext(NotificationContext);
+  if (context === undefined) {
+    throw new Error(
+      "useNotifications must be used within a NotificationProvider",
+    );
+  }
+  return context;
+}
+
+export function NotificationBell() {
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    removeNotification,
+  } = useNotifications();
+
+  useEffect(() => {
+    // Solicitar permissão para notificações
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
     }
-  };
+  }, []);
 
-  const getTypeIcon = (type: string) => {
+  const getNotificationIcon = (type: Notification["type"]) => {
     switch (type) {
-      case "success":
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case "warning":
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case "error":
-        return <AlertTriangle className="w-4 h-4 text-red-500" />;
+      case "NOVO_LEAD":
+        return <Users className="h-4 w-4 text-blue-600" />;
+      case "VISITA_AGENDADA":
+      case "VISITA_CONFIRMADA":
+        return <Calendar className="h-4 w-4 text-green-600" />;
+      case "VENDA_REALIZADA":
+        return <DollarSign className="h-4 w-4 text-green-600" />;
+      case "MENSAGEM_CHAT":
+        return <MessageSquare className="h-4 w-4 text-purple-600" />;
+      case "SISTEMA":
+        return <Settings className="h-4 w-4 text-gray-600" />;
+      case "MARKETING":
+        return <TrendingUp className="h-4 w-4 text-orange-600" />;
+      case "FINANCEIRO":
+        return <DollarSign className="h-4 w-4 text-blue-600" />;
+      case "URGENTE":
+        return <AlertTriangle className="h-4 w-4 text-red-600" />;
       default:
-        return <Info className="w-4 h-4 text-blue-500" />;
+        return <Info className="h-4 w-4 text-gray-600" />;
     }
   };
 
-  const formatTimeAgo = (timestamp: Date) => {
+  const getPriorityColor = (priority: Notification["priority"]) => {
+    switch (priority) {
+      case "URGENT":
+        return "border-l-red-500 bg-red-50";
+      case "HIGH":
+        return "border-l-orange-500 bg-orange-50";
+      case "MEDIUM":
+        return "border-l-blue-500 bg-blue-50";
+      default:
+        return "border-l-gray-500 bg-gray-50";
+    }
+  };
+
+  const formatTime = (timestamp: Date) => {
     const now = new Date();
     const diff = now.getTime() - timestamp.getTime();
     const minutes = Math.floor(diff / 60000);
@@ -176,144 +338,203 @@ export function NotificationSystem() {
   };
 
   return (
-    <div className="relative">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2"
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="h-5 w-5" />
+          {unreadCount > 0 && (
+            <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 text-white">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </Badge>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="w-80 max-h-96 overflow-hidden p-0"
       >
-        <Bell className="w-5 h-5" />
-        {unreadCount > 0 && (
-          <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center p-0">
-            {unreadCount > 9 ? "9+" : unreadCount}
-          </Badge>
-        )}
-      </Button>
-
-      {isOpen && (
-        <Card className="absolute right-0 top-full mt-2 w-80 md:w-96 shadow-lg border-amber-200 z-50">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
-            <CardTitle className="text-lg text-amber-900">
-              Notificações
-            </CardTitle>
-            <div className="flex items-center space-x-2">
-              {unreadCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={markAllAsRead}
-                  className="text-xs text-amber-600 hover:text-amber-800"
-                >
-                  Marcar todas como lidas
-                </Button>
-              )}
+        <div className="p-4 border-b">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold">Notificações</h3>
+            {unreadCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsOpen(false)}
-                className="p-1"
+                onClick={markAllAsRead}
+                className="text-xs"
               >
-                <X className="w-4 h-4" />
+                Marcar todas como lidas
               </Button>
+            )}
+          </div>
+        </div>
+
+        <ScrollArea className="max-h-80">
+          {notifications.length === 0 ? (
+            <div className="p-4 text-center text-muted-foreground">
+              <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p>Nenhuma notificação</p>
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <ScrollArea className="h-96">
-              {notifications.length === 0 ? (
-                <div className="p-8 text-center text-amber-600">
-                  <Bell className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Nenhuma notificação no momento</p>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className={`p-4 border-b border-amber-100 hover:bg-amber-50 transition-colors ${
-                        !notification.read ? "bg-amber-25" : ""
-                      }`}
-                    >
-                      <div className="flex items-start space-x-3">
-                        <div className="flex-shrink-0 mt-1">
-                          {getTypeIcon(notification.type)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center space-x-2">
-                              {getNotificationIcon(notification.category)}
-                              <h4
-                                className={`text-sm font-medium ${
-                                  !notification.read
-                                    ? "text-amber-900"
-                                    : "text-amber-700"
-                                }`}
-                              >
-                                {notification.title}
-                              </h4>
-                              {!notification.read && (
-                                <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                              )}
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <span className="text-xs text-amber-500">
-                                {formatTimeAgo(notification.timestamp)}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  removeNotification(notification.id)
-                                }
-                                className="p-1 h-auto"
-                              >
-                                <X className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                          <p className="text-sm text-amber-600 mt-1">
-                            {notification.message}
-                          </p>
-                          <div className="flex items-center justify-between mt-2">
-                            <Badge
-                              variant="secondary"
-                              className="text-xs bg-amber-100 text-amber-800"
-                            >
-                              {notification.category}
-                            </Badge>
-                            <div className="flex space-x-2">
-                              {!notification.read && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => markAsRead(notification.id)}
-                                  className="text-xs p-1 h-auto text-amber-600 hover:text-amber-800"
-                                >
-                                  <Check className="w-3 h-3 mr-1" />
-                                  Marcar como lida
-                                </Button>
-                              )}
-                              {notification.actionUrl && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-xs p-1 h-auto text-amber-600 hover:text-amber-800"
-                                >
-                                  Ver detalhes
-                                </Button>
-                              )}
-                            </div>
-                          </div>
+          ) : (
+            <div className="divide-y">
+              {notifications.slice(0, 10).map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`p-4 border-l-4 ${getPriorityColor(notification.priority)} ${
+                    !notification.read ? "bg-accent/50" : ""
+                  } hover:bg-accent/70 cursor-pointer transition-colors`}
+                  onClick={() => {
+                    markAsRead(notification.id);
+                    if (notification.actionUrl) {
+                      window.location.href = notification.actionUrl;
+                    }
+                  }}
+                >
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 mt-0.5">
+                      {getNotificationIcon(notification.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <h4
+                          className={`text-sm font-medium ${!notification.read ? "font-semibold" : ""}`}
+                        >
+                          {notification.title}
+                        </h4>
+                        <div className="flex items-center space-x-2">
+                          {!notification.read && (
+                            <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-4 w-4 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeNotification(notification.id);
+                            }}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
                         </div>
                       </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {notification.message}
+                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-xs text-muted-foreground">
+                          {formatTime(notification.timestamp)}
+                        </span>
+                        {notification.actionLabel && (
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                          >
+                            {notification.actionLabel}
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
-              )}
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+
+        {notifications.length > 10 && (
+          <div className="p-4 border-t">
+            <Button variant="ghost" className="w-full text-sm">
+              Ver todas as notificações
+            </Button>
+          </div>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
+}
+
+// Hook para adicionar notificações de qualquer lugar da aplicação
+export function useNotificationActions() {
+  const { addNotification } = useNotifications();
+
+  const notifyNewLead = (leadName: string, leadSource: string) => {
+    addNotification({
+      type: "NOVO_LEAD",
+      title: "Novo Lead Recebido",
+      message: `${leadName} demonstrou interesse via ${leadSource}`,
+      priority: "HIGH",
+      userRole: "CORRETOR",
+      actionUrl: "/dashboard/corretor",
+      actionLabel: "Ver Lead",
+    });
+  };
+
+  const notifyVisitScheduled = (
+    clientName: string,
+    propertyTitle: string,
+    date: string,
+  ) => {
+    addNotification({
+      type: "VISITA_AGENDADA",
+      title: "Nova Visita Agendada",
+      message: `${clientName} agendou visita para ${propertyTitle} em ${date}`,
+      priority: "MEDIUM",
+      userRole: "CORRETOR",
+      actionUrl: "/corretor/agendamentos",
+      actionLabel: "Ver Agendamento",
+    });
+  };
+
+  const notifySaleCompleted = (
+    propertyTitle: string,
+    value: number,
+    brokerName: string,
+  ) => {
+    addNotification({
+      type: "VENDA_REALIZADA",
+      title: "🎉 Venda Realizada!",
+      message: `${propertyTitle} vendido por ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)} - Corretor: ${brokerName}`,
+      priority: "HIGH",
+      userRole: "ALL",
+      actionUrl: "/dashboard/admin",
+      actionLabel: "Ver Detalhes",
+      metadata: { valor: value },
+    });
+  };
+
+  const notifyNewMessage = (senderName: string, propertyTitle?: string) => {
+    addNotification({
+      type: "MENSAGEM_CHAT",
+      title: "Nova Mensagem",
+      message: `${senderName} enviou uma mensagem${propertyTitle ? ` sobre ${propertyTitle}` : ""}`,
+      priority: "MEDIUM",
+      userRole: "CORRETOR",
+      actionUrl: "/chat",
+      actionLabel: "Ver Conversa",
+    });
+  };
+
+  const notifySystemAlert = (
+    title: string,
+    message: string,
+    priority: Notification["priority"] = "MEDIUM",
+  ) => {
+    addNotification({
+      type: "SISTEMA",
+      title,
+      message,
+      priority,
+      userRole: "DESENVOLVEDOR",
+    });
+  };
+
+  return {
+    notifyNewLead,
+    notifyVisitScheduled,
+    notifySaleCompleted,
+    notifyNewMessage,
+    notifySystemAlert,
+  };
 }
