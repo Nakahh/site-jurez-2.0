@@ -21,12 +21,22 @@ import {
   Filter,
   Star,
   CheckCircle,
+  BookOpen,
+  BarChart3,
+  HelpCircle,
+  Scale,
+  Menu,
+  X,
 } from "lucide-react";
 import { Imovel, TipoImovel, Finalidade } from "@shared/types";
 import { ChatBubble } from "@/components/ChatBubble";
 import { EnhancedSearch } from "@/components/EnhancedSearch";
 import { PropertyCardSkeleton } from "@/components/LoadingSkeleton";
 import { NotificationSystem } from "@/components/NotificationSystem";
+import { FavoriteButton } from "@/components/FavoriteButton";
+import { ShareButton } from "@/components/ShareButton";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { FAQ } from "@/components/FAQ";
 
 export default function Index() {
   const [imoveisDestaque, setImoveisDestaque] = useState<Imovel[]>([]);
@@ -38,6 +48,7 @@ export default function Index() {
     bairro: "",
   });
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     carregarImoveisDestaque();
@@ -146,6 +157,18 @@ export default function Index() {
               Imóveis
             </Link>
             <Link
+              to="/blog"
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Blog
+            </Link>
+            <Link
+              to="/comparador"
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Comparador
+            </Link>
+            <Link
               to="/sobre"
               className="text-foreground hover:text-primary transition-colors"
             >
@@ -166,25 +189,110 @@ export default function Index() {
           </nav>
 
           <div className="flex items-center space-x-2">
-            <Button variant="outline" asChild>
-              <Link to="/login">Entrar</Link>
+            <ThemeToggle />
+            <Button
+              variant="outline"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <Menu className="h-4 w-4" />
+              )}
             </Button>
-            <Button asChild>
-              <Link to="/register">Cadastrar</Link>
-            </Button>
+            <div className="hidden md:flex items-center space-x-2">
+              <Button variant="outline" asChild>
+                <Link to="/login">Entrar</Link>
+              </Button>
+              <Button asChild>
+                <Link to="/register">Cadastrar</Link>
+              </Button>
+            </div>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t bg-card/95 backdrop-blur-sm">
+            <nav className="container mx-auto px-4 py-4 space-y-2">
+              <Link
+                to="/"
+                className="block py-2 text-foreground hover:text-primary transition-colors font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Início
+              </Link>
+              <Link
+                to="/imoveis"
+                className="block py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Imóveis
+              </Link>
+              <Link
+                to="/blog"
+                className="block py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Blog
+              </Link>
+              <Link
+                to="/comparador"
+                className="block py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Comparador
+              </Link>
+              <Link
+                to="/sobre"
+                className="block py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Sobre
+              </Link>
+              <Link
+                to="/contato"
+                className="block py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contato
+              </Link>
+              <Link
+                to="/simulador"
+                className="block py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Simulador
+              </Link>
+              <div className="pt-4 border-t border-border/50 space-y-2">
+                <Button variant="outline" className="w-full" asChild>
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                    Entrar
+                  </Link>
+                </Button>
+                <Button className="w-full" asChild>
+                  <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
+                    Cadastrar
+                  </Link>
+                </Button>
+              </div>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
-      <section className="relative h-[70vh] bg-gradient-to-r from-primary/90 to-primary/70 flex items-center justify-center overflow-hidden">
+      <section className="relative h-[80vh] bg-gradient-to-r from-primary/90 to-primary/70 flex items-center justify-center overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
           style={{
             backgroundImage:
-              "url('https://cdn.builder.io/o/assets%2Ff2a517b8d4884b66a8a5c1be8bd00feb%2F024ab83026b24724b5d807b621fddb43?alt=media&token=bfa483e0-f3df-415e-bfda-10acbcac68e2&apiKey=f2a517b8d4884b66a8a5c1be8bd00feb')",
+              "url('https://images.pexels.com/photos/8134821/pexels-photo-8134821.jpeg')",
           }}
         />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary/60"></div>
         <div className="relative text-center text-white space-y-8 max-w-5xl px-4 z-10">
           <h1 className="text-4xl md:text-7xl font-bold tracking-tight animate-fade-in">
             Encontre seu próximo lar
