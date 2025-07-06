@@ -34,6 +34,9 @@ import {
 import { lazy, Suspense } from "react";
 const LazyCorretorLeads = lazy(() => import("./pages/CorretorLeads"));
 const LazyCorretorImoveis = lazy(() => import("./pages/CorretorImoveis"));
+const LazyAssistenteDashboard = lazy(
+  () => import("./pages/dashboards/AssistenteDashboard"),
+);
 
 // Optimized QueryClient configuration
 const queryClient = new QueryClient({
@@ -182,6 +185,14 @@ const App = () => {
               <Route
                 path="/dashboard/desenvolvedor"
                 element={<LazyDesenvolvedorDashboard />}
+              />
+              <Route
+                path="/dashboard/assistente"
+                element={
+                  <Suspense fallback={<div>Carregando...</div>}>
+                    <LazyAssistenteDashboard />
+                  </Suspense>
+                }
               />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<LazyNotFound />} />
