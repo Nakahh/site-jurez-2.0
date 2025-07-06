@@ -603,5 +603,4 @@ export const preloadRoute = (routeName: string) => {
   }
 };
 
-// Export error boundary for direct use
-export { LazyErrorBoundary };
+// LazyErrorBoundary is already exported above as a class
