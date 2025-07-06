@@ -640,6 +640,128 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Blog Preview */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              Blog Imobiliário
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              Fique por dentro das últimas tendências e dicas do mercado
+              imobiliário
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow border-0 bg-card/80">
+              <img
+                src="https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=400&h=250&fit=crop"
+                alt="Investimento Imobiliário"
+                className="w-full h-48 object-cover"
+              />
+              <CardContent className="p-6">
+                <Badge className="mb-4 bg-primary text-primary-foreground">
+                  Investimento
+                </Badge>
+                <h3 className="text-xl font-bold mb-3">
+                  Como Escolher o Imóvel Ideal para Investimento
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Descubra as melhores estratégias para investir no mercado
+                  imobiliário goiano e maximize seus retornos.
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    <span className="text-sm text-muted-foreground">
+                      8 min de leitura
+                    </span>
+                  </div>
+                  <Button variant="link" size="sm" asChild>
+                    <Link to="/blog">Ler mais</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow border-0 bg-card/80">
+              <img
+                src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=250&fit=crop"
+                alt="Documentação"
+                className="w-full h-48 object-cover"
+              />
+              <CardContent className="p-6">
+                <Badge className="mb-4 bg-primary text-primary-foreground">
+                  Documentação
+                </Badge>
+                <h3 className="text-xl font-bold mb-3">
+                  Documentos para Comprar seu Primeiro Imóvel
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Guia completo com todos os documentos necessários para
+                  realizar a compra do seu primeiro imóvel.
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    <span className="text-sm text-muted-foreground">
+                      5 min de leitura
+                    </span>
+                  </div>
+                  <Button variant="link" size="sm" asChild>
+                    <Link to="/blog">Ler mais</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow border-0 bg-card/80">
+              <img
+                src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=250&fit=crop"
+                alt="Tendências"
+                className="w-full h-48 object-cover"
+              />
+              <CardContent className="p-6">
+                <Badge className="mb-4 bg-primary text-primary-foreground">
+                  Mercado
+                </Badge>
+                <h3 className="text-xl font-bold mb-3">
+                  Tendências do Mercado Imobiliário em 2024
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Análise das principais tendências que estão moldando o mercado
+                  imobiliário brasileiro neste ano.
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    <span className="text-sm text-muted-foreground">
+                      6 min de leitura
+                    </span>
+                  </div>
+                  <Button variant="link" size="sm" asChild>
+                    <Link to="/blog">Ler mais</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center mt-12">
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/blog">
+                <BookOpen className="mr-2 h-5 w-5" />
+                Ver todos os artigos
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <FAQ />
+
       {/* Footer */}
       <footer className="bg-card border-t py-16">
         <div className="container mx-auto px-4">
