@@ -121,14 +121,14 @@ export default function Index() {
         <div className="container mx-auto flex items-center justify-between px-4 py-4">
           <div className="flex items-center space-x-2">
             <img
-              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=200"
+              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=300"
               alt="Siqueira Campos Imóveis"
-              className="h-10 w-auto dark:hidden"
+              className="h-14 w-auto dark:hidden"
             />
             <img
-              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-escuro-e97fe8?format=webp&width=200"
+              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-escuro-e97fe8?format=webp&width=300"
               alt="Siqueira Campos Imóveis"
-              className="hidden h-10 w-auto dark:block"
+              className="hidden h-14 w-auto dark:block"
             />
           </div>
 
