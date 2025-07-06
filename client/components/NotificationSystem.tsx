@@ -80,6 +80,67 @@ interface NotificationContextType {
   clearAll: () => void;
 }
 
+// Usuários de exemplo para todos os papéis
+export const exampleUsers = {
+  ADMIN: {
+    id: "admin1",
+    name: "João Administrador",
+    email: "admin@siqueiracampos.com.br",
+    avatar:
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
+  },
+  CORRETOR: {
+    id: "corretor1",
+    name: "Ana Corretora",
+    email: "ana@siqueiracampos.com.br",
+    avatar:
+      "https://images.unsplash.com/photo-1494790108755-2616b612b5ff?w=100&h=100&fit=crop&crop=face",
+  },
+  ASSISTENTE: {
+    id: "assistente1",
+    name: "Maria Assistente",
+    email: "maria@siqueiracampos.com.br",
+    avatar:
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
+  },
+  MARKETING: {
+    id: "marketing1",
+    name: "Carlos Marketing",
+    email: "carlos@siqueiracampos.com.br",
+    avatar:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
+  },
+  DESENVOLVEDOR: {
+    id: "dev1",
+    name: "Pedro Desenvolvedor",
+    email: "pedro@kryonix.dev",
+    avatar:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
+  },
+  CLIENTE: {
+    id: "cliente1",
+    name: "José Cliente",
+    email: "jose@email.com",
+    avatar:
+      "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop&crop=face",
+  },
+};
+
+interface NotificationContextType {
+  notifications: Notification[];
+  unreadCount: number;
+  addNotification: (
+    notification: Omit<Notification, "id" | "timestamp" | "read">,
+  ) => void;
+  markAsRead: (id: string) => void;
+  markAllAsRead: () => void;
+  removeNotification: (id: string) => void;
+  clearAll: () => void;
+  userRole: string;
+  currentUser: typeof exampleUsers.ADMIN;
+  switchUser: (role: keyof typeof exampleUsers) => void;
+}
+
 const NotificationContext = createContext<NotificationContextType | undefined>(
   undefined,
 );
@@ -90,7 +151,14 @@ export function NotificationProvider({
   children: React.ReactNode;
 }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [userRole, setUserRole] = useState<string>("CLIENTE"); // Simular papel do usuário
+  const [userRole, setUserRole] = useState<string>("ADMIN"); // Simular papel do usuário
+  const [currentUser, setCurrentUser] = useState(exampleUsers.ADMIN);
+
+  // Função para alternar entre usuários para demonstração
+  const switchUser = (role: keyof typeof exampleUsers) => {
+    setUserRole(role);
+    setCurrentUser(exampleUsers[role]);
+  };
 
   useEffect(() => {
     // Simular notificações iniciais baseadas no papel do usuário
@@ -159,6 +227,54 @@ export function NotificationProvider({
         actionUrl: "/dashboard/admin",
         actionLabel: "Ver Detalhes",
         metadata: { valor: 650000, corretorId: "juarez" },
+      },
+      {
+        id: "6",
+        type: "NOVO_LEAD",
+        title: "Lead Qualificado",
+        message: "Cliente com pré-aprovação bancária - Roberto Silva",
+        timestamp: new Date(Date.now() - 75 * 60 * 1000), // 1h15 atrás
+        read: false,
+        priority: "URGENT",
+        userRole: "ASSISTENTE",
+        actionUrl: "/dashboard/assistente",
+        actionLabel: "Qualificar Lead",
+      },
+      {
+        id: "7",
+        type: "MENSAGEM_CHAT",
+        title: "Nova Mensagem no Chat",
+        message: "Cliente perguntou sobre financiamento - Apartamento Centro",
+        timestamp: new Date(Date.now() - 90 * 60 * 1000), // 1h30 atrás
+        read: false,
+        priority: "HIGH",
+        userRole: "ALL",
+        actionUrl: "/chat",
+        actionLabel: "Responder",
+      },
+      {
+        id: "8",
+        type: "SISTEMA",
+        title: "Atualização do Sistema",
+        message: "Nova versão 2.1.0 instalada com sucesso",
+        timestamp: new Date(Date.now() - 120 * 60 * 1000), // 2h atrás
+        read: false,
+        priority: "MEDIUM",
+        userRole: "DESENVOLVEDOR",
+        actionUrl: "/dashboard/desenvolvedor",
+        actionLabel: "Ver Logs",
+      },
+      {
+        id: "9",
+        type: "FINANCEIRO",
+        title: "Comissão Processada",
+        message: "Comissão de R$ 25.000 processada para Ana Corretora",
+        timestamp: new Date(Date.now() - 150 * 60 * 1000), // 2h30 atrás
+        read: false,
+        priority: "MEDIUM",
+        userRole: "ADMIN",
+        actionUrl: "/dashboard/admin",
+        actionLabel: "Ver Relatório",
       },
     ];
 
