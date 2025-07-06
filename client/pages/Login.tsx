@@ -43,21 +43,20 @@ export default function Login() {
         const { papel } = data.usuario;
         switch (papel) {
           case "ADMIN":
-            window.location.href = "https://admin.siqueicamposimoveis.com.br";
+            navigate("/dashboard/admin");
             break;
           case "CORRETOR":
           case "ASSISTENTE":
-            window.location.href =
-              "https://corretor.siqueicamposimoveis.com.br";
+            navigate("/dashboard/corretor");
             break;
           case "CLIENTE":
-            window.location.href = "https://cliente.siqueicamposimoveis.com.br";
+            navigate("/dashboard/cliente");
             break;
           case "MARKETING":
-            window.location.href = "https://mkt.siqueicamposimoveis.com.br";
+            navigate("/dashboard/marketing");
             break;
           case "DESENVOLVEDOR":
-            window.location.href = "https://dev.siqueicamposimoveis.com.br";
+            navigate("/dashboard/desenvolvedor");
             break;
           default:
             navigate("/");
