@@ -46,6 +46,7 @@ import { FavoriteButton } from "@/components/FavoriteButton";
 import { ShareButton } from "@/components/ShareButton";
 import { useToast } from "@/hooks/use-toast";
 import { ChatSystem, ScheduleVisitSystem } from "@/components/ChatSystem";
+import { GoogleMapWithLoader } from "@/components/GoogleMap";
 
 interface ImovelDetalhes {
   id: string;
@@ -520,16 +521,15 @@ export default function ImovelPage() {
                 <CardTitle>Localização</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-muted-foreground">
-                      Mapa interativo será carregado aqui
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {imovel.endereco}, {imovel.bairro} - {imovel.cidade}
-                    </p>
-                  </div>
+                <div className="mb-4">
+                  <GoogleMapWithLoader
+                    latitude={imovel.latitude}
+                    longitude={imovel.longitude}
+                    address={`${imovel.endereco}, ${imovel.bairro} - ${imovel.cidade}`}
+                    title={imovel.titulo}
+                    height="300px"
+                    zoom={16}
+                  />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
