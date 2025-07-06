@@ -49,12 +49,76 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "production") {
   initPerformanceMonitoring();
 }
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+const App = () => {
+  // Intelligent preloading based on user behavior patterns
+  useEffect(() => {
+    // Preload critical routes after initial render
+    const preloadCriticalRoutes = () => {
+      const currentPath = window.location.pathname;
+
+      // If on homepage, likely to visit imoveis or login
+      if (currentPath === "/") {
+        setTimeout(() => {
+          preloadRoute("imoveis");
+          preloadRoute("login");
+        }, 2000);
+      }
+
+      // If on login, likely to visit dashboard
+      if (currentPath === "/login") {
+        setTimeout(() => {
+          preloadRoute("dashboard-corretor");
+          preloadRoute("dashboard-admin");
+          preloadRoute("dashboard-cliente");
+        }, 1000);
+      }
+
+      // If authenticated (has token), preload dashboard routes
+      const token = localStorage.getItem("token");
+      if (token) {
+        setTimeout(() => {
+          preloadRoute("dashboard-corretor");
+          preloadRoute("dashboard-admin");
+          preloadRoute("dashboard-cliente");
+        }, 500);
+      }
+    };
+
+    // Mouse hover preloading for navigation links
+    const handleLinkHover = (event: Event) => {
+      const target = event.target as HTMLAnchorElement;
+      if (target.tagName === "A" && target.href) {
+        const path = new URL(target.href).pathname;
+        const routeMap: Record<string, string> = {
+          "/imoveis": "imoveis",
+          "/login": "login",
+          "/dashboard/corretor": "dashboard-corretor",
+          "/dashboard/admin": "dashboard-admin",
+          "/dashboard/cliente": "dashboard-cliente",
+        };
+
+        const routeKey = routeMap[path];
+        if (routeKey) {
+          preloadRoute(routeKey);
+        }
+      }
+    };
+
+    // Setup preloading
+    preloadCriticalRoutes();
+    document.addEventListener("mouseover", handleLinkHover);
+
+    return () => {
+      document.removeEventListener("mouseover", handleLinkHover);
+    };
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
         <Routes>
           <Route path="/" element={<LazyIndex />} />
           <Route path="/login" element={<LazyLogin />} />
