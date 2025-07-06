@@ -27,6 +27,7 @@ import {
   Scale,
   Menu,
   X,
+  Eye,
 } from "lucide-react";
 import { Imovel, TipoImovel, Finalidade } from "@shared/types";
 import { ChatBubble } from "@/components/ChatBubble";
