@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import React from "react";
 
 export interface PerformanceMetrics {
   pageLoadTime: number;
