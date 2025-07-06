@@ -152,6 +152,22 @@ const App = () => {
               path="/dashboard/corretor"
               element={<LazyCorretorDashboard />}
             />
+            <Route
+              path="/corretor/leads"
+              element={
+                <Suspense fallback={<div>Carregando...</div>}>
+                  <LazyCorretorLeads />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/corretor/imoveis"
+              element={
+                <Suspense fallback={<div>Carregando...</div>}>
+                  <LazyCorretorImoveis />
+                </Suspense>
+              }
+            />
             <Route path="/dashboard/admin" element={<LazyAdminDashboard />} />
             <Route
               path="/dashboard/cliente"
