@@ -344,20 +344,8 @@ export default function Index() {
                       className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute top-4 right-4 flex space-x-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="h-10 w-10 p-0 bg-white/90 hover:bg-white"
-                      >
-                        <Heart className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="h-10 w-10 p-0 bg-white/90 hover:bg-white"
-                      >
-                        <Share2 className="h-4 w-4" />
-                      </Button>
+                      <FavoriteButton imovelId={imovel.id} />
+                      <ShareButton imovelId={imovel.id} title={imovel.titulo} />
                     </div>
                     <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground font-semibold">
                       {imovel.finalidade === Finalidade.VENDA
