@@ -1,33 +1,32 @@
-import loadable from "@loadable/component";
-import { Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { cn } from "@/lib/utils";
 
 // Loading component
 const PageLoader = ({ className }: { className?: string }) => (
   <div
     className={cn(
-      "min-h-screen flex items-center justify-center bg-white",
+      "min-h-screen flex items-center justify-center bg-background",
       className,
     )}
   >
     <div className="flex flex-col items-center space-y-4">
-      <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-      <p className="text-gray-600 animate-pulse">Carregando...</p>
+      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      <p className="text-muted-foreground animate-pulse">Carregando...</p>
     </div>
   </div>
 );
 
 // Error fallback
 const ErrorFallback = ({ error }: { error: Error }) => (
-  <div className="min-h-screen flex items-center justify-center bg-white">
+  <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="text-center">
-      <h2 className="text-xl font-semibold text-red-600 mb-2">
+      <h2 className="text-xl font-semibold text-destructive mb-2">
         Erro ao carregar página
       </h2>
-      <p className="text-gray-600 mb-4">{error.message}</p>
+      <p className="text-muted-foreground mb-4">{error.message}</p>
       <button
         onClick={() => window.location.reload()}
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
       >
         Recarregar
       </button>
@@ -37,9 +36,7 @@ const ErrorFallback = ({ error }: { error: Error }) => (
 
 // Create lazy components with loading states
 const createLazyComponent = (importFunc: () => Promise<any>) => {
-  const LazyComponent = loadable(importFunc, {
-    fallback: <PageLoader />,
-  });
+  const LazyComponent = lazy(importFunc);
 
   return (props: any) => (
     <Suspense fallback={<PageLoader />}>
