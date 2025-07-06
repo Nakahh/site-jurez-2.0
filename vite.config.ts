@@ -42,13 +42,7 @@ export default defineConfig({
     cssCodeSplit: true,
     chunkSizeWarningLimit: 1000,
   },
-  plugins: [
-    react({
-      plugins: [
-        ["@swc/plugin-styled-components", { displayName: false, ssr: false }],
-      ],
-    }),
-  ],
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./client"),
