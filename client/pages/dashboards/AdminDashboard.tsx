@@ -61,6 +61,20 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
 
+  // Modal states for functionality
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showNewModal, setShowNewModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [showNewTransactionModal, setShowNewTransactionModal] = useState(false);
+  const [showNewPropertyModal, setShowNewPropertyModal] = useState(false);
+  const [showNewUserModal, setShowNewUserModal] = useState(false);
+
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterBy, setFilterBy] = useState("all");
+
   useEffect(() => {
     carregarDados();
   }, []);
