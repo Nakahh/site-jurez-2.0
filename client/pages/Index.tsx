@@ -230,7 +230,7 @@ export default function Index() {
               onClick={() => {
                 const userRole =
                   localStorage.getItem("currentUserRole") || "ADMIN";
-                const dashboardMap: Record<string, string> = {
+                const dashboardRoutes: Record<string, string> = {
                   ADMIN: "/dashboard/admin",
                   CORRETOR: "/dashboard/corretor",
                   ASSISTENTE: "/dashboard/assistente",
@@ -238,8 +238,9 @@ export default function Index() {
                   DESENVOLVEDOR: "/dashboard/desenvolvedor",
                   CLIENTE: "/dashboard/cliente",
                 };
-                window.location.href =
-                  dashboardMap[userRole] || "/dashboard/admin";
+                const targetRoute =
+                  dashboardRoutes[userRole] || "/dashboard/admin";
+                window.location.assign(targetRoute);
               }}
               className="text-xs h-8 px-2"
             >
