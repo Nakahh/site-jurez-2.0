@@ -500,12 +500,27 @@ export default function AssistenteDashboard() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="leads">Leads</TabsTrigger>
-          <TabsTrigger value="agendamentos">Agendamentos</TabsTrigger>
-          <TabsTrigger value="tarefas">Tarefas</TabsTrigger>
-          <TabsTrigger value="suporte">Suporte</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Visão Geral</span>
+            <span className="sm:hidden">📊</span>
+          </TabsTrigger>
+          <TabsTrigger value="leads" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Leads</span>
+            <span className="sm:hidden">👥</span>
+          </TabsTrigger>
+          <TabsTrigger value="agendamentos" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Agendamentos</span>
+            <span className="sm:hidden">📅</span>
+          </TabsTrigger>
+          <TabsTrigger value="tarefas" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Tarefas</span>
+            <span className="sm:hidden">✓</span>
+          </TabsTrigger>
+          <TabsTrigger value="suporte" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Suporte</span>
+            <span className="sm:hidden">🛠️</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* Visão Geral */}
