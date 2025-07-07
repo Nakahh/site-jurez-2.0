@@ -387,8 +387,9 @@ export default function DesenvolvedorDashboard() {
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="realtime">Tempo Real</TabsTrigger>
             <TabsTrigger value="monitoring">Monitoramento</TabsTrigger>
             <TabsTrigger value="security">Segurança</TabsTrigger>
             <TabsTrigger value="backups">Backups</TabsTrigger>
