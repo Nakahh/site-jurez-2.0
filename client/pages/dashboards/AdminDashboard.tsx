@@ -439,7 +439,7 @@ export default function AdminDashboard() {
           </TabsTrigger>
           <TabsTrigger value="usuarios" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Usuários</span>
-            <span className="sm:hidden">��</span>
+            <span className="sm:hidden">👥</span>
           </TabsTrigger>
           <TabsTrigger value="relatorios" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Relatórios</span>
