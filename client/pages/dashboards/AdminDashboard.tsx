@@ -32,6 +32,7 @@ import {
 } from "@/utils/pdfGenerator";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface DashboardStats {
   totalImoveis: number;
@@ -60,6 +61,8 @@ interface Transacao {
 
 export default function AdminDashboard() {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [loading, setLoading] = useState(true);
