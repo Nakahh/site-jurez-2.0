@@ -1380,7 +1380,7 @@ export default function AdminDashboard() {
               },
               {
                 titulo: "Análise de Mercado",
-                descricao: "Tendências de pre��os, demanda e oferta por região",
+                descricao: "Tendências de preços, demanda e oferta por região",
                 icon: PieChart,
                 color: "bg-orange-100 text-orange-600",
                 stats: "156 imóveis cadastrados",
