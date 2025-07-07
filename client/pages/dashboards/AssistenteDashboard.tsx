@@ -123,6 +123,139 @@ export default function AssistenteDashboard() {
     carregarDados();
   }, []);
 
+  // Funções para gerenciar visitas
+  const handleConfirmarVisita = (visitaId: string) => {
+    setAgendamentos((prev) =>
+      prev.map((agend) =>
+        agend.id === visitaId ? { ...agend, status: "CONFIRMADA" } : agend,
+      ),
+    );
+    alert("Visita confirmada com sucesso!");
+  };
+
+  // Funções para gerenciar leads
+  const handleLigarLead = (leadId: string) => {
+    const lead = leads.find((l) => l.id === leadId);
+    if (lead) {
+      const phoneNumber = lead.telefone.replace(/\D/g, "");
+      window.open(`tel:${phoneNumber}`, "_self");
+    }
+  };
+
+  const handleWhatsAppLead = (leadId: string) => {
+    const lead = leads.find((l) => l.id === leadId);
+    if (lead) {
+      const message = `Olá ${lead.nome}! Sou da Siqueira Campos Imóveis. Gostaria de conversar sobre suas necessidades imobiliárias.`;
+      const whatsappUrl = `https://wa.me/55${lead.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, "_blank");
+    }
+  };
+
+  const handleAgendarLead = (leadId: string) => {
+    const lead = leads.find((l) => l.id === leadId);
+    if (lead) {
+      alert(`Redirecionando para agenda para agendar com ${lead.nome}`);
+      setActiveTab("agendamentos");
+    }
+  };
+
+  const handleEditarLead = (leadId: string) => {
+    const lead = leads.find((l) => l.id === leadId);
+    if (lead) {
+      const newStatus = prompt(
+        "Novo status (NOVO, QUALIFICADO, REUNIAO, PROPOSTA, FECHAMENTO):",
+        lead.status,
+      );
+      if (newStatus) {
+        setLeads((prev) =>
+          prev.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l)),
+        );
+        alert("Lead atualizado com sucesso!");
+      }
+    }
+  };
+
+  // Funções para agendamentos
+  const handleLigarAgendamento = (agendId: string) => {
+    const agend = agendamentos.find((a) => a.id === agendId);
+    if (agend) {
+      const phoneNumber = agend.clienteTelefone.replace(/\D/g, "");
+      window.open(`tel:${phoneNumber}`, "_self");
+    }
+  };
+
+  const handleEditarAgendamento = (agendId: string) => {
+    const agend = agendamentos.find((a) => a.id === agendId);
+    if (agend) {
+      const newDate = prompt(
+        "Nova data (YYYY-MM-DD):",
+        agend.dataHora.toISOString().split("T")[0],
+      );
+      if (newDate) {
+        setAgendamentos((prev) =>
+          prev.map((a) =>
+            a.id === agendId ? { ...a, dataHora: new Date(newDate) } : a,
+          ),
+        );
+        alert("Agendamento atualizado!");
+      }
+    }
+  };
+
+  const handleConfirmarAgendamento = (agendId: string) => {
+    setAgendamentos((prev) =>
+      prev.map((agend) =>
+        agend.id === agendId ? { ...agend, status: "CONFIRMADA" } : agend,
+      ),
+    );
+    alert("Agendamento confirmado!");
+  };
+
+  const handleDetalhesAgendamento = (agendId: string) => {
+    const agend = agendamentos.find((a) => a.id === agendId);
+    if (agend) {
+      alert(
+        `Detalhes do Agendamento:\n\nCliente: ${agend.clienteNome}\nTelefone: ${agend.clienteTelefone}\nImóvel: ${agend.imovelTitulo}\nData: ${agend.dataHora.toLocaleString("pt-BR")}\nStatus: ${agend.status}`,
+      );
+    }
+  };
+
+  // Funções para tarefas
+  const handleConcluirTarefa = (tarefaId: string) => {
+    setTarefas((prev) =>
+      prev.map((tarefa) =>
+        tarefa.id === tarefaId
+          ? { ...tarefa, status: "CONCLUIDA", dataFinalizacao: new Date() }
+          : tarefa,
+      ),
+    );
+    alert("Tarefa concluída!");
+  };
+
+  const handleEditarTarefa = (tarefaId: string) => {
+    const tarefa = tarefas.find((t) => t.id === tarefaId);
+    if (tarefa) {
+      const newTitle = prompt("Novo título:", tarefa.titulo);
+      if (newTitle) {
+        setTarefas((prev) =>
+          prev.map((t) => (t.id === tarefaId ? { ...t, titulo: newTitle } : t)),
+        );
+        alert("Tarefa atualizada!");
+      }
+    }
+  };
+
+  // Funções para suporte
+  const handleLigarSuporte = () => {
+    window.open("tel:+5562985563505", "_self");
+  };
+
+  const handleEnviarMensagem = () => {
+    const message = "Olá! Preciso de ajuda com o sistema da imobiliária.";
+    const whatsappUrl = `https://wa.me/5562985563505?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
   const carregarDados = async () => {
     try {
       // Simular dados do assistente
