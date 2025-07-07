@@ -316,12 +316,27 @@ export default function AdminDashboard() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
-          <TabsTrigger value="imoveis">Imóveis</TabsTrigger>
-          <TabsTrigger value="usuarios">Usuários</TabsTrigger>
-          <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Visão Geral</span>
+            <span className="sm:hidden">Visão</span>
+          </TabsTrigger>
+          <TabsTrigger value="financeiro" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Financeiro</span>
+            <span className="sm:hidden">$</span>
+          </TabsTrigger>
+          <TabsTrigger value="imoveis" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Imóveis</span>
+            <span className="sm:hidden">🏠</span>
+          </TabsTrigger>
+          <TabsTrigger value="usuarios" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Usuários</span>
+            <span className="sm:hidden">👤</span>
+          </TabsTrigger>
+          <TabsTrigger value="relatorios" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Relatórios</span>
+            <span className="sm:hidden">📊</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* Visão Geral */}
