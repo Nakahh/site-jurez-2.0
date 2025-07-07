@@ -1043,15 +1043,24 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Gestão de Usuários</h2>
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleSearch("users")}
-                className="w-full sm:w-auto"
-              >
-                <Search className="h-4 w-4 mr-2" />
-                Buscar
-              </Button>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  placeholder="Buscar usuários..."
+                  className="px-3 py-2 border rounded-md text-sm"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSearch(searchTerm)}
+                  className="w-full sm:w-auto"
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  Buscar
+                </Button>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
