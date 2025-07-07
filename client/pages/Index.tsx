@@ -269,6 +269,63 @@ export default function Index() {
           </div>
         </div>
 
+        {/* Mobile Header Layout */}
+        <div className="md:hidden flex items-center justify-between w-full">
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="h-8 w-8"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <Menu className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+
+          <Link to="/" className="flex items-center">
+            <img
+              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=120"
+              alt="Siqueira Campos Imóveis"
+              className="h-8 w-auto dark:hidden"
+            />
+            <img
+              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-escuro-e97fe8?format=webp&width=120"
+              alt="Siqueira Campos Imóveis"
+              className="hidden h-8 w-auto dark:block"
+            />
+          </Link>
+
+          <div className="flex items-center space-x-1">
+            <UserSwitcher />
+            <NotificationBell />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const userRole =
+                  localStorage.getItem("currentUserRole") || "ADMIN";
+                const dashboardMap: Record<string, string> = {
+                  ADMIN: "/dashboard/admin",
+                  CORRETOR: "/dashboard/corretor",
+                  ASSISTENTE: "/dashboard/assistente",
+                  MARKETING: "/dashboard/marketing",
+                  DESENVOLVEDOR: "/dashboard/desenvolvedor",
+                  CLIENTE: "/dashboard/cliente",
+                };
+                window.location.href =
+                  dashboardMap[userRole] || "/dashboard/admin";
+              }}
+              className="text-xs h-8 w-8 p-0"
+            >
+              📊
+            </Button>
+          </div>
+        </div>
+
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t bg-card/95 backdrop-blur-sm">
