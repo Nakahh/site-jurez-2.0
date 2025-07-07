@@ -476,10 +476,14 @@ export default function AdminDashboard() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1">
           <TabsTrigger value="overview" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Visão Geral</span>
-            <span className="sm:hidden">Visão</span>
+            <span className="sm:hidden">📊</span>
+          </TabsTrigger>
+          <TabsTrigger value="servicos" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Serviços</span>
+            <span className="sm:hidden">💎</span>
           </TabsTrigger>
           <TabsTrigger value="financeiro" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Financeiro</span>
