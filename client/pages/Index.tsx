@@ -334,33 +334,6 @@ export default function Index() {
                             <span className="sm:hidden">💬</span>
                           </Button>
                         </div>
-
-                        {/* Botão de compartilhar */}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="w-full text-xs h-8 flex items-center justify-center"
-                          onClick={() => {
-                            if (navigator.share) {
-                              navigator.share({
-                                title: imovel.titulo,
-                                text: `Confira este imóvel: ${imovel.titulo}`,
-                                url: `${window.location.origin}/imovel/${imovel.id}`,
-                              });
-                            } else {
-                              navigator.clipboard.writeText(
-                                `${window.location.origin}/imovel/${imovel.id}`,
-                              );
-                              alert(
-                                "Link copiado para a área de transferência!",
-                              );
-                            }
-                          }}
-                        >
-                          <Share2 className="h-3 w-3 mr-1" />
-                          <span className="hidden sm:inline">Compartilhar</span>
-                          <span className="sm:hidden">📤</span>
-                        </Button>
                       </div>
                     </div>
                   </CardContent>
