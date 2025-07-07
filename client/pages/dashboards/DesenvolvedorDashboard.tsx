@@ -349,40 +349,36 @@ export default function DesenvolvedorDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Header */}
-      <div className="bg-card border-b px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              Dashboard Técnico
-            </h1>
-            <p className="text-muted-foreground">
-              Monitoramento e administração do sistema
-            </p>
+    <DashboardLayout
+      title="Dashboard Técnico"
+      subtitle="Monitoramento e administração do sistema"
+      userRole="DESENVOLVEDOR"
+      actions={
+        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
+          <div className="flex items-center space-x-2">
+            <Label htmlFor="maintenance-mode" className="text-sm">
+              <span className="hidden sm:inline">Modo Manutenção</span>
+              <span className="sm:hidden">Manutenção</span>
+            </Label>
+            <Switch
+              id="maintenance-mode"
+              checked={maintenanceMode}
+              onCheckedChange={setMaintenanceMode}
+            />
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Label htmlFor="maintenance-mode">Modo Manutenção</Label>
-              <Switch
-                id="maintenance-mode"
-                checked={maintenanceMode}
-                onCheckedChange={setMaintenanceMode}
-              />
-            </div>
-            <Button variant="outline" size="sm" onClick={carregarDados}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Atualizar
-            </Button>
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Configurações
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={carregarDados}
+            className="w-full sm:w-auto"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Atualizar</span>
+            <span className="sm:hidden">↻</span>
+          </Button>
         </div>
-      </div>
-
-      <div className="p-6">
+      }
+    >
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
@@ -722,7 +718,7 @@ export default function DesenvolvedorDashboard() {
                   <div className="h-64 flex items-center justify-center text-muted-foreground">
                     Gráfico de requisições em tempo real
                     <br />
-                    (Implementação do gráfico seria aqui)
+                    (Implementa��ão do gráfico seria aqui)
                   </div>
                 </CardContent>
               </Card>
