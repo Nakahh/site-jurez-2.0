@@ -295,12 +295,12 @@ export function ChatSystem({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <MessageSquare className="h-4 w-4 mr-2" />
-          Conversar com Corretor
+        <Button className="text-xs h-8 w-full flex items-center justify-center">
+          <MessageSquare className="h-3 w-3 mr-1" />
+          Chat
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl h-[600px] p-0">
+      <DialogContent className="max-w-5xl h-[80vh] p-0">
         <div className="flex h-full">
           {/* Lista de Conversas */}
           <div className="w-1/3 border-r flex flex-col">
