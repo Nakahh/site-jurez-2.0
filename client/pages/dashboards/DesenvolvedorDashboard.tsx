@@ -307,20 +307,24 @@ export default function DesenvolvedorDashboard() {
     description?: string;
     color?: string;
   }) => (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-3xl font-bold">{value}</p>
+    <Card className="hover:shadow-lg transition-shadow h-full">
+      <CardContent className="p-4 lg:p-6 h-full flex flex-col">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1 min-w-0 pr-3">
+            <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
+              {title}
+            </p>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">
+              {value}
+            </p>
             {description && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                 {description}
               </p>
             )}
             {status && (
               <Badge
-                className={`mt-2 ${getStatusColor(status)} bg-transparent`}
+                className={`mt-2 ${getStatusColor(status)} bg-transparent text-xs`}
                 variant="outline"
               >
                 {status}
@@ -328,9 +332,9 @@ export default function DesenvolvedorDashboard() {
             )}
           </div>
           <div
-            className={`h-12 w-12 bg-${color}/10 rounded-full flex items-center justify-center`}
+            className={`h-10 w-10 lg:h-12 lg:w-12 bg-${color}/10 rounded-full flex items-center justify-center flex-shrink-0`}
           >
-            <Icon className={`h-6 w-6 text-${color}`} />
+            <Icon className={`h-5 w-5 lg:h-6 lg:w-6 text-${color}`} />
           </div>
         </div>
       </CardContent>
