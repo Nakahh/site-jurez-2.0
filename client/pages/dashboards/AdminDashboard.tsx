@@ -1420,7 +1420,7 @@ export default function AdminDashboard() {
                       Corretores Ativos
                     </p>
                     <p className="text-3xl font-bold text-green-600">
-                      {stats?.corretoresAtivos}
+                      {realData.corretoresAtivos}
                     </p>
                   </div>
                   <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
