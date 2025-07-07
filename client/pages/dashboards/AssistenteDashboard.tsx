@@ -550,7 +550,7 @@ export default function AssistenteDashboard() {
               {/* Métricas Principais */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard
-                  title="Leads Atribuídos"
+                  title="Leads Atribu��dos"
                   value={stats.leadsAtribuidos}
                   icon={Users}
                   description="Total sob sua responsabilidade"
@@ -1299,6 +1299,268 @@ export default function AssistenteDashboard() {
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        {/* Integrações Premium */}
+        <TabsContent value="integracoes" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Integrações Premium</h2>
+            <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
+              Premium
+            </Badge>
+          </div>
+
+          {/* Integrações WhatsApp e Google Calendar */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <WhatsAppIntegration userRole="ASSISTENTE" />
+            <CalendarIntegration userRole="ASSISTENTE" />
+          </div>
+
+          {/* Configurações Adicionais para Assistente */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Configurações de Email */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Mail className="h-5 w-5 text-blue-600" />
+                  <span>Integração Email</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Servidor SMTP</Label>
+                  <Input placeholder="smtp.gmail.com" />
+                </div>
+                <div>
+                  <Label>Email do Assistente</Label>
+                  <Input placeholder="assistente@siqueicamposimoveis.com.br" />
+                </div>
+                <div>
+                  <Label>Senha do Email</Label>
+                  <Input type="password" placeholder="••••••••" />
+                </div>
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                  <div>
+                    <Label>Auto-resposta Email</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Responder automaticamente emails de leads
+                    </p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <Button className="w-full">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Configurar Email
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Configurações de Notificações */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Bell className="h-5 w-5 text-orange-600" />
+                  <span>Notificações Inteligentes</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div>
+                      <Label>Novos Leads</Label>
+                      <p className="text-xs text-muted-foreground">
+                        WhatsApp + Email
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div>
+                      <Label>Visitas Agendadas</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Lembrete 1h antes
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div>
+                      <Label>Follow-up Automático</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Após 24h sem resposta
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div>
+                      <Label>Relatórios Diários</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Resumo às 18h
+                      </p>
+                    </div>
+                    <Switch />
+                  </div>
+                </div>
+                <Button className="w-full">
+                  <Activity className="h-4 w-4 mr-2" />
+                  Testar Notificações
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Configurações N8N */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Activity className="h-5 w-5 text-green-600" />
+                  <span>Automação N8N</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>URL do N8N Server</Label>
+                  <Input placeholder="https://n8n.siqueicamposimoveis.com.br" />
+                </div>
+                <div>
+                  <Label>API Token</Label>
+                  <Input type="password" placeholder="••••••••••••••••" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Workflows Ativos</Label>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center p-2 bg-muted rounded">
+                      <span className="text-sm">Lead Distribution</span>
+                      <Badge className="bg-green-100 text-green-800">
+                        Ativo
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-center p-2 bg-muted rounded">
+                      <span className="text-sm">WhatsApp Automation</span>
+                      <Badge className="bg-green-100 text-green-800">
+                        Ativo
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-center p-2 bg-muted rounded">
+                      <span className="text-sm">Calendar Sync</span>
+                      <Badge variant="secondary">Inativo</Badge>
+                    </div>
+                  </div>
+                </div>
+                <Button className="w-full">
+                  <Target className="h-4 w-4 mr-2" />
+                  Conectar N8N
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Status do Sistema */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Activity className="h-5 w-5 text-purple-600" />
+                  <span>Status do Sistema</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">WhatsApp Business</span>
+                    <Badge className="bg-green-100 text-green-800">
+                      Conectado
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Google Calendar</span>
+                    <Badge className="bg-green-100 text-green-800">
+                      Sincronizado
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Evolution API</span>
+                    <Badge className="bg-green-100 text-green-800">
+                      Online
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">N8N Server</span>
+                    <Badge className="bg-green-100 text-green-800">
+                      Funcionando
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Base de Dados</span>
+                    <Badge className="bg-green-100 text-green-800">
+                      Estável
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t">
+                  <div className="text-center p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950 dark:to-blue-950 rounded-lg">
+                    <div className="text-lg font-bold text-green-600">
+                      99.8%
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Uptime último mês
+                    </div>
+                  </div>
+                </div>
+
+                <Button className="w-full" variant="outline">
+                  <Eye className="h-4 w-4 mr-2" />
+                  Ver Logs Detalhados
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Seção de Tutoriais */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Como Configurar as Integrações</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-6 h-6 bg-green-100 text-green-800 rounded-full flex items-center justify-center text-xs font-bold">
+                      1
+                    </div>
+                    <h4 className="font-semibold">WhatsApp Business</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Configure sua conta WhatsApp Business e conecte com a
+                    Evolution API para automação completa de leads.
+                  </p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-6 h-6 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-xs font-bold">
+                      2
+                    </div>
+                    <h4 className="font-semibold">Google Calendar</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Sincronize agendamentos automaticamente e receba lembretes
+                    inteligentes para visitas.
+                  </p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-6 h-6 bg-purple-100 text-purple-800 rounded-full flex items-center justify-center text-xs font-bold">
+                      3
+                    </div>
+                    <h4 className="font-semibold">N8N Automation</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Configure workflows inteligentes para automação completa do
+                    processo de vendas.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Suporte */}
