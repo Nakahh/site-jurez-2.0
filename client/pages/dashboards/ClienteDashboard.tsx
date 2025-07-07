@@ -57,6 +57,7 @@ import {
   Download,
   Camera,
 } from "lucide-react";
+import { DashboardLayout } from "@/components/DashboardLayout";
 
 // Types
 interface Imovel {
