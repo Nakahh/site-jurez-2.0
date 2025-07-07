@@ -808,6 +808,223 @@ export default function DesenvolvedorDashboard() {
           )}
         </TabsContent>
 
+        {/* Serviços Premium */}
+        <TabsContent value="premium" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Serviços Premium</h2>
+            <div className="flex space-x-2">
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Configurar N8N
+              </Button>
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Serviço
+              </Button>
+            </div>
+          </div>
+
+          {/* Controle de Serviços Premium */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {premiumServices.map((service) => (
+              <Card key={service.id} className="border-0 shadow-lg">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">{service.name}</CardTitle>
+                    <Badge
+                      variant={service.active ? "default" : "secondary"}
+                      className={
+                        service.active ? "bg-green-100 text-green-800" : ""
+                      }
+                    >
+                      {service.status}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    {service.description}
+                  </p>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Preço Mensal:</span>
+                      <span className="text-lg font-bold text-green-600">
+                        R$ {service.price.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Recursos:</Label>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      {service.features.map((feature, index) => (
+                        <li key={index} className="flex items-center space-x-2">
+                          <CheckCircle className="h-3 w-3 text-green-600" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t">
+                    <div>
+                      <Label className="text-sm">Ativar Serviço</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Controla disponibilidade global
+                      </p>
+                    </div>
+                    <Switch
+                      checked={service.active}
+                      onCheckedChange={() => togglePremiumService(service.id)}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Assinantes dos Serviços */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Controle de Clientes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {clientSubscriptions.map((client) => (
+                  <div
+                    key={client.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div>
+                        <p className="font-semibold">{client.clientName}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {client.email}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Expira:{" "}
+                          {client.expiryDate.toLocaleDateString("pt-BR")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-6">
+                      <div className="flex items-center space-x-2">
+                        <Label className="text-xs">WhatsApp</Label>
+                        <Switch
+                          checked={client.whatsappEnabled}
+                          onCheckedChange={() =>
+                            toggleClientService(client.id, "whatsappEnabled")
+                          }
+                          disabled={
+                            !premiumServices.find((s) =>
+                              s.name.includes("WhatsApp"),
+                            )?.active
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Label className="text-xs">N8N</Label>
+                        <Switch
+                          checked={client.n8nEnabled}
+                          onCheckedChange={() =>
+                            toggleClientService(client.id, "n8nEnabled")
+                          }
+                          disabled={
+                            !premiumServices.find((s) => s.name.includes("N8N"))
+                              ?.active
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Label className="text-xs">Calendar</Label>
+                        <Switch
+                          checked={client.googleCalendarEnabled}
+                          onCheckedChange={() =>
+                            toggleClientService(
+                              client.id,
+                              "googleCalendarEnabled",
+                            )
+                          }
+                          disabled={
+                            !premiumServices.find((s) =>
+                              s.name.includes("Calendar"),
+                            )?.active
+                          }
+                        />
+                      </div>
+                      <Badge
+                        variant={
+                          client.status === "ACTIVE"
+                            ? "default"
+                            : client.status === "EXPIRED"
+                              ? "destructive"
+                              : "secondary"
+                        }
+                      >
+                        {client.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Configuração N8N */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Configuração N8N Server</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert>
+                <Settings className="h-4 w-4" />
+                <AlertTitle>Servidor N8N Externo</AlertTitle>
+                <AlertDescription>
+                  O N8N roda em VPS separada para garantir isolamento e controle
+                  de pagamento. Configure as credenciais abaixo para integração.
+                </AlertDescription>
+              </Alert>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>URL do N8N Server</Label>
+                  <Input defaultValue="https://n8n.siqueicamposimoveis.com.br" />
+                </div>
+                <div className="space-y-2">
+                  <Label>API Key</Label>
+                  <Input
+                    type="password"
+                    defaultValue="****************************"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Evolution API URL</Label>
+                  <Input defaultValue="https://evolution.siqueicamposimoveis.com.br" />
+                </div>
+                <div className="space-y-2">
+                  <Label>OpenAI API Key</Label>
+                  <Input
+                    type="password"
+                    defaultValue="sk-****************************"
+                  />
+                </div>
+              </div>
+
+              <div className="flex space-x-2">
+                <Button variant="outline">
+                  <Activity className="h-4 w-4 mr-2" />
+                  Testar Conexão
+                </Button>
+                <Button>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Salvar Configuração
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Monitoramento em Tempo Real */}
         <TabsContent value="realtime" className="space-y-6">
           <SystemMonitoring />
