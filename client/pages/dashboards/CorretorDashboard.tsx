@@ -53,6 +53,7 @@ import { AdvancedCalendar } from "@/components/AdvancedCalendar";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { WhatsAppIntegration } from "@/components/WhatsAppIntegration";
 import { CalendarIntegration } from "@/components/CalendarIntegration";
+import { createDashboardActions } from "@/utils/dashboardActions";
 
 // Types
 interface CorretorStats {
@@ -1115,6 +1116,7 @@ function CadastrarLeadModal({
 export default function CorretorDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dashboardActions = createDashboardActions(navigate);
   const [stats, setStats] = useState<CorretorStats | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [imoveis, setImoveis] = useState<Imovel[]>([]);
@@ -1177,17 +1179,14 @@ export default function CorretorDashboard() {
   const handleCallLead = (leadId: string) => {
     const lead = leads.find((l) => l.id === leadId);
     if (lead) {
-      const phoneNumber = lead.telefone.replace(/\D/g, "");
-      window.open(`tel:${phoneNumber}`, "_self");
+      dashboardActions.contactLead(lead.telefone, "call");
     }
   };
 
   const handleWhatsAppLead = (leadId: string) => {
     const lead = leads.find((l) => l.id === leadId);
     if (lead) {
-      const message = `Olá ${lead.nome}! Sou da Siqueira Campos Imóveis. Vi seu interesse e gostaria de conversar sobre opções de imóveis.`;
-      const whatsappUrl = `https://wa.me/55${lead.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, "_blank");
+      dashboardActions.contactLead(lead.telefone, "whatsapp");
     }
   };
 
@@ -1195,8 +1194,7 @@ export default function CorretorDashboard() {
   const handleViewProperty = (propertyId: string) => {
     const property = imoveis.find((p) => p.id === propertyId);
     if (property) {
-      // Abrir página de detalhes do imóvel
-      navigate(`/imovel/${propertyId}`);
+      dashboardActions.viewProperty(propertyId);
     }
   };
 
@@ -1222,8 +1220,7 @@ export default function CorretorDashboard() {
   const handleScheduleVisit = (propertyId: string) => {
     const property = imoveis.find((p) => p.id === propertyId);
     if (property) {
-      setActiveTab("agenda");
-      alert(`Redirecionando para agenda para ${property.titulo}`);
+      dashboardActions.scheduleVisit(propertyId, "CORRETOR");
     }
   };
 
@@ -2255,7 +2252,7 @@ export default function CorretorDashboard() {
                     // Simular agendamento
                     const whatsappMessage = `Olá ${selectedLeadCorretor.nome}!
 
-Sua visita foi agendada com sucesso! ��
+Sua visita foi agendada com sucesso! 🏠
 
 📅 Data: [Data selecionada]
 🕐 Horário: [Horário selecionado]
