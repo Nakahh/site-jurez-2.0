@@ -2243,30 +2243,60 @@ export default function AdminDashboard() {
                     </label>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                    {/* Preview das imagens - simulação */}
-                    {[
-                      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=200&h=150&fit=crop",
-                      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=200&h=150&fit=crop",
-                    ].map((url, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={url}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-md border"
-                        />
-                        <button
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => alert(`Remover foto ${index + 1}`)}
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                        <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1 rounded">
-                          {index + 1}
+                  {selectedPropertyImages.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                      {selectedPropertyImages.map((url, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={url}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-md border"
+                          />
+                          <button
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => {
+                              setSelectedPropertyImages((prev) =>
+                                prev.filter((_, i) => i !== index),
+                              );
+                              alert(`Foto ${index + 1} removida!`);
+                            }}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                          <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1 rounded">
+                            {index + 1}
+                          </div>
+                          {index === 0 && (
+                            <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                              Capa
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {selectedPropertyImages.length > 0 && (
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground">
+                        {selectedPropertyImages.length} foto(s) selecionada(s) •
+                        A primeira foto será usada como capa
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={() => {
+                          if (confirm("Deseja remover todas as fotos?")) {
+                            setSelectedPropertyImages([]);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Remover Todas
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
 
