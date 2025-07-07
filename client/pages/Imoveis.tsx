@@ -378,45 +378,7 @@ export default function Imoveis() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
-      {/* Header */}
-      <header className="bg-white border-b border-amber-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link to="/" className="flex items-center space-x-2">
-              <img
-                src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=150"
-                alt="Siqueira Campos Imóveis"
-                className="h-8 w-auto"
-              />
-            </Link>
-            <nav className="hidden md:flex space-x-8">
-              <Link
-                to="/"
-                className="text-amber-700 hover:text-amber-900 transition-colors"
-              >
-                Início
-              </Link>
-              <span className="text-amber-900 font-medium">Imóveis</span>
-              <Link
-                to="/sobre"
-                className="text-amber-700 hover:text-amber-900 transition-colors"
-              >
-                Sobre
-              </Link>
-              <Link
-                to="/contato"
-                className="text-amber-700 hover:text-amber-900 transition-colors"
-              >
-                Contato
-              </Link>
-            </nav>
-            <Button className="bg-amber-600 hover:bg-amber-700 text-white">
-              <Phone className="w-4 h-4 mr-2" />
-              Contato
-            </Button>
-          </div>
-        </div>
-      </header>
+      <SharedNavigation />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filters */}
@@ -536,7 +498,7 @@ export default function Imoveis() {
                     {/* Faixa de Preço */}
                     <div>
                       <label className="text-sm font-medium text-amber-900 mb-4 block">
-                        Faixa de Preço: {formatPrice(filters.precoMin[0])} -{" "}
+                        Faixa de Pre��o: {formatPrice(filters.precoMin[0])} -{" "}
                         {formatPrice(filters.precoMax[0])}
                       </label>
                       <div className="space-y-4">
