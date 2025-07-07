@@ -118,6 +118,7 @@ interface Tarefa {
 }
 
 export default function AssistenteDashboard() {
+  const { toast } = useToast();
   const [stats, setStats] = useState<AssistenteStats | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
