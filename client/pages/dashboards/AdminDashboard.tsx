@@ -23,6 +23,11 @@ import {
   Shield,
   Bell,
 } from "lucide-react";
+import {
+  generateSalesReport,
+  generatePerformanceReport,
+  generateCustomReport,
+} from "@/utils/pdfGenerator";
 
 interface DashboardStats {
   totalImoveis: number;
