@@ -4,6 +4,23 @@
 
 Este tutorial explica como configurar integrações N8N para automatizar processos no sistema imobiliário, incluindo WhatsApp, Meta (Facebook/Instagram), Google Calendar e automações de marketing.
 
+## ⚠️ IMPORTANTE - Configuração Meta
+
+**O sistema possui DUAS formas de integração com Meta (Facebook/Instagram):**
+
+1. **Integração Direta** - Via componente MetaIntegration.tsx (Recomendado)
+
+   - Configuração mais simples
+   - Gerenciamento direto no dashboard
+   - Tokens configurados no Marketing Dashboard
+
+2. **Integração via N8N** - Para automações complexas (Opcional)
+   - Requer configuração de tokens no Developer Dashboard
+   - Permite workflows mais avançados
+   - Necessário apenas se usar N8N para Meta
+
+**Se você usar a integração direta, NÃO precisa configurar tokens Meta no N8N.**
+
 ## Pré-requisitos
 
 ### 1. Conta N8N
@@ -14,9 +31,9 @@ Este tutorial explica como configurar integrações N8N para automatizar process
 
 ### 2. APIs Necessárias
 
-- Meta Business API (Facebook/Instagram)
-- WhatsApp Business API (Evolution API)
-- Google Calendar API
+- Meta Business API (Facebook/Instagram) - **APENAS se usar N8N para Meta**
+- WhatsApp Business API (Evolution API) - **OBRIGATÓRIO**
+- Google Calendar API - **APENAS se usar integração Calendar**
 - OpenAI API (opcional para IA)
 
 ## Configuração Inicial N8N
