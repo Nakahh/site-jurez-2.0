@@ -414,56 +414,69 @@ export default function Index() {
 
                         {/* Botões de ação em linha */}
                         <div className="grid grid-cols-2 gap-2">
-                          <ScheduleVisitSystem
-                            propertyId={imovel.id}
-                            propertyTitle={imovel.titulo}
-                          />
-                          <ChatSystem
-                            propertyId={imovel.id}
-                            propertyTitle={imovel.titulo}
-                          />
-                        </div>
-
-                        {/* Botões de ação secundárias */}
-                        <div className="flex justify-between">
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 mr-1"
+                            className="text-xs h-8 flex items-center justify-center"
                             onClick={() => {
-                              const whatsappMessage = `Olá! Tenho interesse no imóvel: ${imovel.titulo} - ${imovel.endereco}. Valor: ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(imovel.preco)}`;
-                              const whatsappUrl = `https://wa.me/5562985563505?text=${encodeURIComponent(whatsappMessage)}`;
-                              window.open(whatsappUrl, "_blank");
+                              // Trigger schedule visit dialog
+                              const event = new CustomEvent("scheduleVisit", {
+                                detail: {
+                                  propertyId: imovel.id,
+                                  propertyTitle: imovel.titulo,
+                                },
+                              });
+                              window.dispatchEvent(event);
+                            }}
+                          >
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Visita
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-8 flex items-center justify-center"
+                            onClick={() => {
+                              // Trigger chat dialog
+                              const event = new CustomEvent("openChat", {
+                                detail: {
+                                  propertyId: imovel.id,
+                                  propertyTitle: imovel.titulo,
+                                },
+                              });
+                              window.dispatchEvent(event);
                             }}
                           >
                             <MessageCircle className="h-3 w-3 mr-1" />
-                            WhatsApp
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 ml-1"
-                            onClick={() => {
-                              if (navigator.share) {
-                                navigator.share({
-                                  title: imovel.titulo,
-                                  text: `Confira este imóvel: ${imovel.titulo}`,
-                                  url: `${window.location.origin}/imovel/${imovel.id}`,
-                                });
-                              } else {
-                                navigator.clipboard.writeText(
-                                  `${window.location.origin}/imovel/${imovel.id}`,
-                                );
-                                alert(
-                                  "Link copiado para a área de transferência!",
-                                );
-                              }
-                            }}
-                          >
-                            <Share2 className="h-3 w-3 mr-1" />
-                            Compartilhar
+                            Chat
                           </Button>
                         </div>
+
+                        {/* Botão de compartilhar */}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full text-xs h-8 flex items-center justify-center"
+                          onClick={() => {
+                            if (navigator.share) {
+                              navigator.share({
+                                title: imovel.titulo,
+                                text: `Confira este imóvel: ${imovel.titulo}`,
+                                url: `${window.location.origin}/imovel/${imovel.id}`,
+                              });
+                            } else {
+                              navigator.clipboard.writeText(
+                                `${window.location.origin}/imovel/${imovel.id}`,
+                              );
+                              alert(
+                                "Link copiado para a área de transferência!",
+                              );
+                            }
+                          }}
+                        >
+                          <Share2 className="h-3 w-3 mr-1" />
+                          Compartilhar
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -562,7 +575,7 @@ export default function Index() {
               </div>
               <h3 className="text-xl font-bold mb-4">Locação</h3>
               <p className="text-muted-foreground mb-4">
-                Gestão completa de locação com contratos seguros e
+                Gestão completa de loca��ão com contratos seguros e
                 acompanhamento personalizado.
               </p>
               <Button variant="outline" size="sm" asChild>
