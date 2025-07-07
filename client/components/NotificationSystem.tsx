@@ -235,7 +235,7 @@ export function NotificationProvider({
         id: "6",
         type: "NOVO_LEAD",
         title: "Lead Qualificado",
-        message: "Cliente com pré-aprovaç��o bancária - Roberto Silva",
+        message: "Cliente com pré-aprovação bancária - Roberto Silva",
         timestamp: new Date(Date.now() - 75 * 60 * 1000), // 1h15 atrás
         read: false,
         priority: "URGENT",
@@ -556,6 +556,10 @@ export function NotificationBell() {
                   } hover:bg-accent/70 cursor-pointer transition-colors`}
                   onClick={() => {
                     markAsRead(notification.id);
+                    // Auto-remove notification after 2 seconds
+                    setTimeout(() => {
+                      removeNotification(notification.id);
+                    }, 2000);
                     if (notification.actionUrl) {
                       window.location.href = notification.actionUrl;
                     }
