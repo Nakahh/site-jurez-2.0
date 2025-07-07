@@ -676,6 +676,240 @@ export default function AdminDashboard() {
           )}
         </TabsContent>
 
+        {/* Serviços Premium */}
+        <TabsContent value="servicos" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Gestão de Serviços Premium</h2>
+            <Button
+              onClick={() =>
+                navigate("/dashboard/desenvolvedor", {
+                  state: { activeTab: "premium" },
+                })
+              }
+              className="bg-gradient-to-r from-purple-600 to-blue-600"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Configurar Serviços
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* WhatsApp Business */}
+            <Card className="border-green-200">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <MessageSquare className="h-5 w-5 text-green-600" />
+                    <span>WhatsApp Business</span>
+                  </div>
+                  <Badge
+                    variant={
+                      localStorage.getItem("whatsapp-businessActive") === "true"
+                        ? "default"
+                        : "secondary"
+                    }
+                  >
+                    {localStorage.getItem("whatsapp-businessActive") === "true"
+                      ? "ATIVO"
+                      : "INATIVO"}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Automação completa de leads via WhatsApp com Evolution API
+                </p>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Preço mensal:</span>
+                    <span className="font-bold text-green-600">R$ 197,00</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    • Resposta automática • N8N Integration • Fallback 15min
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Meta Business */}
+            <Card className="border-blue-200">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Instagram className="h-5 w-5 text-pink-600" />
+                    <span>Meta Business</span>
+                  </div>
+                  <Badge
+                    variant={
+                      localStorage.getItem("meta-integrationActive") === "true"
+                        ? "default"
+                        : "secondary"
+                    }
+                  >
+                    {localStorage.getItem("meta-integrationActive") === "true"
+                      ? "ATIVO"
+                      : "INATIVO"}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Publicação automática no Instagram e Facebook
+                </p>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Preço mensal:</span>
+                    <span className="font-bold text-blue-600">R$ 197,00</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    • Auto-posting • Analytics • Campanhas automáticas
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Google Calendar */}
+            <Card className="border-orange-200">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-5 w-5 text-orange-600" />
+                    <span>Google Calendar</span>
+                  </div>
+                  <Badge
+                    variant={
+                      localStorage.getItem("google-calendarActive") === "true"
+                        ? "default"
+                        : "secondary"
+                    }
+                  >
+                    {localStorage.getItem("google-calendarActive") === "true"
+                      ? "ATIVO"
+                      : "INATIVO"}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Agendamento automático de visitas e sincronização
+                </p>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Preço mensal:</span>
+                    <span className="font-bold text-orange-600">R$ 97,00</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    • Sync automático • Lembretes • Convites
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* N8N Automation */}
+            <Card className="border-purple-200">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Zap className="h-5 w-5 text-purple-600" />
+                    <span>N8N Automation</span>
+                  </div>
+                  <Badge
+                    variant={
+                      localStorage.getItem("n8n-automationActive") === "true"
+                        ? "default"
+                        : "secondary"
+                    }
+                  >
+                    {localStorage.getItem("n8n-automationActive") === "true"
+                      ? "ATIVO"
+                      : "INATIVO"}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Automação completa de processos e integrações
+                </p>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Preço mensal:</span>
+                    <span className="font-bold text-purple-600">R$ 147,00</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    • Workflows ilimitados • APIs • Backup automático
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Resumo Financeiro */}
+          <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950 dark:to-blue-950">
+            <CardHeader>
+              <CardTitle>Resumo de Custos dos Serviços Premium</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">
+                    {localStorage.getItem("whatsapp-businessActive") === "true"
+                      ? "R$ 197"
+                      : "R$ 0"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">WhatsApp</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-blue-600">
+                    {localStorage.getItem("meta-integrationActive") === "true"
+                      ? "R$ 197"
+                      : "R$ 0"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Meta</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-orange-600">
+                    {localStorage.getItem("google-calendarActive") === "true"
+                      ? "R$ 97"
+                      : "R$ 0"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Calendar</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-purple-600">
+                    {localStorage.getItem("n8n-automationActive") === "true"
+                      ? "R$ 147"
+                      : "R$ 0"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">N8N</p>
+                </div>
+              </div>
+              <div className="border-t pt-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-semibold">Total Mensal:</span>
+                  <span className="text-2xl font-bold text-primary">
+                    R${" "}
+                    {(
+                      (localStorage.getItem("whatsapp-businessActive") ===
+                      "true"
+                        ? 197
+                        : 0) +
+                      (localStorage.getItem("meta-integrationActive") === "true"
+                        ? 197
+                        : 0) +
+                      (localStorage.getItem("google-calendarActive") === "true"
+                        ? 97
+                        : 0) +
+                      (localStorage.getItem("n8n-automationActive") === "true"
+                        ? 147
+                        : 0)
+                    ).toFixed(0)}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Financeiro */}
         <TabsContent value="financeiro" className="space-y-6">
           <div className="flex justify-between items-center">
