@@ -161,6 +161,10 @@ export function NotificationProvider({
   const switchUser = (role: keyof typeof exampleUsers) => {
     setUserRole(role);
     setCurrentUser(exampleUsers[role]);
+    // Save current user role to localStorage for demo button
+    localStorage.setItem("currentUserRole", role);
+    localStorage.setItem("userId", exampleUsers[role].id);
+    localStorage.setItem("userName", exampleUsers[role].name);
   };
 
   useEffect(() => {
