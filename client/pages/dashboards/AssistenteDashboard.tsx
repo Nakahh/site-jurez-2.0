@@ -856,19 +856,39 @@ export default function AssistenteDashboard() {
                         </div>
                       </div>
                       <div className="flex flex-col space-y-2">
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleLigarLead(lead.id)}
+                          title="Ligar para o lead"
+                        >
                           <Phone className="h-4 w-4 mr-1" />
                           Ligar
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleWhatsAppLead(lead.id)}
+                          title="Enviar WhatsApp"
+                        >
                           <MessageSquare className="h-4 w-4 mr-1" />
                           WhatsApp
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleAgendarLead(lead.id)}
+                          title="Agendar visita"
+                        >
                           <Calendar className="h-4 w-4 mr-1" />
                           Agendar
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditarLead(lead.id)}
+                          title="Editar lead"
+                        >
                           <Edit className="h-4 w-4 mr-1" />
                           Editar
                         </Button>
