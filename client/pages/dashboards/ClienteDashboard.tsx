@@ -400,6 +400,8 @@ function ComparadorModal({
 }
 
 export default function ClienteDashboard() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [favoritos, setFavoritos] = useState<Imovel[]>([]);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
@@ -411,7 +413,21 @@ export default function ClienteDashboard() {
 
   useEffect(() => {
     carregarDados();
-  }, []);
+    // Handle navigation state
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+    if (location.state?.showNew) {
+      switch (location.state.activeTab) {
+        case "favoritos":
+          navigate("/imoveis");
+          break;
+        case "agendamentos":
+          setActiveTab("agendamentos");
+          break;
+      }
+    }
+  }, [location.state, navigate]);
 
   const carregarDados = async () => {
     try {
