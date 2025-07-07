@@ -1113,6 +1113,8 @@ function CadastrarLeadModal({
 }
 
 export default function CorretorDashboard() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [stats, setStats] = useState<CorretorStats | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [imoveis, setImoveis] = useState<Imovel[]>([]);
@@ -1136,7 +1138,24 @@ export default function CorretorDashboard() {
 
   useEffect(() => {
     carregarDados();
-  }, []);
+    // Handle navigation state
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+    if (location.state?.showNew) {
+      switch (location.state.activeTab) {
+        case "leads":
+          setShowCadastrarLead(true);
+          break;
+        case "imoveis":
+          setShowCriarImovel(true);
+          break;
+        case "agendamentos":
+          setShowAgendarVisita(true);
+          break;
+      }
+    }
+  }, [location.state]);
 
   // Funções para gerenciar leads
   const handleViewLead = (leadId: string) => {
@@ -1177,7 +1196,7 @@ export default function CorretorDashboard() {
     const property = imoveis.find((p) => p.id === propertyId);
     if (property) {
       // Abrir página de detalhes do imóvel
-      window.open(`/imovel/${propertyId}`, "_blank");
+      navigate(`/imovel/${propertyId}`);
     }
   };
 
@@ -2236,7 +2255,7 @@ export default function CorretorDashboard() {
                     // Simular agendamento
                     const whatsappMessage = `Olá ${selectedLeadCorretor.nome}!
 
-Sua visita foi agendada com sucesso! 🏠
+Sua visita foi agendada com sucesso! ��
 
 📅 Data: [Data selecionada]
 🕐 Horário: [Horário selecionado]
