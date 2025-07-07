@@ -1265,7 +1265,7 @@ export default function DesenvolvedorDashboard() {
                   <div>
                     <Label>Autenticação de Dois Fatores</Label>
                     <p className="text-sm text-muted-foreground">
-                      Requer c��digo adicional no login
+                      Requer código adicional no login
                     </p>
                   </div>
                   <Switch defaultChecked />
