@@ -294,42 +294,23 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Header */}
-      <div className="bg-card border-b px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              Dashboard Administrativo
-            </h1>
-            <p className="text-muted-foreground">
-              Controle total do seu negócio imobiliário
-            </p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm">
-              <Bell className="h-4 w-4 mr-2" />
-              Notificações
-            </Button>
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Configurações
-            </Button>
-            <img
-              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=250"
-              alt="Siqueira Campos Imóveis"
-              className="h-14 w-auto dark:hidden"
-            />
-            <img
-              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-escuro-e97fe8?format=webp&width=250"
-              alt="Siqueira Campos Imóveis"
-              className="hidden h-14 w-auto dark:block"
-            />
-          </div>
+    <DashboardLayout
+      title="Dashboard Administrativo"
+      subtitle="Controle total do seu negócio imobiliário"
+      userRole="ADMIN"
+      actions={
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm">
+            <Bell className="h-4 w-4 mr-2" />
+            Notificações
+          </Button>
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Novo
+          </Button>
         </div>
-      </div>
-
-      <div className="p-6">
+      }
+    >
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
