@@ -576,7 +576,7 @@ export default function AdminDashboard() {
                     <Button
                       variant="outline"
                       className="h-16 flex flex-col items-center justify-center space-y-2"
-                      onClick={handleGenerateReport}
+                      onClick={() => handleGenerateReport("Vendas")}
                     >
                       <BarChart3 className="h-5 w-5" />
                       <span className="text-xs">Relatórios</span>
