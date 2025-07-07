@@ -746,7 +746,7 @@ function CriarImovelModal({
                     placeholder="Ex: Reformado recentemente&#10;Móveis planejados&#10;Varanda gourmet"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Digite uma característica por linha
+                    Digite uma caracter��stica por linha
                   </p>
                 </div>
               </div>
@@ -1526,6 +1526,39 @@ export default function CorretorDashboard() {
                 <h3 className="font-bold mb-2">Ver Agenda</h3>
                 <p className="text-sm text-muted-foreground">
                   Visualize seus agendamentos
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Ferramentas de Vendas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <Card
+              className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900"
+              onClick={() => setShowWhatsAppBusiness(true)}
+            >
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageSquare className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">WhatsApp Business</h3>
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  Central de atendimento e mensagens para leads
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card
+              className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-950 dark:to-cyan-900"
+              onClick={() => setActiveTab("agendamentos")}
+            >
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">Agendar Visitas</h3>
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  Organize e gerencie todas as visitas dos clientes
                 </p>
               </CardContent>
             </Card>
