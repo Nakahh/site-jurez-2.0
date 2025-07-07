@@ -1144,6 +1144,120 @@ export default function MarketingDashboard() {
               Premium - R$ 197,00/mês
             </Badge>
           </div>
+
+          {/* Configurações Instagram e Facebook */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <Card className="border-pink-200">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Instagram className="w-5 h-5 mr-2 text-pink-600" />
+                  Configuração Instagram
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="instagram-token">
+                    Instagram Access Token
+                  </Label>
+                  <Input
+                    id="instagram-token"
+                    type="password"
+                    placeholder="IGQVJ..."
+                    value={localStorage.getItem("instagramAccessToken") || ""}
+                    onChange={(e) =>
+                      localStorage.setItem(
+                        "instagramAccessToken",
+                        e.target.value,
+                      )
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="instagram-account">
+                    Instagram Account ID
+                  </Label>
+                  <Input
+                    id="instagram-account"
+                    placeholder="1234567890123456"
+                    value={localStorage.getItem("instagramAccountId") || ""}
+                    onChange={(e) =>
+                      localStorage.setItem("instagramAccountId", e.target.value)
+                    }
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="instagram-enabled"
+                    checked={
+                      localStorage.getItem("instagramEnabled") === "true"
+                    }
+                    onCheckedChange={(checked) =>
+                      localStorage.setItem(
+                        "instagramEnabled",
+                        checked.toString(),
+                      )
+                    }
+                  />
+                  <Label htmlFor="instagram-enabled">
+                    Ativar publicação automática
+                  </Label>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-blue-200">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Facebook className="w-5 h-5 mr-2 text-blue-600" />
+                  Configuração Facebook
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="facebook-token">Facebook Access Token</Label>
+                  <Input
+                    id="facebook-token"
+                    type="password"
+                    placeholder="EAAx..."
+                    value={localStorage.getItem("facebookAccessToken") || ""}
+                    onChange={(e) =>
+                      localStorage.setItem(
+                        "facebookAccessToken",
+                        e.target.value,
+                      )
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="facebook-page">Facebook Page ID</Label>
+                  <Input
+                    id="facebook-page"
+                    placeholder="1234567890123456"
+                    value={localStorage.getItem("facebookPageId") || ""}
+                    onChange={(e) =>
+                      localStorage.setItem("facebookPageId", e.target.value)
+                    }
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="facebook-enabled"
+                    checked={localStorage.getItem("facebookEnabled") === "true"}
+                    onCheckedChange={(checked) =>
+                      localStorage.setItem(
+                        "facebookEnabled",
+                        checked.toString(),
+                      )
+                    }
+                  />
+                  <Label htmlFor="facebook-enabled">
+                    Ativar publicação automática
+                  </Label>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <MetaIntegration userRole="MARKETING" />
         </TabsContent>
 
