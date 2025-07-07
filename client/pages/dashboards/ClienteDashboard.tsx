@@ -627,30 +627,38 @@ export default function ClienteDashboard() {
         <TabsContent value="overview" className="space-y-6">
           {/* Recomendação Personalizada */}
           <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
+            <CardContent className="p-4 lg:p-6">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold mb-2">
+                  <h3 className="text-base lg:text-lg font-bold mb-2">
                     🎯 Recomendação Personalizada
                   </h3>
-                  <p className="text-muted-foreground mb-4">
+                  <p className="text-sm lg:text-base text-muted-foreground mb-4">
                     Baseado no seu perfil e preferências, encontramos imóveis
                     perfeitos para você!
                   </p>
-                  <div className="flex items-center space-x-4">
-                    <Button>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                    <Button className="w-full sm:w-auto">
                       <Search className="h-4 w-4 mr-2" />
-                      Ver Recomendações
+                      <span className="hidden sm:inline">
+                        Ver Recomendações
+                      </span>
+                      <span className="sm:hidden">Recomendações</span>
                     </Button>
-                    <Button variant="outline">
+                    <Button variant="outline" className="w-full sm:w-auto">
                       <Target className="h-4 w-4 mr-2" />
-                      Refinar Perfil
+                      <span className="hidden sm:inline">Refinar Perfil</span>
+                      <span className="sm:hidden">Refinar</span>
                     </Button>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-3xl font-bold text-primary">23</p>
-                  <p className="text-sm text-muted-foreground">novos imóveis</p>
+                <div className="text-center lg:text-right flex-shrink-0">
+                  <p className="text-2xl lg:text-3xl font-bold text-primary">
+                    23
+                  </p>
+                  <p className="text-xs lg:text-sm text-muted-foreground">
+                    novos imóveis
+                  </p>
                 </div>
               </div>
             </CardContent>
