@@ -147,6 +147,7 @@ interface ClientSubscription {
 export default function DesenvolvedorDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
+  const premiumManager = usePremiumServices();
   const [systemStats, setSystemStats] = useState<SystemStats | null>(null);
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
   const [backups, setBackups] = useState<BackupInfo[]>([]);
