@@ -211,10 +211,17 @@ export default function AdminDashboard() {
           await generateCustomReport(reportId, `Relatório ${tipo}`);
       }
 
-      alert(`Relatório ${tipo} baixado com sucesso!`);
+      toast({
+        title: "Download concluído",
+        description: `Relatório ${tipo} baixado com sucesso!`,
+      });
     } catch (error) {
       console.error("Erro ao baixar relatório:", error);
-      alert("Erro ao baixar relatório. Tente novamente.");
+      toast({
+        title: "Erro",
+        description: "Erro ao baixar relatório. Tente novamente.",
+        variant: "destructive",
+      });
     }
   };
 
