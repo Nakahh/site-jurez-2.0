@@ -2020,7 +2020,11 @@ export default function CorretorDashboard() {
         <TabsContent value="configuracoes" className="space-y-6">
           <h2 className="text-2xl font-bold">Configurações</h2>
 
-          <WhatsAppIntegrationCard onUpdate={carregarDados} />
+          {/* Integrações Premium */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <WhatsAppIntegration userRole="CORRETOR" />
+            <CalendarIntegration userRole="CORRETOR" />
+          </div>
 
           {/* Configurações de Notificação */}
           <Card>
@@ -2358,7 +2362,7 @@ Siqueira Campos Imóveis
                     <h5 className="font-medium mb-3">Templates de Mensagens</h5>
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                       {[
-                        "🏠 Olá! Tenho um imóvel perfeito para seu perfil. Gostaria de agendar uma visita?",
+                        "🏠 Ol��! Tenho um imóvel perfeito para seu perfil. Gostaria de agendar uma visita?",
                         "📍 Ótima localização no Setor Bueno! Este apartamento pode ser o que você procura.",
                         "💰 Condições especiais de financiamento! Vamos conversar sobre as possibilidades?",
                         "🔑 Apartamento pronto para morar! Quando podemos agendar uma visita?",
