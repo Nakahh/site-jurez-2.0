@@ -976,658 +976,653 @@ export default function CorretorDashboard() {
         </div>
       }
     >
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-6"
-        >
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-            <TabsTrigger value="leads">Leads</TabsTrigger>
-            <TabsTrigger value="imoveis">Imóveis</TabsTrigger>
-            <TabsTrigger value="agenda">Agenda</TabsTrigger>
-            <TabsTrigger value="vendas">Vendas</TabsTrigger>
-            <TabsTrigger value="configuracoes">Config</TabsTrigger>
-          </TabsList>
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="leads">Leads</TabsTrigger>
+          <TabsTrigger value="imoveis">Imóveis</TabsTrigger>
+          <TabsTrigger value="agenda">Agenda</TabsTrigger>
+          <TabsTrigger value="vendas">Vendas</TabsTrigger>
+          <TabsTrigger value="configuracoes">Config</TabsTrigger>
+        </TabsList>
 
-          {/* Visão Geral */}
-          <TabsContent value="overview" className="space-y-6">
-            {/* Meta Progress */}
-            <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-bold">Meta Mensal</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {formatarPreco(stats?.vendaMes || 0)} de{" "}
-                      {formatarPreco(stats?.metaMensal || 0)}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">
-                      {stats
-                        ? Math.round((stats.vendaMes / stats.metaMensal) * 100)
-                        : 0}
-                      %
-                    </p>
-                    <Badge variant="default">
-                      {stats && stats.vendaMes >= stats.metaMensal
-                        ? "META BATIDA!"
-                        : "EM PROGRESSO"}
-                    </Badge>
-                  </div>
+        {/* Visão Geral */}
+        <TabsContent value="overview" className="space-y-6">
+          {/* Meta Progress */}
+          <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold">Meta Mensal</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {formatarPreco(stats?.vendaMes || 0)} de{" "}
+                    {formatarPreco(stats?.metaMensal || 0)}
+                  </p>
                 </div>
-                <div className="w-full bg-muted rounded-full h-3">
-                  <div
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 h-3 rounded-full transition-all duration-500"
-                    style={{
-                      width: `${stats ? Math.min((stats.vendaMes / stats.metaMensal) * 100, 100) : 0}%`,
-                    }}
-                  />
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-primary">
+                    {stats
+                      ? Math.round((stats.vendaMes / stats.metaMensal) * 100)
+                      : 0}
+                    %
+                  </p>
+                  <Badge variant="default">
+                    {stats && stats.vendaMes >= stats.metaMensal
+                      ? "META BATIDA!"
+                      : "EM PROGRESSO"}
+                  </Badge>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Stats Cards */}
-            {stats && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatsCard
-                  title="Meus Imóveis"
-                  value={stats.totalImoveis}
-                  icon={Home}
-                  description={`${stats.imoveisDisponiveis} disponíveis`}
-                  trend={`+${stats.imoveisVendidos} vendidos este mês`}
-                />
-                <StatsCard
-                  title="Leads Ativos"
-                  value={stats.leadsAtivos}
-                  icon={Users}
-                  description={`${stats.leadsConvertidos} convertidos`}
-                  trend={`${Math.round((stats.leadsConvertidos / stats.meusLeads) * 100)}% taxa de conversão`}
-                  color="green"
-                />
-                <StatsCard
-                  title="Comissões"
-                  value={formatarPreco(stats.minhasComissoes)}
-                  icon={DollarSign}
-                  description="Este mês"
-                  trend={`${formatarPreco(stats.comissoesTotais)} total`}
-                  color="yellow"
-                />
-                <StatsCard
-                  title="Visitas Agendadas"
-                  value={stats.visitasAgendadas}
-                  icon={Calendar}
-                  description={`${stats.visitasRealizadas} realizadas`}
-                  trend="Para esta semana"
-                  color="purple"
+              </div>
+              <div className="w-full bg-muted rounded-full h-3">
+                <div
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 h-3 rounded-full transition-all duration-500"
+                  style={{
+                    width: `${stats ? Math.min((stats.vendaMes / stats.metaMensal) * 100, 100) : 0}%`,
+                  }}
                 />
               </div>
-            )}
+            </CardContent>
+          </Card>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card
-                className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
-                onClick={() => setShowCadastrarLead(true)}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <UserPlus className="h-8 w-8 text-green-600" />
-                  </div>
-                  <h3 className="font-bold mb-2">Cadastrar Lead</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Adicione um novo prospecto manualmente
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card
-                className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
-                onClick={() => setShowCriarImovel(true)}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <PlusCircle className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <h3 className="font-bold mb-2">Cadastrar Imóvel</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Adicione um novo imóvel ao portfólio
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card
-                className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
-                onClick={() => setActiveTab("agenda")}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CalendarDays className="h-8 w-8 text-purple-600" />
-                  </div>
-                  <h3 className="font-bold mb-2">Ver Agenda</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Visualize seus agendamentos
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* WhatsApp Integration */}
-            <WhatsAppIntegrationCard onUpdate={carregarDados} />
-          </TabsContent>
-
-          {/* Leads */}
-          <TabsContent value="leads" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Gestão de Leads</h2>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
-                  <Search className="h-4 w-4 mr-2" />
-                  Buscar
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtrar
-                </Button>
-                <Button onClick={() => setShowCadastrarLead(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Novo Lead
-                </Button>
-              </div>
-            </div>
-
-            {/* Stats de Leads */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Stats Cards */}
+          {stats && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatsCard
-                title="Total de Leads"
-                value={stats?.meusLeads || 0}
-                icon={Users}
-                color="blue"
+                title="Meus Imóveis"
+                value={stats.totalImoveis}
+                icon={Home}
+                description={`${stats.imoveisDisponiveis} disponíveis`}
+                trend={`+${stats.imoveisVendidos} vendidos este mês`}
               />
               <StatsCard
                 title="Leads Ativos"
-                value={stats?.leadsAtivos || 0}
-                icon={Activity}
+                value={stats.leadsAtivos}
+                icon={Users}
+                description={`${stats.leadsConvertidos} convertidos`}
+                trend={`${Math.round((stats.leadsConvertidos / stats.meusLeads) * 100)}% taxa de conversão`}
                 color="green"
               />
               <StatsCard
-                title="Convertidos"
-                value={stats?.leadsConvertidos || 0}
-                icon={CheckSquare}
+                title="Comissões"
+                value={formatarPreco(stats.minhasComissoes)}
+                icon={DollarSign}
+                description="Este mês"
+                trend={`${formatarPreco(stats.comissoesTotais)} total`}
                 color="yellow"
               />
               <StatsCard
-                title="Taxa Conversão"
-                value={`${stats ? Math.round((stats.leadsConvertidos / stats.meusLeads) * 100) : 0}%`}
-                icon={Target}
+                title="Visitas Agendadas"
+                value={stats.visitasAgendadas}
+                icon={Calendar}
+                description={`${stats.visitasRealizadas} realizadas`}
+                trend="Para esta semana"
                 color="purple"
               />
             </div>
+          )}
 
-            {/* Lista de Leads */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Leads Recentes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {leads.map((lead) => (
-                    <div
-                      key={lead.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                          <Users className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-bold">{lead.nome}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {lead.telefone}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {lead.mensagem.substring(0, 50)}...
-                          </p>
-                        </div>
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card
+              className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+              onClick={() => setShowCadastrarLead(true)}
+            >
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <UserPlus className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="font-bold mb-2">Cadastrar Lead</h3>
+                <p className="text-sm text-muted-foreground">
+                  Adicione um novo prospecto manualmente
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card
+              className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+              onClick={() => setShowCriarImovel(true)}
+            >
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <PlusCircle className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="font-bold mb-2">Cadastrar Imóvel</h3>
+                <p className="text-sm text-muted-foreground">
+                  Adicione um novo imóvel ao portfólio
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card
+              className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+              onClick={() => setActiveTab("agenda")}
+            >
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CalendarDays className="h-8 w-8 text-purple-600" />
+                </div>
+                <h3 className="font-bold mb-2">Ver Agenda</h3>
+                <p className="text-sm text-muted-foreground">
+                  Visualize seus agendamentos
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* WhatsApp Integration */}
+          <WhatsAppIntegrationCard onUpdate={carregarDados} />
+        </TabsContent>
+
+        {/* Leads */}
+        <TabsContent value="leads" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Gestão de Leads</h2>
+            <div className="flex space-x-2">
+              <Button variant="outline" size="sm">
+                <Search className="h-4 w-4 mr-2" />
+                Buscar
+              </Button>
+              <Button variant="outline" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                Filtrar
+              </Button>
+              <Button onClick={() => setShowCadastrarLead(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Lead
+              </Button>
+            </div>
+          </div>
+
+          {/* Stats de Leads */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <StatsCard
+              title="Total de Leads"
+              value={stats?.meusLeads || 0}
+              icon={Users}
+              color="blue"
+            />
+            <StatsCard
+              title="Leads Ativos"
+              value={stats?.leadsAtivos || 0}
+              icon={Activity}
+              color="green"
+            />
+            <StatsCard
+              title="Convertidos"
+              value={stats?.leadsConvertidos || 0}
+              icon={CheckSquare}
+              color="yellow"
+            />
+            <StatsCard
+              title="Taxa Conversão"
+              value={`${stats ? Math.round((stats.leadsConvertidos / stats.meusLeads) * 100) : 0}%`}
+              icon={Target}
+              color="purple"
+            />
+          </div>
+
+          {/* Lista de Leads */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Leads Recentes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {leads.map((lead) => (
+                  <div
+                    key={lead.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Users className="h-6 w-6 text-primary" />
                       </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right">
+                      <div>
+                        <p className="font-bold">{lead.nome}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {lead.telefone}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {lead.mensagem.substring(0, 50)}...
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="text-right">
+                        <Badge
+                          variant={
+                            lead.status === "ASSUMIDO" ? "default" : "secondary"
+                          }
+                        >
+                          {lead.status}
+                        </Badge>
+                        <Badge variant="outline" className="ml-2">
+                          {lead.origem}
+                        </Badge>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(lead.criadoEm).toLocaleDateString("pt-BR")}
+                        </p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewLead(lead.id)}
+                          title="Ver detalhes"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditLead(lead.id)}
+                          title="Editar lead"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleCallLead(lead.id)}
+                          title="Ligar"
+                        >
+                          <Phone className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleWhatsAppLead(lead.id)}
+                          title="WhatsApp"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Imóveis */}
+        <TabsContent value="imoveis" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Meus Imóveis</h2>
+            <div className="flex space-x-2">
+              <Button variant="outline" size="sm">
+                <Search className="h-4 w-4 mr-2" />
+                Buscar
+              </Button>
+              <Button variant="outline" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                Filtrar
+              </Button>
+              <Button onClick={() => setShowCriarImovel(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Imóvel
+              </Button>
+            </div>
+          </div>
+
+          {/* Stats de Imóveis */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <StatsCard
+              title="Total"
+              value={stats?.totalImoveis || 0}
+              icon={Home}
+              color="blue"
+            />
+            <StatsCard
+              title="Disponíveis"
+              value={stats?.imoveisDisponiveis || 0}
+              icon={CheckCircle}
+              color="green"
+            />
+            <StatsCard
+              title="Vendidos"
+              value={stats?.imoveisVendidos || 0}
+              icon={DollarSign}
+              color="yellow"
+            />
+            <StatsCard
+              title="Alugados"
+              value={stats?.imoveisAlugados || 0}
+              icon={Calendar}
+              color="purple"
+            />
+          </div>
+
+          {/* Lista de Imóveis */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Portfólio de Imóveis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {imoveis.map((imovel) => (
+                  <div
+                    key={imovel.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                        <Home className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-bold">{imovel.titulo}</p>
+                        <p className="text-sm text-muted-foreground">
+                          <MapPin className="h-4 w-4 inline mr-1" />
+                          {imovel.endereco}, {imovel.bairro}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {imovel.quartos} quartos • {imovel.banheiros}{" "}
+                          banheiros
+                          {imovel.vagas ? ` • ${imovel.vagas} vagas` : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="text-right">
+                        <p className="font-bold text-primary text-lg">
+                          {formatarPreco(imovel.preco)}
+                        </p>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline">{imovel.tipo}</Badge>
                           <Badge
                             variant={
-                              lead.status === "ASSUMIDO"
+                              imovel.status === "DISPONIVEL"
                                 ? "default"
                                 : "secondary"
                             }
                           >
-                            {lead.status}
+                            {imovel.status}
                           </Badge>
-                          <Badge variant="outline" className="ml-2">
-                            {lead.origem}
-                          </Badge>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {new Date(lead.criadoEm).toLocaleDateString(
-                              "pt-BR",
-                            )}
-                          </p>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleViewLead(lead.id)}
-                            title="Ver detalhes"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEditLead(lead.id)}
-                            title="Editar lead"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleCallLead(lead.id)}
-                            title="Ligar"
-                          >
-                            <Phone className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleWhatsAppLead(lead.id)}
-                            title="WhatsApp"
-                          >
-                            <MessageSquare className="h-4 w-4" />
-                          </Button>
                         </div>
                       </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewProperty(imovel.id)}
+                          title="Ver imóvel"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditProperty(imovel.id)}
+                          title="Editar imóvel"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeleteProperty(imovel.id)}
+                          title="Excluir imóvel"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleScheduleVisit(imovel.id)}
+                          title="Agendar visita"
+                        >
+                          <Calendar className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Imóveis */}
-          <TabsContent value="imoveis" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Meus Imóveis</h2>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
-                  <Search className="h-4 w-4 mr-2" />
-                  Buscar
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtrar
-                </Button>
-                <Button onClick={() => setShowCriarImovel(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Novo Imóvel
-                </Button>
+                  </div>
+                ))}
               </div>
-            </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            {/* Stats de Imóveis */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <StatsCard
-                title="Total"
-                value={stats?.totalImoveis || 0}
-                icon={Home}
-                color="blue"
-              />
-              <StatsCard
-                title="Disponíveis"
-                value={stats?.imoveisDisponiveis || 0}
-                icon={CheckCircle}
-                color="green"
-              />
-              <StatsCard
-                title="Vendidos"
-                value={stats?.imoveisVendidos || 0}
-                icon={DollarSign}
-                color="yellow"
-              />
-              <StatsCard
-                title="Alugados"
-                value={stats?.imoveisAlugados || 0}
-                icon={Calendar}
-                color="purple"
-              />
-            </div>
+        {/* Agenda */}
+        <TabsContent value="agenda" className="space-y-6">
+          <AdvancedCalendar
+            userRole="CORRETOR"
+            userId={localStorage.getItem("userId") || "corretor1"}
+            userName={localStorage.getItem("userName") || "Corretor"}
+          />
+        </TabsContent>
 
-            {/* Lista de Imóveis */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Portfólio de Imóveis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {imoveis.map((imovel) => (
-                    <div
-                      key={imovel.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                          <Home className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                        <div>
-                          <p className="font-bold">{imovel.titulo}</p>
-                          <p className="text-sm text-muted-foreground">
-                            <MapPin className="h-4 w-4 inline mr-1" />
-                            {imovel.endereco}, {imovel.bairro}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {imovel.quartos} quartos • {imovel.banheiros}{" "}
-                            banheiros
-                            {imovel.vagas ? ` • ${imovel.vagas} vagas` : ""}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                          <p className="font-bold text-primary text-lg">
-                            {formatarPreco(imovel.preco)}
-                          </p>
-                          <div className="flex items-center space-x-2">
-                            <Badge variant="outline">{imovel.tipo}</Badge>
-                            <Badge
-                              variant={
-                                imovel.status === "DISPONIVEL"
-                                  ? "default"
-                                  : "secondary"
-                              }
-                            >
-                              {imovel.status}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleViewProperty(imovel.id)}
-                            title="Ver imóvel"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEditProperty(imovel.id)}
-                            title="Editar imóvel"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDeleteProperty(imovel.id)}
-                            title="Excluir imóvel"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleScheduleVisit(imovel.id)}
-                            title="Agendar visita"
-                          >
-                            <Calendar className="h-4 w-4" />
-                          </Button>
-                        </div>
+        {/* Vendas */}
+        <TabsContent value="vendas" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Performance de Vendas</h2>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGeneratePerformanceReport}
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Relatório
+              </Button>
+              <Button variant="outline" size="sm">
+                <FileText className="h-4 w-4 mr-2" />
+                Exportar
+              </Button>
+            </div>
+          </div>
+
+          {/* Performance Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-orange-50">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Ranking
+                    </p>
+                    <p className="text-3xl font-bold">#2</p>
+                    <p className="text-sm text-muted-foreground">
+                      Entre os corretores
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <Award className="h-6 w-6 text-yellow-600" />
+                  </div>
+                </div>
+                <Badge variant="default">TOP PERFORMER</Badge>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Avaliação
+                    </p>
+                    <div className="flex items-center">
+                      <p className="text-3xl font-bold mr-2">4.8</p>
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-4 w-4 ${
+                              i < 5
+                                ? "text-yellow-400 fill-current"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
                       </div>
                     </div>
-                  ))}
+                    <p className="text-sm text-muted-foreground">
+                      42 avaliações
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <Star className="h-6 w-6 text-green-600" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          {/* Agenda */}
-          <TabsContent value="agenda" className="space-y-6">
-            <AdvancedCalendar
-              userRole="CORRETOR"
-              userId={localStorage.getItem("userId") || "corretor1"}
-              userName={localStorage.getItem("userName") || "Corretor"}
-            />
-          </TabsContent>
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Eficiência
+                    </p>
+                    <p className="text-3xl font-bold">92%</p>
+                    <p className="text-sm text-muted-foreground">
+                      Leads convertidos
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Target className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+                <Badge variant="default">ALTA EFICIÊNCIA</Badge>
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* Vendas */}
-          <TabsContent value="vendas" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Performance de Vendas</h2>
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleGeneratePerformanceReport}
-                >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Relatório
-                </Button>
-                <Button variant="outline" size="sm">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Exportar
-                </Button>
+          {/* Histórico de Vendas */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Histórico de Vendas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[
+                  {
+                    id: "1",
+                    cliente: "João Silva",
+                    imovel: "Apartamento Setor Bueno",
+                    valor: 650000,
+                    comissao: 19500,
+                    data: "2024-12-15",
+                    status: "FINALIZADA",
+                  },
+                  {
+                    id: "2",
+                    cliente: "Maria Santos",
+                    imovel: "Casa Jardim Goiás",
+                    valor: 450000,
+                    comissao: 13500,
+                    data: "2024-12-08",
+                    status: "FINALIZADA",
+                  },
+                ].map((venda) => (
+                  <div
+                    key={venda.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <DollarSign className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-bold">{venda.cliente}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {venda.imovel}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(venda.data).toLocaleDateString("pt-BR")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-lg">
+                        {formatarPreco(venda.valor)}
+                      </p>
+                      <p className="text-sm text-green-600 font-medium">
+                        Comissão: {formatarPreco(venda.comissao)}
+                      </p>
+                      <Badge variant="default">{venda.status}</Badge>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            {/* Performance Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-orange-50">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">
-                        Ranking
-                      </p>
-                      <p className="text-3xl font-bold">#2</p>
-                      <p className="text-sm text-muted-foreground">
-                        Entre os corretores
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                      <Award className="h-6 w-6 text-yellow-600" />
-                    </div>
-                  </div>
-                  <Badge variant="default">TOP PERFORMER</Badge>
-                </CardContent>
-              </Card>
+        {/* Configurações */}
+        <TabsContent value="configuracoes" className="space-y-6">
+          <h2 className="text-2xl font-bold">Configurações</h2>
 
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">
-                        Avaliação
-                      </p>
-                      <div className="flex items-center">
-                        <p className="text-3xl font-bold mr-2">4.8</p>
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < 5
-                                  ? "text-yellow-400 fill-current"
-                                  : "text-gray-300"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        42 avaliações
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                      <Star className="h-6 w-6 text-green-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          <WhatsAppIntegrationCard onUpdate={carregarDados} />
 
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">
-                        Eficiência
-                      </p>
-                      <p className="text-3xl font-bold">92%</p>
-                      <p className="text-sm text-muted-foreground">
-                        Leads convertidos
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Target className="h-6 w-6 text-blue-600" />
-                    </div>
-                  </div>
-                  <Badge variant="default">ALTA EFICIÊNCIA</Badge>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Histórico de Vendas */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Histórico de Vendas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    {
-                      id: "1",
-                      cliente: "João Silva",
-                      imovel: "Apartamento Setor Bueno",
-                      valor: 650000,
-                      comissao: 19500,
-                      data: "2024-12-15",
-                      status: "FINALIZADA",
-                    },
-                    {
-                      id: "2",
-                      cliente: "Maria Santos",
-                      imovel: "Casa Jardim Goiás",
-                      valor: 450000,
-                      comissao: 13500,
-                      data: "2024-12-08",
-                      status: "FINALIZADA",
-                    },
-                  ].map((venda) => (
-                    <div
-                      key={venda.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                          <DollarSign className="h-6 w-6 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="font-bold">{venda.cliente}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {venda.imovel}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(venda.data).toLocaleDateString("pt-BR")}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-lg">
-                          {formatarPreco(venda.valor)}
-                        </p>
-                        <p className="text-sm text-green-600 font-medium">
-                          Comissão: {formatarPreco(venda.comissao)}
-                        </p>
-                        <Badge variant="default">{venda.status}</Badge>
-                      </div>
-                    </div>
-                  ))}
+          {/* Configurações de Notificação */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Notificações</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Novos Leads</p>
+                  <p className="text-sm text-muted-foreground">
+                    Receber notificação quando um novo lead chegar
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Configurações */}
-          <TabsContent value="configuracoes" className="space-y-6">
-            <h2 className="text-2xl font-bold">Configurações</h2>
-
-            <WhatsAppIntegrationCard onUpdate={carregarDados} />
-
-            {/* Configurações de Notificação */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Notificações</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Novos Leads</p>
-                    <p className="text-sm text-muted-foreground">
-                      Receber notificação quando um novo lead chegar
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
+                <Switch defaultChecked />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Agendamentos</p>
+                  <p className="text-sm text-muted-foreground">
+                    Lembrete de visitas agendadas
+                  </p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Agendamentos</p>
-                    <p className="text-sm text-muted-foreground">
-                      Lembrete de visitas agendadas
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
+                <Switch defaultChecked />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Metas</p>
+                  <p className="text-sm text-muted-foreground">
+                    Progresso da meta mensal
+                  </p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Metas</p>
-                    <p className="text-sm text-muted-foreground">
-                      Progresso da meta mensal
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-              </CardContent>
-            </Card>
+                <Switch defaultChecked />
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Configurações de Perfil */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Perfil do Corretor</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Nome Completo</Label>
-                    <Input defaultValue="Carlos Silva" />
-                  </div>
-                  <div>
-                    <Label>CRECI</Label>
-                    <Input defaultValue="12345-GO" />
-                  </div>
-                  <div>
-                    <Label>Email</Label>
-                    <Input defaultValue="carlos@siqueicamposimoveis.com.br" />
-                  </div>
-                  <div>
-                    <Label>Telefone</Label>
-                    <Input defaultValue="(62) 9 9999-8888" />
-                  </div>
+          {/* Configurações de Perfil */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Perfil do Corretor</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Nome Completo</Label>
+                  <Input defaultValue="Carlos Silva" />
                 </div>
-                <Button>Salvar Alterações</Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+                <div>
+                  <Label>CRECI</Label>
+                  <Input defaultValue="12345-GO" />
+                </div>
+                <div>
+                  <Label>Email</Label>
+                  <Input defaultValue="carlos@siqueicamposimoveis.com.br" />
+                </div>
+                <div>
+                  <Label>Telefone</Label>
+                  <Input defaultValue="(62) 9 9999-8888" />
+                </div>
+              </div>
+              <Button>Salvar Alterações</Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Modals */}
       <CriarImovelModal
@@ -1641,6 +1636,6 @@ export default function CorretorDashboard() {
         onClose={() => setShowCadastrarLead(false)}
         onSuccess={carregarDados}
       />
-    </div>
+    </DashboardLayout>
   );
 }
