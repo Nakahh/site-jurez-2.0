@@ -28,6 +28,7 @@ import {
   generatePerformanceReport,
   generateCustomReport,
 } from "@/utils/pdfGenerator";
+import { DashboardLayout } from "@/components/DashboardLayout";
 
 interface DashboardStats {
   totalImoveis: number;
