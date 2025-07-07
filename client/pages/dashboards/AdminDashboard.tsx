@@ -94,6 +94,36 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     carregarDados();
+
+    // Escutar mudanças nos serviços premium e recarregar dados
+    const handleServiceToggle = (e: CustomEvent) => {
+      console.log("Admin Dashboard: Serviço premium alterado", e.detail);
+      // Forçar re-render para atualizar status dos serviços
+      setLoading(true);
+      setTimeout(() => setLoading(false), 500);
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key?.includes("Active")) {
+        // Forçar re-render quando serviços premium mudam
+        setLoading(true);
+        setTimeout(() => setLoading(false), 500);
+      }
+    };
+
+    window.addEventListener(
+      "premiumServiceToggled",
+      handleServiceToggle as EventListener,
+    );
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener(
+        "premiumServiceToggled",
+        handleServiceToggle as EventListener,
+      );
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   // Button functionality handlers
