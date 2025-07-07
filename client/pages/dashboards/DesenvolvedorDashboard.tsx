@@ -529,10 +529,14 @@ export default function DesenvolvedorDashboard() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-1">
           <TabsTrigger value="overview" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Visão Geral</span>
             <span className="sm:hidden">📊</span>
+          </TabsTrigger>
+          <TabsTrigger value="premium" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Premium</span>
+            <span className="sm:hidden">💎</span>
           </TabsTrigger>
           <TabsTrigger value="realtime" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Tempo Real</span>
