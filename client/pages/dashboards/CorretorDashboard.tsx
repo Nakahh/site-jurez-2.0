@@ -1691,6 +1691,17 @@ export default function CorretorDashboard() {
                         >
                           <MessageSquare className="h-4 w-4" />
                         </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedLeadCorretor(lead);
+                            setShowAgendarVisita(true);
+                          }}
+                          title="Agendar Visita"
+                        >
+                          <Calendar className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   </div>
