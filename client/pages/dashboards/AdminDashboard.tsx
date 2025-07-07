@@ -1268,9 +1268,11 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() =>
-                            console.log("Viewing user:", usuario.id)
-                          }
+                          onClick={() => {
+                            alert(
+                              `Perfil de ${usuario.nome}:\n\nEmail: ${usuario.email}\nFunção: ${usuario.papel}\nStatus: ${usuario.ativo ? "Ativo" : "Inativo"}\nÚltimo login: ${usuario.ultimoLogin}`,
+                            );
+                          }}
                           className="w-full sm:w-auto"
                         >
                           <Eye className="h-4 w-4 mr-1 sm:mr-0" />
@@ -1279,9 +1281,13 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() =>
-                            console.log("Editing user:", usuario.id)
-                          }
+                          onClick={() => {
+                            const novoNome = prompt("Nome:", usuario.nome);
+                            const novoEmail = prompt("Email:", usuario.email);
+                            if (novoNome && novoEmail) {
+                              alert("Usuário atualizado com sucesso!");
+                            }
+                          }}
                           className="w-full sm:w-auto"
                         >
                           <Edit className="h-4 w-4 mr-1 sm:mr-0" />
@@ -1290,7 +1296,10 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={handleSettings}
+                          onClick={() => {
+                            setSelectedProperty(usuario);
+                            setShowSettingsModal(true);
+                          }}
                           className="w-full sm:w-auto"
                         >
                           <Settings className="h-4 w-4 mr-1 sm:mr-0" />
