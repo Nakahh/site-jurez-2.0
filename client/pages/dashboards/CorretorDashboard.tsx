@@ -1371,7 +1371,11 @@ export default function CorretorDashboard() {
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Performance de Vendas</h2>
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGeneratePerformanceReport}
+                >
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Relatório
                 </Button>
