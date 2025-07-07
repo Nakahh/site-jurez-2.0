@@ -1,4 +1,5 @@
 // Serviço centralizado para dados reais dos dashboards
+import { useState, useEffect } from "react";
 interface DashboardData {
   imoveis: {
     total: number;
