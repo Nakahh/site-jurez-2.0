@@ -114,35 +114,35 @@ export function SharedNavigation({
     <header className="border-b bg-card/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto flex items-center justify-between px-4 py-3">
         {/* Logo and Dashboard Info */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 lg:space-x-4 flex-1 min-w-0">
           {showBackButton && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(-1)}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 flex-shrink-0"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
 
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
             <img
               src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=300"
               alt="Siqueira Campos Imóveis"
-              className="h-12 w-auto dark:hidden"
+              className="h-10 lg:h-12 w-auto dark:hidden"
             />
             <img
               src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-escuro-e97fe8?format=webp&width=300"
               alt="Siqueira Campos Imóveis"
-              className="hidden h-12 w-auto dark:block"
+              className="hidden h-10 lg:h-12 w-auto dark:block"
             />
           </Link>
 
           {isDashboard && dashboardTitle && (
-            <div className="hidden md:flex items-center space-x-2 pl-4 border-l border-border">
-              <LayoutDashboard className="w-4 h-4 text-primary" />
-              <span className="font-semibold text-foreground">
+            <div className="hidden lg:flex items-center space-x-2 pl-4 border-l border-border min-w-0">
+              <LayoutDashboard className="w-4 h-4 text-primary flex-shrink-0" />
+              <span className="font-semibold text-foreground truncate">
                 {dashboardTitle}
               </span>
             </div>
