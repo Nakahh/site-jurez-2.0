@@ -485,7 +485,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Resumo Financeiro */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
             <Card className="border-l-4 border-l-green-500">
               <CardContent className="p-6">
                 <div className="flex justify-between items-center">
@@ -1087,7 +1087,7 @@ export default function AdminDashboard() {
               },
               {
                 titulo: "Análise de Mercado",
-                descricao: "Tendências de preços, demanda e oferta por região",
+                descricao: "Tendências de pre��os, demanda e oferta por região",
                 icon: PieChart,
                 color: "bg-orange-100 text-orange-600",
                 stats: "156 imóveis cadastrados",
