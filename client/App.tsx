@@ -39,6 +39,7 @@ const LazyAssistenteDashboard = lazy(
   () => import("./pages/dashboards/AssistenteDashboard"),
 );
 const LazyBlogPost = lazy(() => import("./pages/BlogPost"));
+const LazyForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 
 // Optimized QueryClient configuration
 const queryClient = new QueryClient({
