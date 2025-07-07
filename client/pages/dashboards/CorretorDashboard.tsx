@@ -51,6 +51,8 @@ import {
 import { Link } from "react-router-dom";
 import { AdvancedCalendar } from "@/components/AdvancedCalendar";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { WhatsAppIntegration } from "@/components/WhatsAppIntegration";
+import { CalendarIntegration } from "@/components/CalendarIntegration";
 
 // Types
 interface CorretorStats {
