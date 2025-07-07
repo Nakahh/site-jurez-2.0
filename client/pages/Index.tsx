@@ -51,6 +51,9 @@ export default function Index() {
   });
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [showVisitModal, setShowVisitModal] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
 
   useEffect(() => {
     carregarImoveisDestaque();
@@ -58,14 +61,16 @@ export default function Index() {
     // Add event listeners for custom events
     const handleScheduleVisit = (e: CustomEvent) => {
       const { propertyId, propertyTitle } = e.detail;
-      // You could trigger a modal or other action here
-      console.log("Schedule visit for:", propertyTitle);
+      const property = imoveisParaExibir.find((im) => im.id === propertyId);
+      setSelectedProperty(property);
+      setShowVisitModal(true);
     };
 
     const handleOpenChat = (e: CustomEvent) => {
       const { propertyId, propertyTitle } = e.detail;
-      // You could trigger a modal or other action here
-      console.log("Open chat for:", propertyTitle);
+      const property = imoveisParaExibir.find((im) => im.id === propertyId);
+      setSelectedProperty(property);
+      setShowChatModal(true);
     };
 
     window.addEventListener(
@@ -190,7 +195,7 @@ export default function Index() {
               Imóveis em Destaque
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Conhe��a nossa seleção especial de imóveis com as melhores
+              Conheça nossa seleção especial de imóveis com as melhores
               localizações e preços de Goiânia
             </p>
           </div>
@@ -830,6 +835,123 @@ export default function Index() {
           </div>
         </div>
       </footer>
+
+      {/* Modais */}
+      {showChatModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">
+                Conversar sobre o imóvel
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowChatModal(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            {selectedProperty && (
+              <div className="mb-4">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Imóvel selecionado:
+                </p>
+                <p className="font-semibold">{selectedProperty.titulo}</p>
+                <p className="text-sm text-muted-foreground">
+                  {selectedProperty.bairro}, {selectedProperty.cidade}
+                </p>
+              </div>
+            )}
+            <div className="space-y-4">
+              <p className="text-sm">Escolha como gostaria de conversar:</p>
+              <div className="space-y-2">
+                <Button
+                  className="w-full justify-start"
+                  onClick={() => {
+                    window.open(
+                      `https://wa.me/5562985563505?text=Olá! Tenho interesse no imóvel: ${selectedProperty?.titulo}`,
+                      "_blank",
+                    );
+                    setShowChatModal(false);
+                  }}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  WhatsApp
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    window.location.href = `tel:+5562985563505`;
+                    setShowChatModal(false);
+                  }}
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Ligar agora
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showVisitModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Agendar Visita</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowVisitModal(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            {selectedProperty && (
+              <div className="mb-4">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Imóvel selecionado:
+                </p>
+                <p className="font-semibold">{selectedProperty.titulo}</p>
+                <p className="text-sm text-muted-foreground">
+                  {selectedProperty.bairro}, {selectedProperty.cidade}
+                </p>
+              </div>
+            )}
+            <div className="space-y-4">
+              <p className="text-sm">Como gostaria de agendar sua visita?</p>
+              <div className="space-y-2">
+                <Button
+                  className="w-full justify-start"
+                  onClick={() => {
+                    window.open(
+                      `https://wa.me/5562985563505?text=Olá! Gostaria de agendar uma visita para o imóvel: ${selectedProperty?.titulo}`,
+                      "_blank",
+                    );
+                    setShowVisitModal(false);
+                  }}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  WhatsApp
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    window.location.href = `tel:+5562985563505`;
+                    setShowVisitModal(false);
+                  }}
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Ligar para agendar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Chat Bubble */}
       <ChatBubble />

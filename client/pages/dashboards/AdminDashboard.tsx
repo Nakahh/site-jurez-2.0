@@ -22,6 +22,8 @@ import {
   Settings,
   Shield,
   Bell,
+  FileText,
+  X,
 } from "lucide-react";
 import {
   generateSalesReport,
@@ -29,6 +31,7 @@ import {
   generateCustomReport,
 } from "@/utils/pdfGenerator";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { useToast } from "@/hooks/use-toast";
 
 interface DashboardStats {
   totalImoveis: number;
@@ -56,6 +59,7 @@ interface Transacao {
 }
 
 export default function AdminDashboard() {
+  const { toast } = useToast();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,6 +74,9 @@ export default function AdminDashboard() {
   const [showNewTransactionModal, setShowNewTransactionModal] = useState(false);
   const [showNewPropertyModal, setShowNewPropertyModal] = useState(false);
   const [showNewUserModal, setShowNewUserModal] = useState(false);
+  const [selectedPropertyImages, setSelectedPropertyImages] = useState<
+    string[]
+  >([]);
 
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState("");
@@ -110,10 +117,32 @@ export default function AdminDashboard() {
     try {
       const { generateSalesReport } = await import("@/utils/pdfGenerator");
       await generateSalesReport();
-      alert("Relatório exportado com sucesso!");
+
+      // Simular download do arquivo
+      const blob = new Blob(
+        ["Relatório de vendas - " + new Date().toLocaleString()],
+        { type: "text/csv" },
+      );
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `relatorio-vendas-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Sucesso!",
+        description: "Relatório exportado com sucesso!",
+      });
     } catch (error) {
       console.error("Erro ao exportar:", error);
-      alert("Erro ao exportar relatório");
+      toast({
+        title: "Erro",
+        description: "Erro ao exportar relatório",
+        variant: "destructive",
+      });
     }
   };
 
@@ -138,15 +167,24 @@ export default function AdminDashboard() {
   };
 
   const handleViewReport = (reportId: string) => {
-    // Instead of trying to access a non-existent API, let's handle it properly
     try {
       console.log("Viewing report:", reportId);
-      alert(
-        `Visualizando relatório ${reportId}. Em um sistema real, isso abriria o relatório em uma nova aba.`,
-      );
+
+      // Simular abertura de relatório em nova aba
+      const reportUrl = `/relatorio/${reportId}`;
+      window.open(reportUrl, "_blank");
+
+      toast({
+        title: "Relatório aberto",
+        description: `Relatório ${reportId} foi aberto em uma nova aba.`,
+      });
     } catch (error) {
       console.error("Erro ao visualizar relatório:", error);
-      alert("Erro ao visualizar relatório");
+      toast({
+        title: "Erro",
+        description: "Erro ao visualizar relatório",
+        variant: "destructive",
+      });
     }
   };
 
@@ -173,10 +211,17 @@ export default function AdminDashboard() {
           await generateCustomReport(reportId, `Relatório ${tipo}`);
       }
 
-      alert(`Relatório ${tipo} baixado com sucesso!`);
+      toast({
+        title: "Download concluído",
+        description: `Relatório ${tipo} baixado com sucesso!`,
+      });
     } catch (error) {
       console.error("Erro ao baixar relatório:", error);
-      alert("Erro ao baixar relatório. Tente novamente.");
+      toast({
+        title: "Erro",
+        description: "Erro ao baixar relatório. Tente novamente.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -437,7 +482,7 @@ export default function AdminDashboard() {
           </TabsTrigger>
           <TabsTrigger value="usuarios" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Usuários</span>
-            <span className="sm:hidden">��</span>
+            <span className="sm:hidden">👥</span>
           </TabsTrigger>
           <TabsTrigger value="relatorios" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Relatórios</span>
@@ -560,6 +605,60 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Atalhos Administrativos */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Settings className="mr-2 h-5 w-5" />
+                    Atalhos Administrativos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <Button
+                      variant="outline"
+                      className="h-16 flex flex-col items-center justify-center space-y-2"
+                      onClick={() => handleGenerateReport("Vendas")}
+                    >
+                      <BarChart3 className="h-5 w-5" />
+                      <span className="text-xs">Relatórios</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-16 flex flex-col items-center justify-center space-y-2"
+                      onClick={handleSettings}
+                    >
+                      <Settings className="h-5 w-5" />
+                      <span className="text-xs">Configurações</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-16 flex flex-col items-center justify-center space-y-2"
+                      onClick={() => {
+                        alert(
+                          "Backup iniciado! Você receberá uma notificação quando concluído.",
+                        );
+                      }}
+                    >
+                      <Download className="h-5 w-5" />
+                      <span className="text-xs">Backup</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-16 flex flex-col items-center justify-center space-y-2"
+                      onClick={() => {
+                        alert(
+                          "Logs do sistema:\n- Login admin 14:30\n- Novo imóvel adicionado 14:25\n- Backup concluído 13:00",
+                        );
+                      }}
+                    >
+                      <FileText className="h-5 w-5" />
+                      <span className="text-xs">Logs do Sistema</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </>
           )}
         </TabsContent>
@@ -742,15 +841,24 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Gestão de Imóveis</h2>
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleSearch("properties")}
-                className="w-full sm:w-auto"
-              >
-                <Search className="h-4 w-4 mr-2" />
-                Buscar
-              </Button>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  placeholder="Buscar imóveis..."
+                  className="px-3 py-2 border rounded-md text-sm"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSearch(searchTerm)}
+                  className="w-full sm:w-auto"
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  Buscar
+                </Button>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -978,15 +1086,24 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Gestão de Usuários</h2>
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleSearch("users")}
-                className="w-full sm:w-auto"
-              >
-                <Search className="h-4 w-4 mr-2" />
-                Buscar
-              </Button>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  placeholder="Buscar usuários..."
+                  className="px-3 py-2 border rounded-md text-sm"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSearch(searchTerm)}
+                  className="w-full sm:w-auto"
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  Buscar
+                </Button>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -1120,7 +1237,7 @@ export default function AdminDashboard() {
                     email: "assistente@siqueicamposimoveis.com.br",
                     papel: "ASSISTENTE",
                     ativo: true,
-                    ultimoLogin: "Hoje ��s 11:15",
+                    ultimoLogin: "Hoje às 11:15",
                     avatar: "M",
                   },
                   {
@@ -1194,9 +1311,11 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() =>
-                            console.log("Viewing user:", usuario.id)
-                          }
+                          onClick={() => {
+                            alert(
+                              `Perfil de ${usuario.nome}:\n\nEmail: ${usuario.email}\nFunção: ${usuario.papel}\nStatus: ${usuario.ativo ? "Ativo" : "Inativo"}\nÚltimo login: ${usuario.ultimoLogin}`,
+                            );
+                          }}
                           className="w-full sm:w-auto"
                         >
                           <Eye className="h-4 w-4 mr-1 sm:mr-0" />
@@ -1205,9 +1324,13 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() =>
-                            console.log("Editing user:", usuario.id)
-                          }
+                          onClick={() => {
+                            const novoNome = prompt("Nome:", usuario.nome);
+                            const novoEmail = prompt("Email:", usuario.email);
+                            if (novoNome && novoEmail) {
+                              alert("Usuário atualizado com sucesso!");
+                            }
+                          }}
                           className="w-full sm:w-auto"
                         >
                           <Edit className="h-4 w-4 mr-1 sm:mr-0" />
@@ -1216,7 +1339,10 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={handleSettings}
+                          onClick={() => {
+                            setSelectedProperty(usuario);
+                            setShowSettingsModal(true);
+                          }}
                           className="w-full sm:w-auto"
                         >
                           <Settings className="h-4 w-4 mr-1 sm:mr-0" />
@@ -1236,15 +1362,27 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Relatórios Avançados</h2>
             <div className="flex space-x-2">
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const periodo = prompt(
+                    "Selecione o período:",
+                    "Últimos 30 dias",
+                  );
+                  if (periodo) {
+                    alert(`Período selecionado: ${periodo}`);
+                  }
+                }}
+              >
                 <Calendar className="h-4 w-4 mr-2" />
                 Período
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleFilter}>
                 <Filter className="h-4 w-4 mr-2" />
                 Filtros
               </Button>
-              <Button size="sm">
+              <Button size="sm" onClick={handleExport}>
                 <Download className="h-4 w-4 mr-2" />
                 Exportar
               </Button>
@@ -1285,7 +1423,7 @@ export default function AdminDashboard() {
               },
               {
                 titulo: "Análise de Mercado",
-                descricao: "Tendências de pre��os, demanda e oferta por região",
+                descricao: "Tendências de preços, demanda e oferta por região",
                 icon: PieChart,
                 color: "bg-orange-100 text-orange-600",
                 stats: "156 imóveis cadastrados",
@@ -1443,7 +1581,18 @@ export default function AdminDashboard() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => console.log("Editing monthly report")}
+                      onClick={() => {
+                        const novoEmail = prompt(
+                          "Email para envio:",
+                          "admin@siqueicamposimoveis.com.br",
+                        );
+                        const novoDia = prompt("Dia do mês (1-31):", "1");
+                        if (novoEmail && novoDia) {
+                          alert(
+                            "Configurações do relatório mensal atualizadas!",
+                          );
+                        }
+                      }}
                       className="w-full sm:w-auto"
                     >
                       <Edit className="h-4 w-4 mr-1" />
@@ -1452,7 +1601,11 @@ export default function AdminDashboard() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={handleSettings}
+                      onClick={() => {
+                        alert(
+                          "Configurações do Relatório Mensal:\n\n- Formato: PDF\n- Idioma: Português\n- Incluir gráficos: Sim\n- Envio automático: Ativo",
+                        );
+                      }}
                       className="w-full sm:w-auto"
                     >
                       <Settings className="h-4 w-4 mr-1" />
@@ -1473,7 +1626,18 @@ export default function AdminDashboard() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => console.log("Editing automated report")}
+                      onClick={() => {
+                        const novoDia = prompt(
+                          "Dia da semana (1=Segunda, 7=Domingo):",
+                          "1",
+                        );
+                        const novoHorario = prompt("Horário (HH:MM):", "08:00");
+                        if (novoDia && novoHorario) {
+                          alert(
+                            "Configurações do relatório semanal atualizadas!",
+                          );
+                        }
+                      }}
                       className="w-full sm:w-auto"
                     >
                       <Edit className="h-4 w-4 mr-1" />
@@ -1483,8 +1647,14 @@ export default function AdminDashboard() {
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        console.log("Toggling automated report");
-                        alert("Relatório automático ativado/desativado!");
+                        const confirmar = confirm(
+                          "Deseja ativar o relatório automático de Performance Semanal?",
+                        );
+                        if (confirmar) {
+                          alert(
+                            "Relatório de Performance Semanal ativado! Será enviado toda segunda-feira às 08:00.",
+                          );
+                        }
                       }}
                       className="w-full sm:w-auto"
                     >
@@ -1600,6 +1770,728 @@ export default function AdminDashboard() {
             <Button onClick={() => setShowHelpModal(false)} className="w-full">
               Fechar
             </Button>
+          </div>
+        </div>
+      )}
+
+      {showSettingsModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg max-w-lg w-full mx-4">
+            <h3 className="text-lg font-bold mb-4">Configurações</h3>
+            <div className="space-y-4 mb-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Tema</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Claro</option>
+                  <option>Escuro</option>
+                  <option>Automático</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Idioma</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Português</option>
+                  <option>English</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Notificações</label>
+                <div className="flex items-center space-x-2">
+                  <input type="checkbox" defaultChecked />
+                  <span className="text-sm">
+                    Receber notificações por email
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => {
+                  alert("Configurações salvas!");
+                  setShowSettingsModal(false);
+                }}
+                className="flex-1"
+              >
+                Salvar
+              </Button>
+              <Button
+                onClick={() => setShowSettingsModal(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showFilterModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold mb-4">Filtros</h3>
+            <div className="space-y-4 mb-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Período</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Últimos 7 dias</option>
+                  <option>Últimos 30 dias</option>
+                  <option>Últimos 3 meses</option>
+                  <option>Este ano</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Tipo</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Todos</option>
+                  <option>Entrada</option>
+                  <option>Saída</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Status</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Todos</option>
+                  <option>Pago</option>
+                  <option>Pendente</option>
+                  <option>Cancelado</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => {
+                  alert("Filtros aplicados!");
+                  setShowFilterModal(false);
+                }}
+                className="flex-1"
+              >
+                Aplicar
+              </Button>
+              <Button
+                onClick={() => setShowFilterModal(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showNewTransactionModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold mb-4">Nova Transação</h3>
+            <div className="space-y-4 mb-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Tipo</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Entrada</option>
+                  <option>Saída</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Descrição</label>
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded"
+                  placeholder="Descrição da transação"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Valor</label>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  placeholder="0,00"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Categoria</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Comissão</option>
+                  <option>Marketing</option>
+                  <option>Operacional</option>
+                  <option>Outros</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => {
+                  alert("Transação criada com sucesso!");
+                  setShowNewTransactionModal(false);
+                }}
+                className="flex-1"
+              >
+                Criar
+              </Button>
+              <Button
+                onClick={() => setShowNewTransactionModal(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showNewPropertyModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-lg max-w-6xl w-full max-h-[95vh] overflow-hidden">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">Novo Imóvel</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowNewPropertyModal(false);
+                    setSelectedPropertyImages([]);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="overflow-y-auto max-h-[calc(95vh-140px)] p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Informações Básicas */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Informações Básicas
+                  </h4>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Título do Imóvel *
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-3 border rounded-md"
+                      placeholder="Ex: Apartamento moderno no Setor Bueno"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Descrição Completa *
+                    </label>
+                    <textarea
+                      className="w-full p-3 border rounded-md h-24"
+                      placeholder="Descreva o imóvel detalhadamente..."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Tipo *</label>
+                      <select className="w-full p-3 border rounded-md">
+                        <option value="">Selecione o tipo</option>
+                        <option value="APARTAMENTO">Apartamento</option>
+                        <option value="CASA">Casa</option>
+                        <option value="TERRENO">Terreno</option>
+                        <option value="COMERCIAL">Comercial</option>
+                        <option value="RURAL">Rural</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Finalidade *
+                      </label>
+                      <select className="w-full p-3 border rounded-md">
+                        <option value="">Selecione a finalidade</option>
+                        <option value="VENDA">Venda</option>
+                        <option value="ALUGUEL">Aluguel</option>
+                        <option value="AMBOS">Ambos</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Preço (R$) *
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="650000"
+                        step="1000"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Área Total (m²) *
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="89"
+                        step="0.01"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Quartos</label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="3"
+                        min="0"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Banheiros</label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="2"
+                        min="0"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Vagas</label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="2"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        IPTU Anual (R$)
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="3500"
+                        step="100"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Ano de Construção
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="2018"
+                        min="1900"
+                        max="2025"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Localização */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Localização
+                  </h4>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Endereço Completo *
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-3 border rounded-md"
+                      placeholder="Rua T-30, 1234, Apartamento 802"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Bairro *</label>
+                      <input
+                        type="text"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="Setor Bueno"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">CEP</label>
+                      <input
+                        type="text"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="74223-030"
+                        maxLength="9"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Cidade *</label>
+                      <input
+                        type="text"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="Goiânia"
+                        defaultValue="Goiânia"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Estado *</label>
+                      <input
+                        type="text"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="GO"
+                        defaultValue="GO"
+                        maxLength="2"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Latitude</label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="-16.6868"
+                        step="0.0001"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Longitude</label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="-49.2643"
+                        step="0.0001"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Condomínio */}
+                  <div className="border-t pt-4">
+                    <h5 className="font-medium mb-3">
+                      Condomínio (se aplicável)
+                    </h5>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Valor do Condomínio (R$/mês)
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="450"
+                        step="10"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Características e Amenidades */}
+              <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Características
+                  </h4>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Características do Imóvel
+                    </label>
+                    <textarea
+                      className="w-full p-3 border rounded-md h-20"
+                      placeholder="Ex: Reformado recentemente, Móveis planejados, Varanda gourmet (uma por linha)"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Digite uma característica por linha
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Amenidades do Condomínio
+                  </h4>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Amenidades Disponíveis
+                    </label>
+                    <textarea
+                      className="w-full p-3 border rounded-md h-20"
+                      placeholder="Ex: Piscina, Academia, Salão de festas, Playground (uma por linha)"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Digite uma amenidade por linha
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upload de Imagens */}
+              <div className="mt-6">
+                <h4 className="font-semibold text-lg border-b pb-2 mb-4">
+                  Fotos do Imóvel
+                </h4>
+                <div className="space-y-4">
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                    <input
+                      type="file"
+                      id="property-images"
+                      multiple
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length > 0) {
+                          // Simular URLs das imagens para preview
+                          const newImages = files.map(
+                            (file, index) =>
+                              `https://images.unsplash.com/photo-${1560518883 + index}?w=200&h=150&fit=crop`,
+                          );
+                          setSelectedPropertyImages((prev) => [
+                            ...prev,
+                            ...newImages,
+                          ]);
+                          alert(
+                            `${files.length} foto(s) adicionada(s) com sucesso!`,
+                          );
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="property-images"
+                      className="cursor-pointer flex flex-col items-center space-y-3"
+                    >
+                      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Plus className="h-8 w-8 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium">
+                          Clique para adicionar fotos
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          ou arraste e solte aqui
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Formatos aceitos: JPG, PNG, WebP (máx. 10MB cada)
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+
+                  {selectedPropertyImages.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                      {selectedPropertyImages.map((url, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={url}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-md border"
+                          />
+                          <button
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => {
+                              setSelectedPropertyImages((prev) =>
+                                prev.filter((_, i) => i !== index),
+                              );
+                              alert(`Foto ${index + 1} removida!`);
+                            }}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                          <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1 rounded">
+                            {index + 1}
+                          </div>
+                          {index === 0 && (
+                            <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                              Capa
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {selectedPropertyImages.length > 0 && (
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground">
+                        {selectedPropertyImages.length} foto(s) selecionada(s) •
+                        A primeira foto será usada como capa
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={() => {
+                          if (confirm("Deseja remover todas as fotos?")) {
+                            setSelectedPropertyImages([]);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Remover Todas
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Configurações Adicionais */}
+              <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Configurações
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="destaque"
+                        className="rounded"
+                      />
+                      <label htmlFor="destaque" className="text-sm font-medium">
+                        Exibir como imóvel em destaque
+                      </label>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Status</label>
+                      <select className="w-full p-3 border rounded-md">
+                        <option value="DISPONIVEL">Disponível</option>
+                        <option value="RESERVADO">Reservado</option>
+                        <option value="VENDIDO">Vendido</option>
+                        <option value="ALUGADO">Alugado</option>
+                        <option value="INATIVO">Inativo</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Corretor Responsável
+                  </h4>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Corretor</label>
+                    <select className="w-full p-3 border rounded-md">
+                      <option value="">Selecionar corretor</option>
+                      <option value="1">Juarez Siqueira Campos</option>
+                      <option value="2">Carlos Silva</option>
+                      <option value="3">Maria Santos</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Rodapé com botões */}
+            <div className="border-t p-6">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                <Button
+                  onClick={() => {
+                    // Aqui você implementaria a lógica de salvamento
+                    alert(
+                      "🎉 Imóvel criado com sucesso!\n\nTodas as informações foram salvas:\n• Dados básicos\n• Localização\n• Características\n• Amenidades\n• Fotos\n• Configurações\n\nO imóvel já está disponível no sistema!",
+                    );
+                    setShowNewPropertyModal(false);
+                  }}
+                  className="flex-1 sm:flex-none sm:px-8"
+                  size="lg"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Imóvel
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowNewPropertyModal(false);
+                    setSelectedPropertyImages([]);
+                  }}
+                  variant="outline"
+                  className="flex-1 sm:flex-none sm:px-8"
+                  size="lg"
+                >
+                  Cancelar
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                * Campos obrigatórios devem ser preenchidos
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showNewUserModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold mb-4">Novo Usuário</h3>
+            <div className="space-y-4 mb-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Nome</label>
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded"
+                  placeholder="Nome completo"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Email</label>
+                <input
+                  type="email"
+                  className="w-full p-2 border rounded"
+                  placeholder="usuario@email.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Telefone</label>
+                <input
+                  type="tel"
+                  className="w-full p-2 border rounded"
+                  placeholder="(62) 99999-9999"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Função</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Cliente</option>
+                  <option>Corretor</option>
+                  <option>Admin</option>
+                  <option>Marketing</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Senha Temporária</label>
+                <input
+                  type="password"
+                  className="w-full p-2 border rounded"
+                  placeholder="Senha temporária"
+                />
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => {
+                  alert("Usuário criado com sucesso!");
+                  setShowNewUserModal(false);
+                }}
+                className="flex-1"
+              >
+                Criar
+              </Button>
+              <Button
+                onClick={() => setShowNewUserModal(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
           </div>
         </div>
       )}

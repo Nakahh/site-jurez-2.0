@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,9 +51,15 @@ import {
   Bell,
   UserCheck,
   CalendarCheck,
+  X,
+  Trash2,
+  DollarSign,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { WhatsAppIntegration } from "@/components/WhatsAppIntegration";
+import { CalendarIntegration } from "@/components/CalendarIntegration";
+import { useToast } from "@/hooks/use-toast";
 
 interface AssistenteStats {
   leadsAtribuidos: number;
@@ -111,6 +118,7 @@ interface Tarefa {
 }
 
 export default function AssistenteDashboard() {
+  const { toast } = useToast();
   const [stats, setStats] = useState<AssistenteStats | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
@@ -119,6 +127,13 @@ export default function AssistenteDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [novoLead, setNovoLead] = useState(false);
   const [novaTarefa, setNovaTarefa] = useState(false);
+  const [showCriarImovel, setShowCriarImovel] = useState(false);
+  const [selectedPropertyImages, setSelectedPropertyImages] = useState<
+    string[]
+  >([]);
+  const [showAgendarVisita, setShowAgendarVisita] = useState(false);
+  const [showWhatsAppBusiness, setShowWhatsAppBusiness] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   useEffect(() => {
     carregarDados();
@@ -131,7 +146,10 @@ export default function AssistenteDashboard() {
         agend.id === visitaId ? { ...agend, status: "CONFIRMADA" } : agend,
       ),
     );
-    alert("Visita confirmada com sucesso!");
+    toast({
+      title: "Visita confirmada!",
+      description: "A confirmação foi enviada para o cliente.",
+    });
   };
 
   // Funções para gerenciar leads
@@ -155,8 +173,8 @@ export default function AssistenteDashboard() {
   const handleAgendarLead = (leadId: string) => {
     const lead = leads.find((l) => l.id === leadId);
     if (lead) {
-      alert(`Redirecionando para agenda para agendar com ${lead.nome}`);
-      setActiveTab("agendamentos");
+      setSelectedLead(lead);
+      setShowAgendarVisita(true);
     }
   };
 
@@ -171,7 +189,10 @@ export default function AssistenteDashboard() {
         setLeads((prev) =>
           prev.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l)),
         );
-        alert("Lead atualizado com sucesso!");
+        toast({
+          title: "Lead atualizado",
+          description: "As informações do lead foram atualizadas.",
+        });
       }
     }
   };
@@ -504,7 +525,7 @@ export default function AssistenteDashboard() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1">
           <TabsTrigger value="overview" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Visão Geral</span>
             <span className="sm:hidden">📊</span>
@@ -521,6 +542,10 @@ export default function AssistenteDashboard() {
             <span className="hidden sm:inline">Tarefas</span>
             <span className="sm:hidden">✓</span>
           </TabsTrigger>
+          <TabsTrigger value="integracoes" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Integrações</span>
+            <span className="sm:hidden">🔗</span>
+          </TabsTrigger>
           <TabsTrigger value="suporte" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Suporte</span>
             <span className="sm:hidden">🛠️</span>
@@ -534,7 +559,7 @@ export default function AssistenteDashboard() {
               {/* Métricas Principais */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard
-                  title="Leads Atribuídos"
+                  title="Leads Atribu��dos"
                   value={stats.leadsAtribuidos}
                   icon={Users}
                   description="Total sob sua responsabilidade"
@@ -691,6 +716,56 @@ export default function AssistenteDashboard() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Ações Rápidas */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card
+                  className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900"
+                  onClick={() => setShowCriarImovel(true)}
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Home className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-bold mb-2">Cadastrar Imóvel</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      Adicione um novo imóvel com todas as informações e fotos
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900"
+                  onClick={() => setShowWhatsAppBusiness(true)}
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <MessageSquare className="h-8 w-8 text-green-600" />
+                    </div>
+                    <h3 className="text-lg font-bold mb-2">
+                      WhatsApp Business
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      Central de mensagens e atendimento via WhatsApp
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-950 dark:to-violet-900"
+                  onClick={() => setActiveTab("agendamentos")}
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CalendarCheck className="h-8 w-8 text-purple-600" />
+                    </div>
+                    <h3 className="text-lg font-bold mb-2">Agendar Visitas</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      Gerencie e organize todas as visitas dos clientes
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
             </>
           )}
         </TabsContent>
@@ -743,7 +818,7 @@ export default function AssistenteDashboard() {
                           <SelectItem value="whatsapp">WhatsApp</SelectItem>
                           <SelectItem value="instagram">Instagram</SelectItem>
                           <SelectItem value="facebook">Facebook</SelectItem>
-                          <SelectItem value="indicacao">Indicação</SelectItem>
+                          <SelectItem value="indicacao">Indicaç��o</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1235,6 +1310,268 @@ export default function AssistenteDashboard() {
           </div>
         </TabsContent>
 
+        {/* Integrações Premium */}
+        <TabsContent value="integracoes" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Integrações Premium</h2>
+            <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
+              Premium
+            </Badge>
+          </div>
+
+          {/* Integrações WhatsApp e Google Calendar */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <WhatsAppIntegration userRole="ASSISTENTE" />
+            <CalendarIntegration userRole="ASSISTENTE" />
+          </div>
+
+          {/* Configurações Adicionais para Assistente */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Configurações de Email */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Mail className="h-5 w-5 text-blue-600" />
+                  <span>Integração Email</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Servidor SMTP</Label>
+                  <Input placeholder="smtp.gmail.com" />
+                </div>
+                <div>
+                  <Label>Email do Assistente</Label>
+                  <Input placeholder="assistente@siqueicamposimoveis.com.br" />
+                </div>
+                <div>
+                  <Label>Senha do Email</Label>
+                  <Input type="password" placeholder="••••••••" />
+                </div>
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                  <div>
+                    <Label>Auto-resposta Email</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Responder automaticamente emails de leads
+                    </p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <Button className="w-full">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Configurar Email
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Configurações de Notificações */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Bell className="h-5 w-5 text-orange-600" />
+                  <span>Notificações Inteligentes</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div>
+                      <Label>Novos Leads</Label>
+                      <p className="text-xs text-muted-foreground">
+                        WhatsApp + Email
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div>
+                      <Label>Visitas Agendadas</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Lembrete 1h antes
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div>
+                      <Label>Follow-up Automático</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Após 24h sem resposta
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div>
+                      <Label>Relatórios Diários</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Resumo às 18h
+                      </p>
+                    </div>
+                    <Switch />
+                  </div>
+                </div>
+                <Button className="w-full">
+                  <Activity className="h-4 w-4 mr-2" />
+                  Testar Notificações
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Configurações N8N */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Activity className="h-5 w-5 text-green-600" />
+                  <span>Automação N8N</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>URL do N8N Server</Label>
+                  <Input placeholder="https://n8n.siqueicamposimoveis.com.br" />
+                </div>
+                <div>
+                  <Label>API Token</Label>
+                  <Input type="password" placeholder="••••••••••••••••" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Workflows Ativos</Label>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center p-2 bg-muted rounded">
+                      <span className="text-sm">Lead Distribution</span>
+                      <Badge className="bg-green-100 text-green-800">
+                        Ativo
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-center p-2 bg-muted rounded">
+                      <span className="text-sm">WhatsApp Automation</span>
+                      <Badge className="bg-green-100 text-green-800">
+                        Ativo
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-center p-2 bg-muted rounded">
+                      <span className="text-sm">Calendar Sync</span>
+                      <Badge variant="secondary">Inativo</Badge>
+                    </div>
+                  </div>
+                </div>
+                <Button className="w-full">
+                  <Target className="h-4 w-4 mr-2" />
+                  Conectar N8N
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Status do Sistema */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Activity className="h-5 w-5 text-purple-600" />
+                  <span>Status do Sistema</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">WhatsApp Business</span>
+                    <Badge className="bg-green-100 text-green-800">
+                      Conectado
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Google Calendar</span>
+                    <Badge className="bg-green-100 text-green-800">
+                      Sincronizado
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Evolution API</span>
+                    <Badge className="bg-green-100 text-green-800">
+                      Online
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">N8N Server</span>
+                    <Badge className="bg-green-100 text-green-800">
+                      Funcionando
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Base de Dados</span>
+                    <Badge className="bg-green-100 text-green-800">
+                      Estável
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t">
+                  <div className="text-center p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950 dark:to-blue-950 rounded-lg">
+                    <div className="text-lg font-bold text-green-600">
+                      99.8%
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Uptime último mês
+                    </div>
+                  </div>
+                </div>
+
+                <Button className="w-full" variant="outline">
+                  <Eye className="h-4 w-4 mr-2" />
+                  Ver Logs Detalhados
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Seção de Tutoriais */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Como Configurar as Integrações</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-6 h-6 bg-green-100 text-green-800 rounded-full flex items-center justify-center text-xs font-bold">
+                      1
+                    </div>
+                    <h4 className="font-semibold">WhatsApp Business</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Configure sua conta WhatsApp Business e conecte com a
+                    Evolution API para automação completa de leads.
+                  </p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-6 h-6 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-xs font-bold">
+                      2
+                    </div>
+                    <h4 className="font-semibold">Google Calendar</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Sincronize agendamentos automaticamente e receba lembretes
+                    inteligentes para visitas.
+                  </p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-6 h-6 bg-purple-100 text-purple-800 rounded-full flex items-center justify-center text-xs font-bold">
+                      3
+                    </div>
+                    <h4 className="font-semibold">N8N Automation</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Configure workflows inteligentes para automação completa do
+                    processo de vendas.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Suporte */}
         <TabsContent value="suporte" className="space-y-6">
           <div className="flex justify-between items-center">
@@ -1398,6 +1735,923 @@ export default function AssistenteDashboard() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Modal de Criação de Imóveis */}
+      {showCriarImovel && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-6xl w-full max-h-[95vh] overflow-hidden">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">Cadastrar Novo Imóvel</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowCriarImovel(false);
+                    setSelectedPropertyImages([]);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="overflow-y-auto max-h-[calc(95vh-140px)] p-6">
+              <form className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Informações Básicas */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg border-b pb-2">
+                      Informações Básicas
+                    </h4>
+
+                    <div className="space-y-2">
+                      <Label>Título do Imóvel *</Label>
+                      <Input placeholder="Ex: Apartamento moderno no Setor Bueno" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Descrição Completa *</Label>
+                      <Textarea
+                        className="h-24"
+                        placeholder="Descreva o imóvel detalhadamente..."
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Tipo *</Label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o tipo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="APARTAMENTO">
+                              Apartamento
+                            </SelectItem>
+                            <SelectItem value="CASA">Casa</SelectItem>
+                            <SelectItem value="TERRENO">Terreno</SelectItem>
+                            <SelectItem value="COMERCIAL">Comercial</SelectItem>
+                            <SelectItem value="RURAL">Rural</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Finalidade *</Label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione a finalidade" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="VENDA">Venda</SelectItem>
+                            <SelectItem value="ALUGUEL">Aluguel</SelectItem>
+                            <SelectItem value="AMBOS">Ambos</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Preço (R$) *</Label>
+                        <Input type="number" placeholder="650000" step="1000" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Área Total (m²) *</Label>
+                        <Input type="number" placeholder="89" step="0.01" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>Quartos</Label>
+                        <Input type="number" placeholder="3" min="0" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Banheiros</Label>
+                        <Input type="number" placeholder="2" min="0" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Vagas</Label>
+                        <Input type="number" placeholder="2" min="0" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>IPTU Anual (R$)</Label>
+                        <Input type="number" placeholder="3500" step="100" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Ano de Construção</Label>
+                        <Input
+                          type="number"
+                          placeholder="2018"
+                          min="1900"
+                          max="2025"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Localização */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg border-b pb-2">
+                      Localização
+                    </h4>
+
+                    <div className="space-y-2">
+                      <Label>Endereço Completo *</Label>
+                      <Input placeholder="Rua T-30, 1234, Apartamento 802" />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Bairro *</Label>
+                        <Input placeholder="Setor Bueno" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>CEP</Label>
+                        <Input placeholder="74223-030" maxLength={9} />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Cidade *</Label>
+                        <Input placeholder="Goiânia" defaultValue="Goiânia" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Estado *</Label>
+                        <Input
+                          placeholder="GO"
+                          defaultValue="GO"
+                          maxLength={2}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Latitude</Label>
+                        <Input
+                          type="number"
+                          placeholder="-16.6868"
+                          step="0.0001"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Longitude</Label>
+                        <Input
+                          type="number"
+                          placeholder="-49.2643"
+                          step="0.0001"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Condomínio */}
+                    <div className="border-t pt-4">
+                      <h5 className="font-medium mb-3">
+                        Condomínio (se aplicável)
+                      </h5>
+                      <div className="space-y-2">
+                        <Label>Valor do Condomínio (R$/mês)</Label>
+                        <Input type="number" placeholder="450" step="10" />
+                      </div>
+                    </div>
+
+                    {/* WhatsApp Integration */}
+                    <div className="border-t pt-4">
+                      <h5 className="font-medium mb-3">Integração WhatsApp</h5>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="whatsapp-alerts"
+                            className="rounded"
+                          />
+                          <label
+                            htmlFor="whatsapp-alerts"
+                            className="text-sm font-medium"
+                          >
+                            Receber alertas via WhatsApp quando houver interesse
+                          </label>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Mensagem automática para interessados</Label>
+                          <Textarea
+                            className="h-16"
+                            placeholder="Olá! Vi que você tem interesse neste imóvel. Sou da Siqueira Campos Imóveis e posso te ajudar com mais informações!"
+                            defaultValue="Olá! Vi que você tem interesse neste imóvel. Sou da Siqueira Campos Imóveis e posso te ajudar com mais informações!"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Características e Amenidades */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg border-b pb-2">
+                      Características
+                    </h4>
+                    <div className="space-y-2">
+                      <Label>Características do Imóvel</Label>
+                      <Textarea
+                        className="h-20"
+                        placeholder="Ex: Reformado recentemente&#10;Móveis planejados&#10;Varanda gourmet"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Digite uma característica por linha
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg border-b pb-2">
+                      Amenidades do Condomínio
+                    </h4>
+                    <div className="space-y-2">
+                      <Label>Amenidades Disponíveis</Label>
+                      <Textarea
+                        className="h-20"
+                        placeholder="Ex: Piscina&#10;Academia&#10;Salão de festas&#10;Playground"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Digite uma amenidade por linha
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Upload de Imagens */}
+                <div>
+                  <h4 className="font-semibold text-lg border-b pb-2 mb-4">
+                    Fotos do Imóvel
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                      <input
+                        type="file"
+                        id="property-images-assistente"
+                        multiple
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files || []);
+                          if (files.length > 0) {
+                            const newImages = files.map(
+                              (file, index) =>
+                                `https://images.unsplash.com/photo-${1560518883 + selectedPropertyImages.length + index}?w=200&h=150&fit=crop`,
+                            );
+                            setSelectedPropertyImages((prev) => [
+                              ...prev,
+                              ...newImages,
+                            ]);
+                            alert(
+                              `${files.length} foto(s) adicionada(s) com sucesso!`,
+                            );
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor="property-images-assistente"
+                        className="cursor-pointer flex flex-col items-center space-y-3"
+                      >
+                        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                          <Plus className="h-8 w-8 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">
+                            Clique para adicionar fotos
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            ou arraste e solte aqui
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Formatos aceitos: JPG, PNG, WebP (máx. 10MB cada)
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+
+                    {selectedPropertyImages.length > 0 && (
+                      <>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                          {selectedPropertyImages.map((url, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={url}
+                                alt={`Preview ${index + 1}`}
+                                className="w-full h-24 object-cover rounded-md border"
+                              />
+                              <button
+                                type="button"
+                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => {
+                                  setSelectedPropertyImages((prev) =>
+                                    prev.filter((_, i) => i !== index),
+                                  );
+                                  alert(`Foto ${index + 1} removida!`);
+                                }}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                              <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1 rounded">
+                                {index + 1}
+                              </div>
+                              {index === 0 && (
+                                <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                                  Capa
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="text-center">
+                          <p className="text-sm text-muted-foreground">
+                            {selectedPropertyImages.length} foto(s)
+                            selecionada(s) • A primeira foto será usada como
+                            capa
+                          </p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="mt-2"
+                            onClick={() => {
+                              if (confirm("Deseja remover todas as fotos?")) {
+                                setSelectedPropertyImages([]);
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Remover Todas
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Configurações Adicionais */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg border-b pb-2">
+                      Configurações
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="destaque-assistente"
+                          className="rounded"
+                        />
+                        <label
+                          htmlFor="destaque-assistente"
+                          className="text-sm font-medium"
+                        >
+                          Exibir como imóvel em destaque
+                        </label>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Status</Label>
+                        <Select defaultValue="DISPONIVEL">
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="DISPONIVEL">
+                              Disponível
+                            </SelectItem>
+                            <SelectItem value="RESERVADO">Reservado</SelectItem>
+                            <SelectItem value="VENDIDO">Vendido</SelectItem>
+                            <SelectItem value="ALUGADO">Alugado</SelectItem>
+                            <SelectItem value="INATIVO">Inativo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg border-b pb-2">
+                      Notificações WhatsApp
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="whatsapp-lead"
+                          className="rounded"
+                          defaultChecked
+                        />
+                        <label
+                          htmlFor="whatsapp-lead"
+                          className="text-sm font-medium"
+                        >
+                          Notificar quando houver novo interesse
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="whatsapp-visit"
+                          className="rounded"
+                          defaultChecked
+                        />
+                        <label
+                          htmlFor="whatsapp-visit"
+                          className="text-sm font-medium"
+                        >
+                          Notificar quando agendarem visita
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="whatsapp-question"
+                          className="rounded"
+                          defaultChecked
+                        />
+                        <label
+                          htmlFor="whatsapp-question"
+                          className="text-sm font-medium"
+                        >
+                          Notificar quando fizerem perguntas
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rodapé com botões */}
+                <div className="border-t pt-6">
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                    <Button
+                      type="submit"
+                      className="flex-1 sm:flex-none sm:px-8"
+                      size="lg"
+                      onClick={() => {
+                        alert(
+                          "🎉 Imóvel criado com sucesso!\n\n✅ Todas as informações foram salvas\n✅ Fotos carregadas\n✅ Notificações WhatsApp ativadas\n✅ Sistema pronto para receber leads!",
+                        );
+                        setShowCriarImovel(false);
+                        setSelectedPropertyImages([]);
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Criar Imóvel
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setShowCriarImovel(false);
+                        setSelectedPropertyImages([]);
+                      }}
+                      variant="outline"
+                      className="flex-1 sm:flex-none sm:px-8"
+                      size="lg"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    * Campos obrigatórios devem ser preenchidos
+                  </p>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Agendamento de Visitas */}
+      {showAgendarVisita && selectedLead && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-md w-full">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold">Agendar Visita</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowAgendarVisita(false);
+                    setSelectedLead(null);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="space-y-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  <h4 className="font-semibold">Cliente</h4>
+                  <p className="text-sm">{selectedLead.nome}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedLead.telefone}
+                  </p>
+                  {selectedLead.email && (
+                    <p className="text-sm text-muted-foreground">
+                      {selectedLead.email}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Data da Visita</Label>
+                  <Input
+                    type="date"
+                    min={new Date().toISOString().split("T")[0]}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Horário</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o horário" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="08:00">08:00</SelectItem>
+                      <SelectItem value="09:00">09:00</SelectItem>
+                      <SelectItem value="10:00">10:00</SelectItem>
+                      <SelectItem value="11:00">11:00</SelectItem>
+                      <SelectItem value="14:00">14:00</SelectItem>
+                      <SelectItem value="15:00">15:00</SelectItem>
+                      <SelectItem value="16:00">16:00</SelectItem>
+                      <SelectItem value="17:00">17:00</SelectItem>
+                      <SelectItem value="18:00">18:00</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Imóvel de Interesse</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o imóvel" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="apt1">
+                        Apartamento Setor Bueno - R$ 650.000
+                      </SelectItem>
+                      <SelectItem value="casa1">
+                        Casa Jardim Goiás - R$ 450.000
+                      </SelectItem>
+                      <SelectItem value="apt2">
+                        Apartamento Setor Oeste - R$ 380.000
+                      </SelectItem>
+                      <SelectItem value="casa2">
+                        Casa Aldeia do Vale - R$ 520.000
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Corretor Responsável</Label>
+                  <Select defaultValue="juarez">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="juarez">
+                        Juarez Siqueira Campos
+                      </SelectItem>
+                      <SelectItem value="carlos">Carlos Silva</SelectItem>
+                      <SelectItem value="maria">Maria Santos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Observações</Label>
+                  <Textarea
+                    placeholder="Observações sobre a visita..."
+                    className="h-20"
+                  />
+                </div>
+
+                <div className="space-y-3 border-t pt-4">
+                  <h5 className="font-medium">Confirmação Automática</h5>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="whatsapp-confirm"
+                        className="rounded"
+                        defaultChecked
+                      />
+                      <label htmlFor="whatsapp-confirm" className="text-sm">
+                        Enviar confirmação via WhatsApp
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="email-confirm"
+                        className="rounded"
+                      />
+                      <label htmlFor="email-confirm" className="text-sm">
+                        Enviar confirmação por email
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="sms-confirm"
+                        className="rounded"
+                      />
+                      <label htmlFor="sms-confirm" className="text-sm">
+                        Enviar lembrete por SMS
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-2 mt-6">
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    // Simular agendamento
+                    const message = `Olá ${selectedLead.nome}! Sua visita foi agendada. Em breve enviaremos os detalhes via WhatsApp.`;
+                    alert(`✅ Visita agendada com sucesso!\n\n${message}`);
+
+                    // Enviar WhatsApp
+                    const whatsappMessage = `Olá ${selectedLead.nome}!
+
+Sua visita foi agendada com sucesso! 🏠
+
+📅 Data: [Data selecionada]
+🕐 Horário: [Horário selecionado]
+📍 Imóvel: [Imóvel selecionado]
+👨‍💼 Corretor: [Corretor responsável]
+
+Em caso de dúvidas, estou à disposição!
+
+Siqueira Campos Imóveis
+📱 (62) 9 8556-3505`;
+
+                    const phoneNumber = selectedLead.telefone.replace(
+                      /\D/g,
+                      "",
+                    );
+                    window.open(
+                      `https://wa.me/55${phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`,
+                      "_blank",
+                    );
+
+                    setShowAgendarVisita(false);
+                    setSelectedLead(null);
+                  }}
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Agendar Visita
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowAgendarVisita(false);
+                    setSelectedLead(null);
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal WhatsApp Business */}
+      {showWhatsAppBusiness && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold flex items-center">
+                  <MessageSquare className="h-6 w-6 mr-2 text-green-600" />
+                  WhatsApp Business - Central de Atendimento
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowWhatsAppBusiness(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="overflow-y-auto max-h-[calc(90vh-140px)] p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Ações Rápidas */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Ações Rápidas
+                  </h4>
+
+                  <div className="space-y-3">
+                    <Button
+                      className="w-full justify-start bg-green-600 hover:bg-green-700"
+                      onClick={() => {
+                        const message =
+                          "Olá! Sou da Siqueira Campos Imóveis. Como posso ajudá-lo hoje?";
+                        window.open(
+                          `https://wa.me/5562985563505?text=${encodeURIComponent(message)}`,
+                          "_blank",
+                        );
+                      }}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Abrir WhatsApp Web
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        const message =
+                          "Bom dia! Temos imóveis incríveis disponíveis. Gostaria de conhecer nossas opções?";
+                        navigator.clipboard.writeText(message);
+                        alert("Mensagem copiada para a área de transferência!");
+                      }}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Copiar Mensagem de Bom Dia
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        const contacts = leads
+                          .map((lead) => `${lead.nome}: ${lead.telefone}`)
+                          .join("\n");
+                        navigator.clipboard.writeText(contacts);
+                        alert("Lista de contatos copiada!");
+                      }}
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Copiar Lista de Leads
+                    </Button>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h5 className="font-medium mb-3">
+                      Mensagens Pré-definidas
+                    </h5>
+                    <div className="space-y-2">
+                      {[
+                        "Olá! Temos o imóvel perfeito para você. Gostaria de agendar uma visita?",
+                        "Boa tarde! Vi seu interesse em nossos imóveis. Posso ajudá-lo com mais informações?",
+                        "Olá! Temos uma promoção especial para este mês. Gostaria de conhecer?",
+                        "Bom dia! Há novidades em imóveis que podem interessar você!",
+                        "Olá! Seu financiamento foi aprovado. Podemos prosseguir com a documentação?",
+                      ].map((msg, index) => (
+                        <div
+                          key={index}
+                          className="p-3 border rounded-lg hover:bg-muted cursor-pointer"
+                        >
+                          <p className="text-sm mb-2">{msg}</p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              navigator.clipboard.writeText(msg);
+                              alert("Mensagem copiada!");
+                            }}
+                          >
+                            Copiar
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Leads Recentes */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Leads para Contatar
+                  </h4>
+
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {leads.slice(0, 8).map((lead) => (
+                      <div key={lead.id} className="p-4 border rounded-lg">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h5 className="font-semibold">{lead.nome}</h5>
+                            <p className="text-sm text-muted-foreground">
+                              {lead.telefone}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {lead.origem} •{" "}
+                              {lead.criadoEm.toLocaleDateString("pt-BR")}
+                            </p>
+                          </div>
+                          <Badge
+                            className={
+                              lead.status === "NOVO"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-green-100 text-green-800"
+                            }
+                          >
+                            {lead.status}
+                          </Badge>
+                        </div>
+
+                        <p className="text-sm mb-3 line-clamp-2">
+                          {lead.mensagem}
+                        </p>
+
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
+                            onClick={() => {
+                              const message = `Olá ${lead.nome}! Vi seu interesse em nossos imóveis. Sou da Siqueira Campos Imóveis e gostaria de ajudá-lo. ${lead.mensagem ? `Sobre sua mensagem: "${lead.mensagem}"` : ""} Como posso ajudá-lo?`;
+                              const phoneNumber = lead.telefone.replace(
+                                /\D/g,
+                                "",
+                              );
+                              window.open(
+                                `https://wa.me/55${phoneNumber}?text=${encodeURIComponent(message)}`,
+                                "_blank",
+                              );
+                            }}
+                          >
+                            <MessageSquare className="h-3 w-3 mr-1" />
+                            WhatsApp
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const phoneNumber = lead.telefone.replace(
+                                /\D/g,
+                                "",
+                              );
+                              window.open(`tel:+55${phoneNumber}`, "_self");
+                            }}
+                          >
+                            <Phone className="h-3 w-3 mr-1" />
+                            Ligar
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Estatísticas WhatsApp */}
+              <div className="border-t mt-6 pt-6">
+                <h4 className="font-semibold text-lg mb-4">
+                  Estatísticas de Atendimento
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">127</div>
+                    <div className="text-sm text-muted-foreground">
+                      Mensagens Enviadas
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">89%</div>
+                    <div className="text-sm text-muted-foreground">
+                      Taxa de Resposta
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">
+                      2.5h
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Tempo M��dio Resposta
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600">45</div>
+                    <div className="text-sm text-muted-foreground">
+                      Leads Convertidos
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

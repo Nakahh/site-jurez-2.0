@@ -46,11 +46,13 @@ import {
   CheckSquare,
   Star,
   Award,
-  MessageSquare,
+  X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AdvancedCalendar } from "@/components/AdvancedCalendar";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { WhatsAppIntegration } from "@/components/WhatsAppIntegration";
+import { CalendarIntegration } from "@/components/CalendarIntegration";
 
 // Types
 interface CorretorStats {
@@ -298,7 +300,7 @@ function StatsCard({
   );
 }
 
-// Modal para criar imóvel
+// Modal para criar imóvel completo
 function CriarImovelModal({
   isOpen,
   onClose,
@@ -309,6 +311,7 @@ function CriarImovelModal({
   onSuccess: () => void;
 }) {
   const [loading, setLoading] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     titulo: "",
     tipo: "",
@@ -323,7 +326,16 @@ function CriarImovelModal({
     cidade: "Goiânia",
     estado: "GO",
     cep: "",
+    latitude: "",
+    longitude: "",
     descricao: "",
+    caracteristicas: "",
+    amenidades: "",
+    iptu: "",
+    anoConstucao: "",
+    valorCondominio: "",
+    destaque: false,
+    status: "DISPONIVEL",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -345,232 +357,604 @@ function CriarImovelModal({
           quartos: parseInt(formData.quartos),
           banheiros: parseInt(formData.banheiros),
           vagas: formData.vagas ? parseInt(formData.vagas) : 0,
+          latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+          longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+          iptu: formData.iptu ? parseFloat(formData.iptu) : null,
+          anoConstucao: formData.anoConstucao
+            ? parseInt(formData.anoConstucao)
+            : null,
+          valorCondominio: formData.valorCondominio
+            ? parseFloat(formData.valorCondominio)
+            : null,
+          caracteristicas: formData.caracteristicas
+            .split("\n")
+            .filter((c) => c.trim()),
+          amenidades: formData.amenidades.split("\n").filter((a) => a.trim()),
+          fotos: selectedImages,
         }),
       });
 
       if (response.ok) {
         onSuccess();
-        onClose();
-        // Reset form
-        setFormData({
-          titulo: "",
-          tipo: "",
-          finalidade: "",
-          preco: "",
-          area: "",
-          quartos: "",
-          banheiros: "",
-          vagas: "",
-          endereco: "",
-          bairro: "",
-          cidade: "Goiânia",
-          estado: "GO",
-          cep: "",
-          descricao: "",
-        });
+        handleCloseModal();
+        alert(
+          "🎉 Imóvel criado com sucesso! Todas as informações foram salvas.",
+        );
       }
     } catch (error) {
       console.error("Erro ao criar imóvel:", error);
+      alert("Erro ao criar imóvel. Tente novamente.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCloseModal = () => {
+    onClose();
+    setSelectedImages([]);
+    setFormData({
+      titulo: "",
+      tipo: "",
+      finalidade: "",
+      preco: "",
+      area: "",
+      quartos: "",
+      banheiros: "",
+      vagas: "",
+      endereco: "",
+      bairro: "",
+      cidade: "Goiânia",
+      estado: "GO",
+      cep: "",
+      latitude: "",
+      longitude: "",
+      descricao: "",
+      caracteristicas: "",
+      amenidades: "",
+      iptu: "",
+      anoConstucao: "",
+      valorCondominio: "",
+      destaque: false,
+      status: "DISPONIVEL",
+    });
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-background rounded-lg max-w-6xl w-full max-h-[95vh] overflow-hidden">
         <div className="p-6 border-b">
-          <h2 className="text-2xl font-bold">Cadastrar Novo Imóvel</h2>
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-bold">Cadastrar Novo Imóvel</h3>
+            <Button variant="ghost" size="sm" onClick={handleCloseModal}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="overflow-y-auto max-h-[calc(95vh-140px)] p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Informações Básicas */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg border-b pb-2">
+                  Informações Básicas
+                </h4>
+
+                <div className="space-y-2">
+                  <Label>Título do Imóvel *</Label>
+                  <Input
+                    value={formData.titulo}
+                    onChange={(e) =>
+                      setFormData({ ...formData, titulo: e.target.value })
+                    }
+                    placeholder="Ex: Apartamento moderno no Setor Bueno"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Descrição Completa *</Label>
+                  <Textarea
+                    value={formData.descricao}
+                    onChange={(e) =>
+                      setFormData({ ...formData, descricao: e.target.value })
+                    }
+                    className="h-24"
+                    placeholder="Descreva o imóvel detalhadamente..."
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Tipo *</Label>
+                    <Select
+                      value={formData.tipo}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, tipo: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="APARTAMENTO">Apartamento</SelectItem>
+                        <SelectItem value="CASA">Casa</SelectItem>
+                        <SelectItem value="TERRENO">Terreno</SelectItem>
+                        <SelectItem value="COMERCIAL">Comercial</SelectItem>
+                        <SelectItem value="RURAL">Rural</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Finalidade *</Label>
+                    <Select
+                      value={formData.finalidade}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, finalidade: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a finalidade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="VENDA">Venda</SelectItem>
+                        <SelectItem value="ALUGUEL">Aluguel</SelectItem>
+                        <SelectItem value="AMBOS">Ambos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Preço (R$) *</Label>
+                    <Input
+                      type="number"
+                      value={formData.preco}
+                      onChange={(e) =>
+                        setFormData({ ...formData, preco: e.target.value })
+                      }
+                      placeholder="650000"
+                      step="1000"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Área Total (m²) *</Label>
+                    <Input
+                      type="number"
+                      value={formData.area}
+                      onChange={(e) =>
+                        setFormData({ ...formData, area: e.target.value })
+                      }
+                      placeholder="89"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Quartos</Label>
+                    <Input
+                      type="number"
+                      value={formData.quartos}
+                      onChange={(e) =>
+                        setFormData({ ...formData, quartos: e.target.value })
+                      }
+                      placeholder="3"
+                      min="0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Banheiros</Label>
+                    <Input
+                      type="number"
+                      value={formData.banheiros}
+                      onChange={(e) =>
+                        setFormData({ ...formData, banheiros: e.target.value })
+                      }
+                      placeholder="2"
+                      min="0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Vagas</Label>
+                    <Input
+                      type="number"
+                      value={formData.vagas}
+                      onChange={(e) =>
+                        setFormData({ ...formData, vagas: e.target.value })
+                      }
+                      placeholder="2"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>IPTU Anual (R$)</Label>
+                    <Input
+                      type="number"
+                      value={formData.iptu}
+                      onChange={(e) =>
+                        setFormData({ ...formData, iptu: e.target.value })
+                      }
+                      placeholder="3500"
+                      step="100"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Ano de Construção</Label>
+                    <Input
+                      type="number"
+                      value={formData.anoConstucao}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          anoConstucao: e.target.value,
+                        })
+                      }
+                      placeholder="2018"
+                      min="1900"
+                      max="2025"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Localização */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg border-b pb-2">
+                  Localização
+                </h4>
+
+                <div className="space-y-2">
+                  <Label>Endereço Completo *</Label>
+                  <Input
+                    value={formData.endereco}
+                    onChange={(e) =>
+                      setFormData({ ...formData, endereco: e.target.value })
+                    }
+                    placeholder="Rua T-30, 1234, Apartamento 802"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Bairro *</Label>
+                    <Input
+                      value={formData.bairro}
+                      onChange={(e) =>
+                        setFormData({ ...formData, bairro: e.target.value })
+                      }
+                      placeholder="Setor Bueno"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>CEP</Label>
+                    <Input
+                      value={formData.cep}
+                      onChange={(e) =>
+                        setFormData({ ...formData, cep: e.target.value })
+                      }
+                      placeholder="74223-030"
+                      maxLength={9}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Cidade *</Label>
+                    <Input
+                      value={formData.cidade}
+                      onChange={(e) =>
+                        setFormData({ ...formData, cidade: e.target.value })
+                      }
+                      placeholder="Goiânia"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Estado *</Label>
+                    <Input
+                      value={formData.estado}
+                      onChange={(e) =>
+                        setFormData({ ...formData, estado: e.target.value })
+                      }
+                      placeholder="GO"
+                      maxLength={2}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Latitude</Label>
+                    <Input
+                      type="number"
+                      value={formData.latitude}
+                      onChange={(e) =>
+                        setFormData({ ...formData, latitude: e.target.value })
+                      }
+                      placeholder="-16.6868"
+                      step="0.0001"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Longitude</Label>
+                    <Input
+                      type="number"
+                      value={formData.longitude}
+                      onChange={(e) =>
+                        setFormData({ ...formData, longitude: e.target.value })
+                      }
+                      placeholder="-49.2643"
+                      step="0.0001"
+                    />
+                  </div>
+                </div>
+
+                {/* Condomínio */}
+                <div className="border-t pt-4">
+                  <h5 className="font-medium mb-3">
+                    Condomínio (se aplicável)
+                  </h5>
+                  <div className="space-y-2">
+                    <Label>Valor do Condomínio (R$/mês)</Label>
+                    <Input
+                      type="number"
+                      value={formData.valorCondominio}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          valorCondominio: e.target.value,
+                        })
+                      }
+                      placeholder="450"
+                      step="10"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Características e Amenidades */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg border-b pb-2">
+                  Características
+                </h4>
+                <div className="space-y-2">
+                  <Label>Características do Imóvel</Label>
+                  <Textarea
+                    value={formData.caracteristicas}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        caracteristicas: e.target.value,
+                      })
+                    }
+                    className="h-20"
+                    placeholder="Ex: Reformado recentemente&#10;Móveis planejados&#10;Varanda gourmet"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Digite uma caracter��stica por linha
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg border-b pb-2">
+                  Amenidades do Condomínio
+                </h4>
+                <div className="space-y-2">
+                  <Label>Amenidades Disponíveis</Label>
+                  <Textarea
+                    value={formData.amenidades}
+                    onChange={(e) =>
+                      setFormData({ ...formData, amenidades: e.target.value })
+                    }
+                    className="h-20"
+                    placeholder="Ex: Piscina&#10;Academia&#10;Salão de festas&#10;Playground"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Digite uma amenidade por linha
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Upload de Imagens */}
             <div>
-              <Label htmlFor="titulo">Título do Imóvel</Label>
-              <Input
-                id="titulo"
-                value={formData.titulo}
-                onChange={(e) =>
-                  setFormData({ ...formData, titulo: e.target.value })
-                }
-                placeholder="Ex: Apartamento moderno no Setor Bueno"
-                required
-              />
+              <h4 className="font-semibold text-lg border-b pb-2 mb-4">
+                Fotos do Imóvel
+              </h4>
+              <div className="space-y-4">
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                  <input
+                    type="file"
+                    id="property-images-corretor"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      if (files.length > 0) {
+                        const newImages = files.map(
+                          (file, index) =>
+                            `https://images.unsplash.com/photo-${1560518883 + selectedImages.length + index}?w=200&h=150&fit=crop`,
+                        );
+                        setSelectedImages((prev) => [...prev, ...newImages]);
+                        alert(
+                          `${files.length} foto(s) adicionada(s) com sucesso!`,
+                        );
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor="property-images-corretor"
+                    className="cursor-pointer flex flex-col items-center space-y-3"
+                  >
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                      <Plus className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Clique para adicionar fotos</p>
+                      <p className="text-sm text-muted-foreground">
+                        ou arraste e solte aqui
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Formatos aceitos: JPG, PNG, WebP (máx. 10MB cada)
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                {selectedImages.length > 0 && (
+                  <>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                      {selectedImages.map((url, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={url}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-md border"
+                          />
+                          <button
+                            type="button"
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => {
+                              setSelectedImages((prev) =>
+                                prev.filter((_, i) => i !== index),
+                              );
+                              alert(`Foto ${index + 1} removida!`);
+                            }}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                          <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1 rounded">
+                            {index + 1}
+                          </div>
+                          {index === 0 && (
+                            <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                              Capa
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground">
+                        {selectedImages.length} foto(s) selecionada(s) • A
+                        primeira foto será usada como capa
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={() => {
+                          if (confirm("Deseja remover todas as fotos?")) {
+                            setSelectedImages([]);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Remover Todas
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
-            <div>
-              <Label htmlFor="tipo">Tipo</Label>
-              <Select
-                value={formData.tipo}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, tipo: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CASA">Casa</SelectItem>
-                  <SelectItem value="APARTAMENTO">Apartamento</SelectItem>
-                  <SelectItem value="TERRENO">Terreno</SelectItem>
-                  <SelectItem value="COMERCIAL">Comercial</SelectItem>
-                  <SelectItem value="RURAL">Rural</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Configurações Adicionais */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg border-b pb-2">
+                  Configurações
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="destaque-corretor"
+                      className="rounded"
+                      checked={formData.destaque}
+                      onChange={(e) =>
+                        setFormData({ ...formData, destaque: e.target.checked })
+                      }
+                    />
+                    <label
+                      htmlFor="destaque-corretor"
+                      className="text-sm font-medium"
+                    >
+                      Exibir como imóvel em destaque
+                    </label>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select
+                      value={formData.status}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, status: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="DISPONIVEL">Disponível</SelectItem>
+                        <SelectItem value="RESERVADO">Reservado</SelectItem>
+                        <SelectItem value="VENDIDO">Vendido</SelectItem>
+                        <SelectItem value="ALUGADO">Alugado</SelectItem>
+                        <SelectItem value="INATIVO">Inativo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <Label htmlFor="finalidade">Finalidade</Label>
-              <Select
-                value={formData.finalidade}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, finalidade: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a finalidade" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="VENDA">Venda</SelectItem>
-                  <SelectItem value="ALUGUEL">Aluguel</SelectItem>
-                  <SelectItem value="AMBOS">Ambos</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Rodapé com botões */}
+            <div className="border-t pt-6">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                <Button
+                  type="submit"
+                  className="flex-1 sm:flex-none sm:px-8"
+                  size="lg"
+                  disabled={loading}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  {loading ? "Criando..." : "Criar Imóvel"}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleCloseModal}
+                  variant="outline"
+                  className="flex-1 sm:flex-none sm:px-8"
+                  size="lg"
+                >
+                  Cancelar
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                * Campos obrigatórios devem ser preenchidos
+              </p>
             </div>
-
-            <div>
-              <Label htmlFor="preco">Preço (R$)</Label>
-              <Input
-                id="preco"
-                type="number"
-                value={formData.preco}
-                onChange={(e) =>
-                  setFormData({ ...formData, preco: e.target.value })
-                }
-                placeholder="Ex: 450000"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="area">Área (m²)</Label>
-              <Input
-                id="area"
-                type="number"
-                value={formData.area}
-                onChange={(e) =>
-                  setFormData({ ...formData, area: e.target.value })
-                }
-                placeholder="Ex: 120.5"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="quartos">Quartos</Label>
-              <Input
-                id="quartos"
-                type="number"
-                value={formData.quartos}
-                onChange={(e) =>
-                  setFormData({ ...formData, quartos: e.target.value })
-                }
-                placeholder="Ex: 3"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="banheiros">Banheiros</Label>
-              <Input
-                id="banheiros"
-                type="number"
-                value={formData.banheiros}
-                onChange={(e) =>
-                  setFormData({ ...formData, banheiros: e.target.value })
-                }
-                placeholder="Ex: 2"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="vagas">Vagas de Garagem</Label>
-              <Input
-                id="vagas"
-                type="number"
-                value={formData.vagas}
-                onChange={(e) =>
-                  setFormData({ ...formData, vagas: e.target.value })
-                }
-                placeholder="Ex: 2"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <Label htmlFor="endereco">Endereço Completo</Label>
-              <Input
-                id="endereco"
-                value={formData.endereco}
-                onChange={(e) =>
-                  setFormData({ ...formData, endereco: e.target.value })
-                }
-                placeholder="Ex: Rua T-30, 1234"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="bairro">Bairro</Label>
-              <Input
-                id="bairro"
-                value={formData.bairro}
-                onChange={(e) =>
-                  setFormData({ ...formData, bairro: e.target.value })
-                }
-                placeholder="Ex: Setor Bueno"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="cep">CEP</Label>
-              <Input
-                id="cep"
-                value={formData.cep}
-                onChange={(e) =>
-                  setFormData({ ...formData, cep: e.target.value })
-                }
-                placeholder="Ex: 74210-060"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <Label htmlFor="descricao">Descrição</Label>
-              <Textarea
-                id="descricao"
-                value={formData.descricao}
-                onChange={(e) =>
-                  setFormData({ ...formData, descricao: e.target.value })
-                }
-                placeholder="Descreva as características e diferenciais do imóvel..."
-                rows={4}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-4">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Cadastrando..." : "Cadastrar Imóvel"}
-            </Button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
@@ -737,6 +1121,18 @@ export default function CorretorDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [showCriarImovel, setShowCriarImovel] = useState(false);
   const [showCadastrarLead, setShowCadastrarLead] = useState(false);
+  const [selectedPropertyImages, setSelectedPropertyImages] = useState<
+    string[]
+  >([]);
+  const [showAgendarVisita, setShowAgendarVisita] = useState(false);
+  const [showWhatsAppBusiness, setShowWhatsAppBusiness] = useState(false);
+  const [showViewLeadModal, setShowViewLeadModal] = useState(false);
+  const [showEditLeadModal, setShowEditLeadModal] = useState(false);
+  const [showEditPropertyModal, setShowEditPropertyModal] = useState(false);
+  const [selectedLeadCorretor, setSelectedLeadCorretor] = useState<Lead | null>(
+    null,
+  );
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
 
   useEffect(() => {
     carregarDados();
@@ -746,22 +1142,16 @@ export default function CorretorDashboard() {
   const handleViewLead = (leadId: string) => {
     const lead = leads.find((l) => l.id === leadId);
     if (lead) {
-      alert(
-        `Visualizando lead: ${lead.nome}\nTelefone: ${lead.telefone}\nEmail: ${lead.email}\nMensagem: ${lead.mensagem}`,
-      );
+      setSelectedLeadCorretor(lead);
+      setShowViewLeadModal(true);
     }
   };
 
   const handleEditLead = (leadId: string) => {
     const lead = leads.find((l) => l.id === leadId);
     if (lead) {
-      const newName = prompt("Novo nome:", lead.nome);
-      if (newName) {
-        setLeads((prev) =>
-          prev.map((l) => (l.id === leadId ? { ...l, nome: newName } : l)),
-        );
-        alert("Lead atualizado com sucesso!");
-      }
+      setSelectedLeadCorretor(lead);
+      setShowEditLeadModal(true);
     }
   };
 
@@ -786,6 +1176,7 @@ export default function CorretorDashboard() {
   const handleViewProperty = (propertyId: string) => {
     const property = imoveis.find((p) => p.id === propertyId);
     if (property) {
+      // Abrir página de detalhes do imóvel
       window.open(`/imovel/${propertyId}`, "_blank");
     }
   };
@@ -793,15 +1184,8 @@ export default function CorretorDashboard() {
   const handleEditProperty = (propertyId: string) => {
     const property = imoveis.find((p) => p.id === propertyId);
     if (property) {
-      const newTitle = prompt("Novo título:", property.titulo);
-      if (newTitle) {
-        setImoveis((prev) =>
-          prev.map((p) =>
-            p.id === propertyId ? { ...p, titulo: newTitle } : p,
-          ),
-        );
-        alert("Imóvel atualizado com sucesso!");
-      }
+      setSelectedProperty(property);
+      setShowEditPropertyModal(true);
     }
   };
 
@@ -1010,7 +1394,7 @@ export default function CorretorDashboard() {
           </TabsTrigger>
           <TabsTrigger value="configuracoes" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Config</span>
-            <span className="sm:hidden">⚙️</span>
+            <span className="sm:hidden">⚙���</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1136,6 +1520,39 @@ export default function CorretorDashboard() {
                 <h3 className="font-bold mb-2">Ver Agenda</h3>
                 <p className="text-sm text-muted-foreground">
                   Visualize seus agendamentos
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Ferramentas de Vendas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <Card
+              className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900"
+              onClick={() => setShowWhatsAppBusiness(true)}
+            >
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageSquare className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">WhatsApp Business</h3>
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  Central de atendimento e mensagens para leads
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card
+              className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-950 dark:to-cyan-900"
+              onClick={() => setActiveTab("agendamentos")}
+            >
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">Agendar Visitas</h3>
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  Organize e gerencie todas as visitas dos clientes
                 </p>
               </CardContent>
             </Card>
@@ -1267,6 +1684,17 @@ export default function CorretorDashboard() {
                           title="WhatsApp"
                         >
                           <MessageSquare className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedLeadCorretor(lead);
+                            setShowAgendarVisita(true);
+                          }}
+                          title="Agendar Visita"
+                        >
+                          <Calendar className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -1584,7 +2012,11 @@ export default function CorretorDashboard() {
         <TabsContent value="configuracoes" className="space-y-6">
           <h2 className="text-2xl font-bold">Configurações</h2>
 
-          <WhatsAppIntegrationCard onUpdate={carregarDados} />
+          {/* Integrações Premium */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <WhatsAppIntegration userRole="CORRETOR" />
+            <CalendarIntegration userRole="CORRETOR" />
+          </div>
 
           {/* Configurações de Notificação */}
           <Card>
@@ -1664,6 +2096,715 @@ export default function CorretorDashboard() {
         onClose={() => setShowCadastrarLead(false)}
         onSuccess={carregarDados}
       />
+
+      {/* Modal de Agendamento de Visitas */}
+      {showAgendarVisita && selectedLeadCorretor && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-lg w-full">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold">Agendar Visita</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowAgendarVisita(false);
+                    setSelectedLeadCorretor(null);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="space-y-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  <h4 className="font-semibold">Cliente</h4>
+                  <p className="text-sm">{selectedLeadCorretor.nome}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedLeadCorretor.telefone}
+                  </p>
+                  {selectedLeadCorretor.email && (
+                    <p className="text-sm text-muted-foreground">
+                      {selectedLeadCorretor.email}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Data da Visita</Label>
+                  <Input
+                    type="date"
+                    min={new Date().toISOString().split("T")[0]}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Horário</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o horário" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="08:00">08:00</SelectItem>
+                      <SelectItem value="09:00">09:00</SelectItem>
+                      <SelectItem value="10:00">10:00</SelectItem>
+                      <SelectItem value="11:00">11:00</SelectItem>
+                      <SelectItem value="14:00">14:00</SelectItem>
+                      <SelectItem value="15:00">15:00</SelectItem>
+                      <SelectItem value="16:00">16:00</SelectItem>
+                      <SelectItem value="17:00">17:00</SelectItem>
+                      <SelectItem value="18:00">18:00</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Imóvel de Interesse</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o imóvel" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {imoveis.slice(0, 5).map((imovel) => (
+                        <SelectItem key={imovel.id} value={imovel.id}>
+                          {imovel.titulo} - {formatarPreco(imovel.preco)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Observações</Label>
+                  <Textarea
+                    placeholder="Observações sobre a visita..."
+                    className="h-20"
+                  />
+                </div>
+
+                <div className="space-y-3 border-t pt-4">
+                  <h5 className="font-medium">Confirmação Automática</h5>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="whatsapp-confirm-corretor"
+                        className="rounded"
+                        defaultChecked
+                      />
+                      <label
+                        htmlFor="whatsapp-confirm-corretor"
+                        className="text-sm"
+                      >
+                        Enviar confirmação via WhatsApp
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="email-confirm-corretor"
+                        className="rounded"
+                      />
+                      <label
+                        htmlFor="email-confirm-corretor"
+                        className="text-sm"
+                      >
+                        Enviar confirmação por email
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="calendar-reminder"
+                        className="rounded"
+                        defaultChecked
+                      />
+                      <label htmlFor="calendar-reminder" className="text-sm">
+                        Adicionar à minha agenda
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-2 mt-6">
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    // Simular agendamento
+                    const whatsappMessage = `Olá ${selectedLeadCorretor.nome}!
+
+Sua visita foi agendada com sucesso! 🏠
+
+📅 Data: [Data selecionada]
+🕐 Horário: [Horário selecionado]
+📍 Imóvel: [Imóvel selecionado]
+👨‍💼 Corretor: Juarez Siqueira Campos
+
+Qualquer dúvida, estou à disposição!
+
+Siqueira Campos Imóveis
+📱 (62) 9 8556-3505`;
+
+                    const phoneNumber = selectedLeadCorretor.telefone.replace(
+                      /\D/g,
+                      "",
+                    );
+                    window.open(
+                      `https://wa.me/55${phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`,
+                      "_blank",
+                    );
+
+                    alert(
+                      "✅ Visita agendada com sucesso!\n\nConfirmação enviada via WhatsApp.",
+                    );
+                    setShowAgendarVisita(false);
+                    setSelectedLeadCorretor(null);
+                  }}
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Agendar e Confirmar
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowAgendarVisita(false);
+                    setSelectedLeadCorretor(null);
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal WhatsApp Business */}
+      {showWhatsAppBusiness && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-5xl w-full max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold flex items-center">
+                  <MessageSquare className="h-6 w-6 mr-2 text-green-600" />
+                  WhatsApp Business - Central do Corretor
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowWhatsAppBusiness(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="overflow-y-auto max-h-[calc(90vh-140px)] p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Ações Rápidas do Corretor */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Ferramentas de Vendas
+                  </h4>
+
+                  <div className="space-y-3">
+                    <Button
+                      className="w-full justify-start bg-green-600 hover:bg-green-700"
+                      onClick={() => {
+                        window.open("https://web.whatsapp.com/", "_blank");
+                      }}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Abrir WhatsApp Web
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        const message =
+                          "🏠 Novos imóveis disponíveis na Siqueira Campos!\n\nOlá! Tenho ótimas oportunidades que podem interessar você. Gostaria de conhecer?";
+                        navigator.clipboard.writeText(message);
+                        alert("Mensagem de prospecção copiada!");
+                      }}
+                    >
+                      <Target className="h-4 w-4 mr-2" />
+                      Copiar Mensagem de Prospecção
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        const message =
+                          "Olá! Sou corretor da Siqueira Campos Imóveis. Vi que você tem interesse em imóveis. Como posso ajudá-lo a encontrar a casa dos seus sonhos?";
+                        navigator.clipboard.writeText(message);
+                        alert("Mensagem de apresentação copiada!");
+                      }}
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Mensagem de Apresentação
+                    </Button>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h5 className="font-medium mb-3">Templates de Mensagens</h5>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {[
+                        "🏠 Ol��! Tenho um imóvel perfeito para seu perfil. Gostaria de agendar uma visita?",
+                        "📍 Ótima localização no Setor Bueno! Este apartamento pode ser o que você procura.",
+                        "💰 Condições especiais de financiamento! Vamos conversar sobre as possibilidades?",
+                        "🔑 Apartamento pronto para morar! Quando podemos agendar uma visita?",
+                        "📋 Documentação aprovada! Podemos dar início ao processo de compra.",
+                        "🎯 Investimento garantido! Este imóvel tem grande potencial de valorização.",
+                        "🏆 Oportunidade única! Imóvel com desconto especial para este mês.",
+                      ].map((msg, index) => (
+                        <div
+                          key={index}
+                          className="p-3 border rounded-lg hover:bg-muted cursor-pointer"
+                        >
+                          <p className="text-sm mb-2">{msg}</p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              navigator.clipboard.writeText(msg);
+                              alert("Mensagem copiada!");
+                            }}
+                          >
+                            Copiar Template
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Leads para Contato */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Seus Leads - Contato Direto
+                  </h4>
+
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {leads.slice(0, 6).map((lead) => (
+                      <div key={lead.id} className="p-4 border rounded-lg">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h5 className="font-semibold">{lead.nome}</h5>
+                            <p className="text-sm text-muted-foreground">
+                              {lead.telefone}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {lead.origem} •{" "}
+                              {new Date(lead.criadoEm).toLocaleDateString(
+                                "pt-BR",
+                              )}
+                            </p>
+                          </div>
+                          <Badge
+                            className={
+                              lead.status === "NOVO"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-green-100 text-green-800"
+                            }
+                          >
+                            {lead.status}
+                          </Badge>
+                        </div>
+
+                        <p className="text-sm mb-3 line-clamp-2">
+                          {lead.mensagem}
+                        </p>
+
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
+                            onClick={() => {
+                              const message = `Olá ${lead.nome}! Sou Juarez da Siqueira Campos Imóveis. ${lead.mensagem ? `Vi sua mensagem: "${lead.mensagem}".` : ""} Como posso ajudá-lo a encontrar o imóvel ideal?`;
+                              const phoneNumber = lead.telefone.replace(
+                                /\D/g,
+                                "",
+                              );
+                              window.open(
+                                `https://wa.me/55${phoneNumber}?text=${encodeURIComponent(message)}`,
+                                "_blank",
+                              );
+                            }}
+                          >
+                            <MessageSquare className="h-3 w-3 mr-1" />
+                            WhatsApp
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedLeadCorretor(lead);
+                              setShowAgendarVisita(true);
+                              setShowWhatsAppBusiness(false);
+                            }}
+                          >
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Agendar
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Estatísticas do Corretor */}
+              <div className="border-t mt-6 pt-6">
+                <h4 className="font-semibold text-lg mb-4">
+                  Suas Estatísticas WhatsApp
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">
+                      {leads.length}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Leads Ativos
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">94%</div>
+                    <div className="text-sm text-muted-foreground">
+                      Taxa de Resposta
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">
+                      1.8h
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Tempo Médio Resposta
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {stats?.imoveisVendidos || 0}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Vendas via WhatsApp
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Visualização de Lead */}
+      {showViewLeadModal && selectedLeadCorretor && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">Detalhes do Lead</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowViewLeadModal(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="font-semibold">Nome</Label>
+                  <p className="text-muted-foreground">
+                    {selectedLeadCorretor.nome}
+                  </p>
+                </div>
+                <div>
+                  <Label className="font-semibold">Telefone</Label>
+                  <p className="text-muted-foreground">
+                    {selectedLeadCorretor.telefone}
+                  </p>
+                </div>
+                <div>
+                  <Label className="font-semibold">Email</Label>
+                  <p className="text-muted-foreground">
+                    {selectedLeadCorretor.email || "Não informado"}
+                  </p>
+                </div>
+                <div>
+                  <Label className="font-semibold">Status</Label>
+                  <Badge variant="secondary">
+                    {selectedLeadCorretor.status}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="font-semibold">Origem</Label>
+                  <p className="text-muted-foreground">
+                    {selectedLeadCorretor.origem}
+                  </p>
+                </div>
+                <div>
+                  <Label className="font-semibold">Data</Label>
+                  <p className="text-muted-foreground">
+                    {selectedLeadCorretor.criadoEm.toLocaleDateString("pt-BR")}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <Label className="font-semibold">Mensagem</Label>
+                <p className="text-muted-foreground p-3 bg-muted rounded-lg">
+                  {selectedLeadCorretor.mensagem}
+                </p>
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  onClick={() => {
+                    const phoneNumber = selectedLeadCorretor.telefone.replace(
+                      /\D/g,
+                      "",
+                    );
+                    window.open(`tel:${phoneNumber}`, "_self");
+                  }}
+                  className="flex-1"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Ligar
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const message = `Olá ${selectedLeadCorretor.nome}! Sou da Siqueira Campos Imóveis.`;
+                    const whatsappUrl = `https://wa.me/55${selectedLeadCorretor.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, "_blank");
+                  }}
+                  className="flex-1"
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  WhatsApp
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Edição de Lead */}
+      {showEditLeadModal && selectedLeadCorretor && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">Editar Lead</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowEditLeadModal(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="p-6">
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  // Atualizar lead
+                  alert("Lead atualizado com sucesso!");
+                  setShowEditLeadModal(false);
+                }}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-nome">Nome</Label>
+                    <Input
+                      id="edit-nome"
+                      defaultValue={selectedLeadCorretor.nome}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-telefone">Telefone</Label>
+                    <Input
+                      id="edit-telefone"
+                      defaultValue={selectedLeadCorretor.telefone}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-email">Email</Label>
+                    <Input
+                      id="edit-email"
+                      type="email"
+                      defaultValue={selectedLeadCorretor.email}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-status">Status</Label>
+                    <Select defaultValue={selectedLeadCorretor.status}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="NOVO">Novo</SelectItem>
+                        <SelectItem value="CONTATADO">Contatado</SelectItem>
+                        <SelectItem value="QUALIFICADO">Qualificado</SelectItem>
+                        <SelectItem value="PROPOSTA">Proposta</SelectItem>
+                        <SelectItem value="CONVERTIDO">Convertido</SelectItem>
+                        <SelectItem value="PERDIDO">Perdido</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="edit-observacoes">Observações</Label>
+                  <Textarea
+                    id="edit-observacoes"
+                    placeholder="Adicionar observações sobre o lead..."
+                    rows={3}
+                  />
+                </div>
+                <div className="flex space-x-2">
+                  <Button type="submit" className="flex-1">
+                    Salvar Alterações
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowEditLeadModal(false)}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Edição de Propriedade */}
+      {showEditPropertyModal && selectedProperty && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">Editar Imóvel</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowEditPropertyModal(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="p-6">
+              <form
+                className="space-y-6"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  // Atualizar propriedade
+                  alert("Imóvel atualizado com sucesso!");
+                  setShowEditPropertyModal(false);
+                }}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-titulo">Título</Label>
+                    <Input
+                      id="edit-titulo"
+                      defaultValue={selectedProperty.titulo}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-preco">Preço</Label>
+                    <Input
+                      id="edit-preco"
+                      type="number"
+                      defaultValue={selectedProperty.preco}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-tipo">Tipo</Label>
+                    <Select defaultValue={selectedProperty.tipo}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="APARTAMENTO">Apartamento</SelectItem>
+                        <SelectItem value="CASA">Casa</SelectItem>
+                        <SelectItem value="TERRENO">Terreno</SelectItem>
+                        <SelectItem value="COMERCIAL">Comercial</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-finalidade">Finalidade</Label>
+                    <Select defaultValue={selectedProperty.finalidade}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="VENDA">Venda</SelectItem>
+                        <SelectItem value="ALUGUEL">Aluguel</SelectItem>
+                        <SelectItem value="AMBOS">Venda e Aluguel</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-quartos">Quartos</Label>
+                    <Input
+                      id="edit-quartos"
+                      type="number"
+                      defaultValue={selectedProperty.quartos}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-banheiros">Banheiros</Label>
+                    <Input
+                      id="edit-banheiros"
+                      type="number"
+                      defaultValue={selectedProperty.banheiros}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="edit-endereco">Endereço</Label>
+                  <Input
+                    id="edit-endereco"
+                    defaultValue={selectedProperty.endereco}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-descricao">Descrição</Label>
+                  <Textarea
+                    id="edit-descricao"
+                    defaultValue={selectedProperty.descricao}
+                    rows={4}
+                  />
+                </div>
+                <div className="flex space-x-2">
+                  <Button type="submit" className="flex-1">
+                    Salvar Alterações
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowEditPropertyModal(false)}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

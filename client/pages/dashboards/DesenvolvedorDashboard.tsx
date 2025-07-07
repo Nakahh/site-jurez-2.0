@@ -117,11 +117,37 @@ interface ApiEndpoint {
   lastUsed: Date;
 }
 
+interface PremiumService {
+  id: string;
+  name: string;
+  description: string;
+  active: boolean;
+  price: number;
+  features: string[];
+  status: "ACTIVE" | "INACTIVE" | "MAINTENANCE";
+  lastUpdated: Date;
+}
+
+interface ClientSubscription {
+  id: string;
+  clientName: string;
+  email: string;
+  whatsappEnabled: boolean;
+  n8nEnabled: boolean;
+  googleCalendarEnabled: boolean;
+  expiryDate: Date;
+  status: "ACTIVE" | "EXPIRED" | "SUSPENDED";
+}
+
 export default function DesenvolvedorDashboard() {
   const [systemStats, setSystemStats] = useState<SystemStats | null>(null);
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
   const [backups, setBackups] = useState<BackupInfo[]>([]);
   const [apiEndpoints, setApiEndpoints] = useState<ApiEndpoint[]>([]);
+  const [premiumServices, setPremiumServices] = useState<PremiumService[]>([]);
+  const [clientSubscriptions, setClientSubscriptions] = useState<
+    ClientSubscription[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -249,14 +275,129 @@ export default function DesenvolvedorDashboard() {
         },
       ];
 
+      const premiumServicesSimulados: PremiumService[] = [
+        {
+          id: "1",
+          name: "WhatsApp Business Integration",
+          description:
+            "Integração completa com Evolution API para automação de leads",
+          active: true,
+          price: 97.0,
+          features: [
+            "Resposta automática de leads",
+            "Distribuição inteligente para corretores",
+            "Fallback após 15 minutos",
+            "Histórico completo de conversas",
+            "Notificações em tempo real",
+          ],
+          status: "ACTIVE",
+          lastUpdated: new Date(),
+        },
+        {
+          id: "2",
+          name: "N8N Automation Suite",
+          description: "Automação completa de processos com N8N e IA",
+          active: true,
+          price: 147.0,
+          features: [
+            "Integração com OpenAI GPT-3.5",
+            "Processamento automático de leads",
+            "Agendamento Google Calendar",
+            "Email marketing automatizado",
+            "Relatórios avançados",
+            "Backup automático",
+          ],
+          status: "ACTIVE",
+          lastUpdated: new Date(),
+        },
+        {
+          id: "3",
+          name: "Google Calendar Integration",
+          description: "Agendamento automático de visitas com sincronização",
+          active: false,
+          price: 47.0,
+          features: [
+            "Sincronização com Google Calendar",
+            "Agendamento automático de visitas",
+            "Lembretes por email e WhatsApp",
+            "Gestão de disponibilidade",
+            "Relatórios de agendamentos",
+          ],
+          status: "INACTIVE",
+          lastUpdated: new Date(),
+        },
+      ];
+
+      const clientSubscriptionsSimulados: ClientSubscription[] = [
+        {
+          id: "1",
+          clientName: "Siqueira Campos Imóveis",
+          email: "admin@siqueicamposimoveis.com.br",
+          whatsappEnabled: true,
+          n8nEnabled: true,
+          googleCalendarEnabled: false,
+          expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          status: "ACTIVE",
+        },
+        {
+          id: "2",
+          clientName: "Imobiliária Exemplo",
+          email: "contato@exemplo.com.br",
+          whatsappEnabled: false,
+          n8nEnabled: false,
+          googleCalendarEnabled: false,
+          expiryDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+          status: "EXPIRED",
+        },
+      ];
+
       setSystemStats(statsSimuladas);
       setSecurityEvents(securityEventsSimulados);
       setBackups(backupsSimulados);
       setApiEndpoints(apiEndpointsSimulados);
+      setPremiumServices(premiumServicesSimulados);
+      setClientSubscriptions(clientSubscriptionsSimulados);
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const togglePremiumService = async (serviceId: string) => {
+    try {
+      // Simular toggle do serviço premium
+      setPremiumServices((prev) =>
+        prev.map((service) =>
+          service.id === serviceId
+            ? {
+                ...service,
+                active: !service.active,
+                status: !service.active ? "ACTIVE" : "INACTIVE",
+                lastUpdated: new Date(),
+              }
+            : service,
+        ),
+      );
+    } catch (error) {
+      console.error("Erro ao alterar serviço:", error);
+    }
+  };
+
+  const toggleClientService = async (clientId: string, serviceType: string) => {
+    try {
+      setClientSubscriptions((prev) =>
+        prev.map((client) =>
+          client.id === clientId
+            ? {
+                ...client,
+                [serviceType]: !client[serviceType as keyof ClientSubscription],
+              }
+            : client,
+        ),
+      );
+    } catch (error) {
+      console.error("Erro ao alterar serviço do cliente:", error);
     }
   };
 
@@ -388,10 +529,14 @@ export default function DesenvolvedorDashboard() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-1">
           <TabsTrigger value="overview" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Visão Geral</span>
             <span className="sm:hidden">📊</span>
+          </TabsTrigger>
+          <TabsTrigger value="premium" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Premium</span>
+            <span className="sm:hidden">💎</span>
           </TabsTrigger>
           <TabsTrigger value="realtime" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Tempo Real</span>
@@ -661,6 +806,223 @@ export default function DesenvolvedorDashboard() {
               </div>
             </>
           )}
+        </TabsContent>
+
+        {/* Serviços Premium */}
+        <TabsContent value="premium" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Serviços Premium</h2>
+            <div className="flex space-x-2">
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Configurar N8N
+              </Button>
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Serviço
+              </Button>
+            </div>
+          </div>
+
+          {/* Controle de Serviços Premium */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {premiumServices.map((service) => (
+              <Card key={service.id} className="border-0 shadow-lg">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">{service.name}</CardTitle>
+                    <Badge
+                      variant={service.active ? "default" : "secondary"}
+                      className={
+                        service.active ? "bg-green-100 text-green-800" : ""
+                      }
+                    >
+                      {service.status}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    {service.description}
+                  </p>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Preço Mensal:</span>
+                      <span className="text-lg font-bold text-green-600">
+                        R$ {service.price.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Recursos:</Label>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      {service.features.map((feature, index) => (
+                        <li key={index} className="flex items-center space-x-2">
+                          <CheckCircle className="h-3 w-3 text-green-600" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t">
+                    <div>
+                      <Label className="text-sm">Ativar Serviço</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Controla disponibilidade global
+                      </p>
+                    </div>
+                    <Switch
+                      checked={service.active}
+                      onCheckedChange={() => togglePremiumService(service.id)}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Assinantes dos Serviços */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Controle de Clientes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {clientSubscriptions.map((client) => (
+                  <div
+                    key={client.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div>
+                        <p className="font-semibold">{client.clientName}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {client.email}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Expira:{" "}
+                          {client.expiryDate.toLocaleDateString("pt-BR")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-6">
+                      <div className="flex items-center space-x-2">
+                        <Label className="text-xs">WhatsApp</Label>
+                        <Switch
+                          checked={client.whatsappEnabled}
+                          onCheckedChange={() =>
+                            toggleClientService(client.id, "whatsappEnabled")
+                          }
+                          disabled={
+                            !premiumServices.find((s) =>
+                              s.name.includes("WhatsApp"),
+                            )?.active
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Label className="text-xs">N8N</Label>
+                        <Switch
+                          checked={client.n8nEnabled}
+                          onCheckedChange={() =>
+                            toggleClientService(client.id, "n8nEnabled")
+                          }
+                          disabled={
+                            !premiumServices.find((s) => s.name.includes("N8N"))
+                              ?.active
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Label className="text-xs">Calendar</Label>
+                        <Switch
+                          checked={client.googleCalendarEnabled}
+                          onCheckedChange={() =>
+                            toggleClientService(
+                              client.id,
+                              "googleCalendarEnabled",
+                            )
+                          }
+                          disabled={
+                            !premiumServices.find((s) =>
+                              s.name.includes("Calendar"),
+                            )?.active
+                          }
+                        />
+                      </div>
+                      <Badge
+                        variant={
+                          client.status === "ACTIVE"
+                            ? "default"
+                            : client.status === "EXPIRED"
+                              ? "destructive"
+                              : "secondary"
+                        }
+                      >
+                        {client.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Configuração N8N */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Configuração N8N Server</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert>
+                <Settings className="h-4 w-4" />
+                <AlertTitle>Servidor N8N Externo</AlertTitle>
+                <AlertDescription>
+                  O N8N roda em VPS separada para garantir isolamento e controle
+                  de pagamento. Configure as credenciais abaixo para integração.
+                </AlertDescription>
+              </Alert>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>URL do N8N Server</Label>
+                  <Input defaultValue="https://n8n.siqueicamposimoveis.com.br" />
+                </div>
+                <div className="space-y-2">
+                  <Label>API Key</Label>
+                  <Input
+                    type="password"
+                    defaultValue="****************************"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Evolution API URL</Label>
+                  <Input defaultValue="https://evolution.siqueicamposimoveis.com.br" />
+                </div>
+                <div className="space-y-2">
+                  <Label>OpenAI API Key</Label>
+                  <Input
+                    type="password"
+                    defaultValue="sk-****************************"
+                  />
+                </div>
+              </div>
+
+              <div className="flex space-x-2">
+                <Button variant="outline">
+                  <Activity className="h-4 w-4 mr-2" />
+                  Testar Conexão
+                </Button>
+                <Button>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Salvar Configuração
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Monitoramento em Tempo Real */}

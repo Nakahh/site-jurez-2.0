@@ -41,13 +41,17 @@ export default function Login() {
 
         // Redirecionar baseado no papel do usuário
         const { papel } = data.usuario;
+        localStorage.setItem("currentUserRole", papel);
+
         switch (papel) {
           case "ADMIN":
             navigate("/dashboard/admin");
             break;
           case "CORRETOR":
-          case "ASSISTENTE":
             navigate("/dashboard/corretor");
+            break;
+          case "ASSISTENTE":
+            navigate("/dashboard/assistente");
             break;
           case "CLIENTE":
             navigate("/dashboard/cliente");
