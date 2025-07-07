@@ -140,6 +140,34 @@ export default function AssistenteDashboard() {
 
   useEffect(() => {
     carregarDados();
+
+    // Escutar mudanças nos serviços premium
+    const handleServiceToggle = (e: CustomEvent) => {
+      console.log("Assistente Dashboard: Serviço premium alterado", e.detail);
+      // Recarregar dados quando serviços premium mudam
+      carregarDados();
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key?.includes("Active")) {
+        // Recarregar dados quando há mudanças nos serviços
+        carregarDados();
+      }
+    };
+
+    window.addEventListener(
+      "premiumServiceToggled",
+      handleServiceToggle as EventListener,
+    );
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener(
+        "premiumServiceToggled",
+        handleServiceToggle as EventListener,
+      );
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   // Funções para gerenciar visitas
@@ -2403,7 +2431,7 @@ Sua visita foi agendada com sucesso! 🏠
 Em caso de dúvidas, estou à disposição!
 
 Siqueira Campos Imóveis
-📱 (62) 9 8556-3505`;
+���� (62) 9 8556-3505`;
 
                     const phoneNumber = selectedLead.telefone.replace(
                       /\D/g,
