@@ -190,7 +190,7 @@ export default function Index() {
               Imóveis em Destaque
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Conhe��a nossa seleção especial de imóveis com as melhores
+              Conheça nossa seleção especial de imóveis com as melhores
               localizações e preços de Goiânia
             </p>
           </div>
