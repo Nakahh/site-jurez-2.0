@@ -1194,7 +1194,7 @@ export default function AdminDashboard() {
                     email: "assistente@siqueicamposimoveis.com.br",
                     papel: "ASSISTENTE",
                     ativo: true,
-                    ultimoLogin: "Hoje ��s 11:15",
+                    ultimoLogin: "Hoje às 11:15",
                     avatar: "M",
                   },
                   {
