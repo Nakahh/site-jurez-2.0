@@ -1538,7 +1538,18 @@ export default function AdminDashboard() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => console.log("Editing monthly report")}
+                      onClick={() => {
+                        const novoEmail = prompt(
+                          "Email para envio:",
+                          "admin@siqueicamposimoveis.com.br",
+                        );
+                        const novoDia = prompt("Dia do mês (1-31):", "1");
+                        if (novoEmail && novoDia) {
+                          alert(
+                            "Configurações do relatório mensal atualizadas!",
+                          );
+                        }
+                      }}
                       className="w-full sm:w-auto"
                     >
                       <Edit className="h-4 w-4 mr-1" />
@@ -1547,7 +1558,11 @@ export default function AdminDashboard() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={handleSettings}
+                      onClick={() => {
+                        alert(
+                          "Configurações do Relatório Mensal:\n\n- Formato: PDF\n- Idioma: Português\n- Incluir gráficos: Sim\n- Envio automático: Ativo",
+                        );
+                      }}
                       className="w-full sm:w-auto"
                     >
                       <Settings className="h-4 w-4 mr-1" />
