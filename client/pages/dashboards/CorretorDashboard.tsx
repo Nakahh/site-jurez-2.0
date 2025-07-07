@@ -733,6 +733,41 @@ export default function CorretorDashboard() {
     carregarDados();
   }, []);
 
+  const handleGeneratePerformanceReport = async () => {
+    try {
+      const performanceData = [
+        {
+          nome: "Vendas Dezembro",
+          vendas: stats?.imoveisVendidos || 0,
+          volume: 850000,
+          comissao: 25500,
+        },
+        {
+          nome: "Performance Mensal",
+          vendas: stats?.leadsConvertidos || 0,
+          volume: 650000,
+          comissao: 19500,
+        },
+        {
+          nome: "Meta vs Realizado",
+          vendas: 5,
+          volume: stats?.vendaMes || 0,
+          comissao: stats?.minhasComissoes || 0,
+        },
+      ];
+
+      const { generatePerformanceReport } = await import(
+        "@/utils/pdfGenerator"
+      );
+      await generatePerformanceReport(performanceData);
+
+      alert("Relatório de performance gerado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao gerar relatório:", error);
+      alert("Erro ao gerar relatório. Tente novamente.");
+    }
+  };
+
   const carregarDados = async () => {
     try {
       const token = localStorage.getItem("token");
