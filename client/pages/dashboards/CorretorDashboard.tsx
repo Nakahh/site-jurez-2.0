@@ -1172,6 +1172,7 @@ export default function CorretorDashboard() {
   const handleViewProperty = (propertyId: string) => {
     const property = imoveis.find((p) => p.id === propertyId);
     if (property) {
+      // Abrir página de detalhes do imóvel
       window.open(`/imovel/${propertyId}`, "_blank");
     }
   };
@@ -1179,15 +1180,8 @@ export default function CorretorDashboard() {
   const handleEditProperty = (propertyId: string) => {
     const property = imoveis.find((p) => p.id === propertyId);
     if (property) {
-      const newTitle = prompt("Novo título:", property.titulo);
-      if (newTitle) {
-        setImoveis((prev) =>
-          prev.map((p) =>
-            p.id === propertyId ? { ...p, titulo: newTitle } : p,
-          ),
-        );
-        alert("Imóvel atualizado com sucesso!");
-      }
+      setSelectedProperty(property);
+      setShowEditPropertyModal(true);
     }
   };
 
