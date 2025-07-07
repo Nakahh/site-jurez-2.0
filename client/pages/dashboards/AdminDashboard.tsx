@@ -72,6 +72,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const realData = useAdminDashboardData(); // Dados reais do serviço
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
