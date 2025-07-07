@@ -533,7 +533,7 @@ export default function AssistenteDashboard() {
           </TabsTrigger>
           <TabsTrigger value="suporte" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Suporte</span>
-            <span className="sm:hidden">🛠��</span>
+            <span className="sm:hidden">🛠️</span>
           </TabsTrigger>
         </TabsList>
 
@@ -719,7 +719,10 @@ export default function AssistenteDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900">
+                <Card
+                  className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900"
+                  onClick={() => setShowWhatsAppBusiness(true)}
+                >
                   <CardContent className="p-6 text-center">
                     <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                       <MessageSquare className="h-8 w-8 text-green-600" />
