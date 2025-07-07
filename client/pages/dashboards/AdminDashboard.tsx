@@ -1319,15 +1319,27 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Relatórios Avançados</h2>
             <div className="flex space-x-2">
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const periodo = prompt(
+                    "Selecione o período:",
+                    "Últimos 30 dias",
+                  );
+                  if (periodo) {
+                    alert(`Período selecionado: ${periodo}`);
+                  }
+                }}
+              >
                 <Calendar className="h-4 w-4 mr-2" />
                 Período
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleFilter}>
                 <Filter className="h-4 w-4 mr-2" />
                 Filtros
               </Button>
-              <Button size="sm">
+              <Button size="sm" onClick={handleExport}>
                 <Download className="h-4 w-4 mr-2" />
                 Exportar
               </Button>
