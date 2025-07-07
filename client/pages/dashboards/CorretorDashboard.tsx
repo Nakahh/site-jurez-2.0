@@ -1122,6 +1122,11 @@ export default function CorretorDashboard() {
   const [selectedPropertyImages, setSelectedPropertyImages] = useState<
     string[]
   >([]);
+  const [showAgendarVisita, setShowAgendarVisita] = useState(false);
+  const [showWhatsAppBusiness, setShowWhatsAppBusiness] = useState(false);
+  const [selectedLeadCorretor, setSelectedLeadCorretor] = useState<Lead | null>(
+    null,
+  );
 
   useEffect(() => {
     carregarDados();
