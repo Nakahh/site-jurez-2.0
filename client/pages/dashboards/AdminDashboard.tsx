@@ -1403,7 +1403,9 @@ export default function AdminDashboard() {
                     <p className="text-sm font-medium text-muted-foreground">
                       Total Usuários
                     </p>
-                    <p className="text-3xl font-bold">{stats?.totalUsuarios}</p>
+                    <p className="text-3xl font-bold">
+                      {realData.totalUsuarios}
+                    </p>
                   </div>
                   <Users className="h-12 w-12 text-primary" />
                 </div>
