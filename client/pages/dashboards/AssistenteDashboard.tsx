@@ -974,20 +974,45 @@ export default function AssistenteDashboard() {
                       </div>
                       <div className="flex flex-col space-y-2">
                         {agendamento.status === "AGENDADO" && (
-                          <Button size="sm">
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              handleConfirmarAgendamento(agendamento.id)
+                            }
+                            title="Confirmar agendamento"
+                          >
                             <CheckCircle className="h-4 w-4 mr-1" />
                             Confirmar
                           </Button>
                         )}
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleLigarAgendamento(agendamento.id)}
+                          title="Ligar para cliente"
+                        >
                           <Phone className="h-4 w-4 mr-1" />
                           Ligar
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            handleEditarAgendamento(agendamento.id)
+                          }
+                          title="Editar agendamento"
+                        >
                           <Edit className="h-4 w-4 mr-1" />
                           Editar
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            handleDetalhesAgendamento(agendamento.id)
+                          }
+                          title="Ver detalhes"
+                        >
                           <Eye className="h-4 w-4 mr-1" />
                           Detalhes
                         </Button>
