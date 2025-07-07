@@ -117,10 +117,32 @@ export default function AdminDashboard() {
     try {
       const { generateSalesReport } = await import("@/utils/pdfGenerator");
       await generateSalesReport();
-      alert("Relatório exportado com sucesso!");
+
+      // Simular download do arquivo
+      const blob = new Blob(
+        ["Relatório de vendas - " + new Date().toLocaleString()],
+        { type: "text/csv" },
+      );
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `relatorio-vendas-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Sucesso!",
+        description: "Relatório exportado com sucesso!",
+      });
     } catch (error) {
       console.error("Erro ao exportar:", error);
-      alert("Erro ao exportar relatório");
+      toast({
+        title: "Erro",
+        description: "Erro ao exportar relatório",
+        variant: "destructive",
+      });
     }
   };
 
