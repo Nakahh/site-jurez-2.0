@@ -167,15 +167,24 @@ export default function AdminDashboard() {
   };
 
   const handleViewReport = (reportId: string) => {
-    // Instead of trying to access a non-existent API, let's handle it properly
     try {
       console.log("Viewing report:", reportId);
-      alert(
-        `Visualizando relatório ${reportId}. Em um sistema real, isso abriria o relatório em uma nova aba.`,
-      );
+
+      // Simular abertura de relatório em nova aba
+      const reportUrl = `/relatorio/${reportId}`;
+      window.open(reportUrl, "_blank");
+
+      toast({
+        title: "Relatório aberto",
+        description: `Relatório ${reportId} foi aberto em uma nova aba.`,
+      });
     } catch (error) {
       console.error("Erro ao visualizar relatório:", error);
-      alert("Erro ao visualizar relatório");
+      toast({
+        title: "Erro",
+        description: "Erro ao visualizar relatório",
+        variant: "destructive",
+      });
     }
   };
 
