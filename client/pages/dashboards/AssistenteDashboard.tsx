@@ -189,7 +189,10 @@ export default function AssistenteDashboard() {
         setLeads((prev) =>
           prev.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l)),
         );
-        alert("Lead atualizado com sucesso!");
+        toast({
+          title: "Lead atualizado",
+          description: "As informações do lead foram atualizadas.",
+        });
       }
     }
   };
