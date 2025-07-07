@@ -1603,6 +1603,337 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {showSettingsModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg max-w-lg w-full mx-4">
+            <h3 className="text-lg font-bold mb-4">Configurações</h3>
+            <div className="space-y-4 mb-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Tema</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Claro</option>
+                  <option>Escuro</option>
+                  <option>Automático</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Idioma</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Português</option>
+                  <option>English</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Notificações</label>
+                <div className="flex items-center space-x-2">
+                  <input type="checkbox" defaultChecked />
+                  <span className="text-sm">
+                    Receber notificações por email
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => {
+                  alert("Configurações salvas!");
+                  setShowSettingsModal(false);
+                }}
+                className="flex-1"
+              >
+                Salvar
+              </Button>
+              <Button
+                onClick={() => setShowSettingsModal(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showFilterModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold mb-4">Filtros</h3>
+            <div className="space-y-4 mb-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Período</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Últimos 7 dias</option>
+                  <option>Últimos 30 dias</option>
+                  <option>Últimos 3 meses</option>
+                  <option>Este ano</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Tipo</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Todos</option>
+                  <option>Entrada</option>
+                  <option>Saída</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Status</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Todos</option>
+                  <option>Pago</option>
+                  <option>Pendente</option>
+                  <option>Cancelado</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => {
+                  alert("Filtros aplicados!");
+                  setShowFilterModal(false);
+                }}
+                className="flex-1"
+              >
+                Aplicar
+              </Button>
+              <Button
+                onClick={() => setShowFilterModal(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showNewTransactionModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold mb-4">Nova Transação</h3>
+            <div className="space-y-4 mb-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Tipo</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Entrada</option>
+                  <option>Saída</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Descrição</label>
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded"
+                  placeholder="Descrição da transação"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Valor</label>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  placeholder="0,00"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Categoria</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Comissão</option>
+                  <option>Marketing</option>
+                  <option>Operacional</option>
+                  <option>Outros</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => {
+                  alert("Transação criada com sucesso!");
+                  setShowNewTransactionModal(false);
+                }}
+                className="flex-1"
+              >
+                Criar
+              </Button>
+              <Button
+                onClick={() => setShowNewTransactionModal(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showNewPropertyModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <h3 className="text-lg font-bold mb-4">Novo Imóvel</h3>
+            <div className="space-y-4 mb-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Título</label>
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded"
+                  placeholder="Ex: Apartamento moderno no centro"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Tipo</label>
+                  <select className="w-full p-2 border rounded">
+                    <option>Apartamento</option>
+                    <option>Casa</option>
+                    <option>Terreno</option>
+                    <option>Comercial</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Finalidade</label>
+                  <select className="w-full p-2 border rounded">
+                    <option>Venda</option>
+                    <option>Aluguel</option>
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Preço</label>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  placeholder="0,00"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Quartos</label>
+                  <input
+                    type="number"
+                    className="w-full p-2 border rounded"
+                    placeholder="0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Banheiros</label>
+                  <input
+                    type="number"
+                    className="w-full p-2 border rounded"
+                    placeholder="0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Vagas</label>
+                  <input
+                    type="number"
+                    className="w-full p-2 border rounded"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Endereço</label>
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded"
+                  placeholder="Endereço completo"
+                />
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => {
+                  alert("Imóvel criado com sucesso!");
+                  setShowNewPropertyModal(false);
+                }}
+                className="flex-1"
+              >
+                Criar
+              </Button>
+              <Button
+                onClick={() => setShowNewPropertyModal(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showNewUserModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold mb-4">Novo Usuário</h3>
+            <div className="space-y-4 mb-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Nome</label>
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded"
+                  placeholder="Nome completo"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Email</label>
+                <input
+                  type="email"
+                  className="w-full p-2 border rounded"
+                  placeholder="usuario@email.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Telefone</label>
+                <input
+                  type="tel"
+                  className="w-full p-2 border rounded"
+                  placeholder="(62) 99999-9999"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Função</label>
+                <select className="w-full p-2 border rounded">
+                  <option>Cliente</option>
+                  <option>Corretor</option>
+                  <option>Admin</option>
+                  <option>Marketing</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Senha Temporária</label>
+                <input
+                  type="password"
+                  className="w-full p-2 border rounded"
+                  placeholder="Senha temporária"
+                />
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => {
+                  alert("Usuário criado com sucesso!");
+                  setShowNewUserModal(false);
+                }}
+                className="flex-1"
+              >
+                Criar
+              </Button>
+              <Button
+                onClick={() => setShowNewUserModal(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
