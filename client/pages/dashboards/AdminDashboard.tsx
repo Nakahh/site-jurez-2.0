@@ -1184,15 +1184,37 @@ export default function AdminDashboard() {
                           </span>
                         </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4" />
+                      <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            console.log("Viewing user:", usuario.id)
+                          }
+                          className="w-full sm:w-auto"
+                        >
+                          <Eye className="h-4 w-4 mr-1 sm:mr-0" />
+                          <span className="sm:hidden">Ver</span>
                         </Button>
-                        <Button size="sm" variant="outline">
-                          <Edit className="h-4 w-4" />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            console.log("Editing user:", usuario.id)
+                          }
+                          className="w-full sm:w-auto"
+                        >
+                          <Edit className="h-4 w-4 mr-1 sm:mr-0" />
+                          <span className="sm:hidden">Editar</span>
                         </Button>
-                        <Button size="sm" variant="outline">
-                          <Settings className="h-4 w-4" />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleSettings}
+                          className="w-full sm:w-auto"
+                        >
+                          <Settings className="h-4 w-4 mr-1 sm:mr-0" />
+                          <span className="sm:hidden">Config</span>
                         </Button>
                       </div>
                     </div>
