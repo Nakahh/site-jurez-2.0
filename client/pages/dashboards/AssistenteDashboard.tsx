@@ -146,7 +146,10 @@ export default function AssistenteDashboard() {
         agend.id === visitaId ? { ...agend, status: "CONFIRMADA" } : agend,
       ),
     );
-    alert("Visita confirmada com sucesso!");
+    toast({
+      title: "Visita confirmada!",
+      description: "A confirmação foi enviada para o cliente.",
+    });
   };
 
   // Funções para gerenciar leads
