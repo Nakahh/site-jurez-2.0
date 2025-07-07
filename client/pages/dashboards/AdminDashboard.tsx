@@ -42,21 +42,6 @@ import {
 } from "@/components/PremiumServiceAlert";
 import { useAdminDashboardData } from "@/services/dashboardDataService";
 
-interface DashboardStats {
-  totalImoveis: number;
-  imoveisDisponiveis: number;
-  imoveisVendidos: number;
-  imoveisAlugados: number;
-  totalUsuarios: number;
-  corretoresAtivos: number;
-  leadsAtivos: number;
-  visitasAgendadas: number;
-  comissoesTotais: number;
-  comissoesPendentes: number;
-  faturamentoMes: number;
-  metaMensal: number;
-}
-
 interface Transacao {
   id: string;
   tipo: "ENTRADA" | "SAIDA";
@@ -522,7 +507,7 @@ export default function AdminDashboard() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Visão Geral */}
+        {/* Vis��o Geral */}
         <TabsContent value="overview" className="space-y-6">
           {realData && (
             <>
