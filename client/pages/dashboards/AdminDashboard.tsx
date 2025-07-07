@@ -156,7 +156,11 @@ export default function AdminDashboard() {
       console.log("Downloading report:", reportId, tipo);
 
       // For demo purposes, generate a new report
-      const { generateSalesReport, generatePerformanceReport, generateCustomReport } = await import("@/utils/pdfGenerator");
+      const {
+        generateSalesReport,
+        generatePerformanceReport,
+        generateCustomReport,
+      } = await import("@/utils/pdfGenerator");
 
       switch (tipo.toLowerCase()) {
         case "vendas":
@@ -170,12 +174,6 @@ export default function AdminDashboard() {
       }
 
       alert(`Relatório ${tipo} baixado com sucesso!`);
-    } catch (error) {
-      console.error("Erro ao baixar relatório:", error);
-      alert("Erro ao baixar relatório. Tente novamente.");
-    }
-  };
-      await handleGenerateReport(tipo);
     } catch (error) {
       console.error("Erro ao baixar relatório:", error);
       alert("Erro ao baixar relatório. Tente novamente.");
