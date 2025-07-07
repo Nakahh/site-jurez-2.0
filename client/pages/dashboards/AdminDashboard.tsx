@@ -466,6 +466,8 @@ export default function AdminDashboard() {
         </div>
       }
     >
+      <PremiumServiceAlert userRole="ADMIN" />
+
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
