@@ -604,9 +604,12 @@ Para recusar, responda: NÃO`;
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <Calendar className="h-4 w-4 mr-2" />
-          Agendar Visita
+        <Button
+          variant="outline"
+          className="text-xs h-8 w-full flex items-center justify-center"
+        >
+          <Calendar className="h-3 w-3 mr-1" />
+          Visita
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
