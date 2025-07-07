@@ -312,6 +312,7 @@ export default function Index() {
             >
               📊
             </Button>
+            <ThemeToggle />
           </div>
         </div>
 
