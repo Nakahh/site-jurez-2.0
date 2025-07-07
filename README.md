@@ -114,25 +114,43 @@ Sistema imobiliário premium com dashboards especializados, automação N8N, int
 - ✅ **Monitoramento de Sistema**: Uptime, performance, logs em tempo real
 - ✅ **Configuração de Automação**: N8N Server, Evolution API, OpenAI
 - ✅ **Gestão de Assinantes**: Controle de clientes premium
-- ✅ **Estatísticas de Uso**: Métricas de utilização dos serviços
+- ✅ **Estatísticas de Uso**: Métricas de utilização dos servi��os
 
-## 🤖 Automação Inteligente (N8N)
+## 🤖 Automação Premium N8N + WhatsApp Business + IA
 
-### 📋 Fluxo Completo Implementado:
+### 📋 Fluxo Completo Premium Implementado:
 
-1. ✅ **Cliente envia mensagem** no chat do site
-2. ✅ **IA responde automaticamente** com mensagem cordial
-3. ✅ **Lead é salvo** no banco PostgreSQL
-4. ✅ **N8N busca corretores ativos** (status ativo + WhatsApp configurado)
-5. ✅ **Mensagem é enviada** para WhatsApp dos corretores
-6. ✅ **Primeiro corretor que responder "ASSUMIR"** fica com o lead
-7. ✅ **Outros corretores são notificados** que o lead foi assumido
-8. ✅ **Cliente é informado** que um corretor irá atendê-lo
-9. ✅ **Se ninguém responder em 15 min**: Fallback automático + email para gerente
+1. ✅ **Cliente envia mensagem** no chat Bubble do site
+2. ✅ **N8N recebe via webhook** `/lead-site`
+3. ✅ **Lead é salvo** no PostgreSQL com status "pendente"
+4. ✅ **IA OpenAI gera resposta** personalizada e cordial
+5. ✅ **Resposta enviada ao cliente** via chat Bubble
+6. ✅ **N8N busca corretores ativos** (ativo=true + WhatsApp configurado)
+7. ✅ **Mensagem enviada via Evolution API** para WhatsApp dos corretores
+8. ✅ **Corretor responde "ASSUMIR"** via webhook `/resposta-corretor`
+9. ✅ **Lead atualizado como "assumido"** + corretor_id no banco
+10. ✅ **Outros corretores notificados** que lead foi assumido
+11. ✅ **Cliente informado** que corretor X irá atendê-lo
+12. ✅ **Timer de 15 minutos** para fallback automático
+13. ✅ **Fallback**: Cliente avisado + email para gerente + lead marcado "expirado"
 
-### 📄 Arquivo N8N Pronto:
+### 🎯 Recursos Avançados do Sistema:
 
-- ✅ `n8n-fluxo-imobiliaria-completo.json` - Importar diretamente no N8N
+- ✅ **Templates Inteligentes**: Mensagens profissionais personalizáveis
+- ✅ **Estatísticas em Tempo Real**: Dashboard com métricas de performance
+- ✅ **Google Calendar Sync**: Agendamentos automáticos sincronizados
+- ✅ **Multi-corretor**: Distribuição inteligente baseada em disponibilidade
+- ✅ **Fallback Inteligente**: Sistema de contingência em caso de não resposta
+- ✅ **Logs Completos**: Auditoria de todas as interações
+- ✅ **Configuração Visual**: Interface amigável para configurações
+
+### 📄 Arquivos N8N Prontos:
+
+- ✅ `n8n-imobiliaria-flow.json` - Fluxo completo para importar no N8N
+- ✅ Configurações Evolution API incluídas
+- ✅ Credenciais PostgreSQL configuradas
+- ✅ Integração OpenAI para IA
+- ✅ Templates de email para fallback
 
 ## 🗄️ Banco de Dados
 
@@ -258,7 +276,7 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ## 📞 Contatos Configurados
 
-### ���� Empresa
+### 🏢 Empresa
 
 - **WhatsApp**: (62) 9 8556-3505
 - **Instagram**: @imoveissiqueiracampos
