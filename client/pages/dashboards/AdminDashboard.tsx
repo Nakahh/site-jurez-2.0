@@ -632,20 +632,21 @@ export default function AdminDashboard() {
                       <div className="flex justify-between items-center">
                         <span>Total Acumulado</span>
                         <span className="font-bold text-green-600">
-                          {formatCurrency(stats.comissoesTotais)}
+                          {formatCurrency(realData.comissoesTotais)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span>Pendentes</span>
                         <span className="font-bold text-orange-600">
-                          {formatCurrency(stats.comissoesPendentes)}
+                          {formatCurrency(realData.comissoesPendentes)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span>Pagas</span>
                         <span className="font-bold text-blue-600">
                           {formatCurrency(
-                            stats.comissoesTotais - stats.comissoesPendentes,
+                            realData.comissoesTotais -
+                              realData.comissoesPendentes,
                           )}
                         </span>
                       </div>
@@ -2017,7 +2018,7 @@ export default function AdminDashboard() {
               </Button>
               <Button variant="outline" onClick={() => setShowNewModal(false)}>
                 <FileText className="h-4 w-4 mr-2" />
-                Relatório
+                Relat��rio
               </Button>
             </div>
             <Button
