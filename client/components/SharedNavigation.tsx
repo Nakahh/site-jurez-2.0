@@ -223,28 +223,52 @@ export function SharedNavigation({
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Acessar Dashboard</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/dashboard/admin")}>
+              <DropdownMenuItem
+                onClick={() => {
+                  console.log("Navigating to Admin Dashboard");
+                  navigate("/dashboard/admin");
+                }}
+              >
                 👑 Administrador
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/dashboard/corretor")}>
+              <DropdownMenuItem
+                onClick={() => {
+                  console.log("Navigating to Corretor Dashboard");
+                  navigate("/dashboard/corretor");
+                }}
+              >
                 🏠 Corretor
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => navigate("/dashboard/assistente")}
+                onClick={() => {
+                  console.log("Navigating to Assistente Dashboard");
+                  navigate("/dashboard/assistente");
+                }}
               >
                 📋 Assistente
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => navigate("/dashboard/marketing")}
+                onClick={() => {
+                  console.log("Navigating to Marketing Dashboard");
+                  navigate("/dashboard/marketing");
+                }}
               >
-                📱 Marketing
+                ���� Marketing
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => navigate("/dashboard/desenvolvedor")}
+                onClick={() => {
+                  console.log("Navigating to Desenvolvedor Dashboard");
+                  navigate("/dashboard/desenvolvedor");
+                }}
               >
                 💻 Desenvolvedor
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/dashboard/cliente")}>
+              <DropdownMenuItem
+                onClick={() => {
+                  console.log("Navigating to Cliente Dashboard");
+                  navigate("/dashboard/cliente");
+                }}
+              >
                 👤 Cliente
               </DropdownMenuItem>
               <DropdownMenuSeparator />
