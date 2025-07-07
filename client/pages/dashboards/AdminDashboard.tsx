@@ -400,7 +400,7 @@ export default function AdminDashboard() {
         },
       ];
 
-      setStats(statsSimuladas);
+      // Usar realData do hook useAdminDashboardData() em vez de stats local
       setTransacoes(transacoesSimuladas);
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
