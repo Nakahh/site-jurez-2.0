@@ -408,32 +408,30 @@ export default function MarketingDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Header */}
-      <div className="bg-card border-b px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              Dashboard Marketing
-            </h1>
-            <p className="text-muted-foreground">
-              Gerencie campanhas, conteúdo e análises de marketing
-            </p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm" onClick={handleExportReport}>
-              <Download className="h-4 w-4 mr-2" />
-              Exportar Relatório
-            </Button>
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Configura��ões
-            </Button>
-          </div>
+    <DashboardLayout
+      title="Dashboard Marketing"
+      subtitle="Gerencie campanhas, conteúdo e análises de marketing"
+      userRole="MARKETING"
+      actions={
+        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportReport}
+            className="w-full sm:w-auto"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Exportar Relatório</span>
+            <span className="sm:hidden">Relatório</span>
+          </Button>
+          <Button size="sm" className="w-full sm:w-auto">
+            <Plus className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Nova Campanha</span>
+            <span className="sm:hidden">Nova</span>
+          </Button>
         </div>
-      </div>
-
-      <div className="p-6">
+      }
+    >
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
