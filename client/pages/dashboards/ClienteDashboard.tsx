@@ -592,14 +592,35 @@ export default function ClienteDashboard() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="favoritos">Favoritos</TabsTrigger>
-          <TabsTrigger value="agendamentos">Agendamentos</TabsTrigger>
-          <TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>
-          <TabsTrigger value="buscas">Buscas Salvas</TabsTrigger>
-          <TabsTrigger value="vistos">Recentes</TabsTrigger>
-          <TabsTrigger value="perfil">Perfil</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Visão Geral</span>
+            <span className="sm:hidden">📊</span>
+          </TabsTrigger>
+          <TabsTrigger value="favoritos" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Favoritos</span>
+            <span className="sm:hidden">❤️</span>
+          </TabsTrigger>
+          <TabsTrigger value="agendamentos" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Agendamentos</span>
+            <span className="sm:hidden">📅</span>
+          </TabsTrigger>
+          <TabsTrigger value="avaliacoes" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Avaliações</span>
+            <span className="sm:hidden">⭐</span>
+          </TabsTrigger>
+          <TabsTrigger value="buscas" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Buscas Salvas</span>
+            <span className="sm:hidden">🔍</span>
+          </TabsTrigger>
+          <TabsTrigger value="vistos" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Recentes</span>
+            <span className="sm:hidden">👁️</span>
+          </TabsTrigger>
+          <TabsTrigger value="perfil" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Perfil</span>
+            <span className="sm:hidden">👤</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* Visão Geral */}
