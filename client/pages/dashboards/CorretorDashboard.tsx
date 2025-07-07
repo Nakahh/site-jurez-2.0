@@ -733,6 +733,88 @@ export default function CorretorDashboard() {
     carregarDados();
   }, []);
 
+  // Funções para gerenciar leads
+  const handleViewLead = (leadId: string) => {
+    const lead = leads.find((l) => l.id === leadId);
+    if (lead) {
+      alert(
+        `Visualizando lead: ${lead.nome}\nTelefone: ${lead.telefone}\nEmail: ${lead.email}\nMensagem: ${lead.mensagem}`,
+      );
+    }
+  };
+
+  const handleEditLead = (leadId: string) => {
+    const lead = leads.find((l) => l.id === leadId);
+    if (lead) {
+      const newName = prompt("Novo nome:", lead.nome);
+      if (newName) {
+        setLeads((prev) =>
+          prev.map((l) => (l.id === leadId ? { ...l, nome: newName } : l)),
+        );
+        alert("Lead atualizado com sucesso!");
+      }
+    }
+  };
+
+  const handleCallLead = (leadId: string) => {
+    const lead = leads.find((l) => l.id === leadId);
+    if (lead) {
+      const phoneNumber = lead.telefone.replace(/\D/g, "");
+      window.open(`tel:${phoneNumber}`, "_self");
+    }
+  };
+
+  const handleWhatsAppLead = (leadId: string) => {
+    const lead = leads.find((l) => l.id === leadId);
+    if (lead) {
+      const message = `Olá ${lead.nome}! Sou da Siqueira Campos Imóveis. Vi seu interesse e gostaria de conversar sobre opções de imóveis.`;
+      const whatsappUrl = `https://wa.me/55${lead.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, "_blank");
+    }
+  };
+
+  // Funções para gerenciar imóveis
+  const handleViewProperty = (propertyId: string) => {
+    const property = imoveis.find((p) => p.id === propertyId);
+    if (property) {
+      window.open(`/imovel/${propertyId}`, "_blank");
+    }
+  };
+
+  const handleEditProperty = (propertyId: string) => {
+    const property = imoveis.find((p) => p.id === propertyId);
+    if (property) {
+      const newTitle = prompt("Novo título:", property.titulo);
+      if (newTitle) {
+        setImoveis((prev) =>
+          prev.map((p) =>
+            p.id === propertyId ? { ...p, titulo: newTitle } : p,
+          ),
+        );
+        alert("Imóvel atualizado com sucesso!");
+      }
+    }
+  };
+
+  const handleDeleteProperty = (propertyId: string) => {
+    if (
+      confirm(
+        "Tem certeza que deseja excluir este imóvel? Esta ação não pode ser desfeita.",
+      )
+    ) {
+      setImoveis((prev) => prev.filter((p) => p.id !== propertyId));
+      alert("Imóvel excluído com sucesso!");
+    }
+  };
+
+  const handleScheduleVisit = (propertyId: string) => {
+    const property = imoveis.find((p) => p.id === propertyId);
+    if (property) {
+      setActiveTab("agenda");
+      alert(`Redirecionando para agenda para ${property.titulo}`);
+    }
+  };
+
   const handleGeneratePerformanceReport = async () => {
     try {
       const performanceData = [
