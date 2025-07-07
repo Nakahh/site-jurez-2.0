@@ -434,7 +434,7 @@ function CriarImovelModal({
           } catch (error) {
             console.error("Erro no auto-post:", error);
             alert(
-              "🎉 Imóvel criado com sucesso!\n\n✅ Todas as informações foram salvas\n⚠️ Erro na publicação automática",
+              "🎉 Imóvel criado com sucesso!\n\n✅ Todas as informa��ões foram salvas\n⚠️ Erro na publicação automática",
             );
           }
         } else {
@@ -1221,6 +1221,34 @@ export default function CorretorDashboard() {
           break;
       }
     }
+
+    // Escutar mudanças nos serviços premium
+    const handleServiceToggle = (e: CustomEvent) => {
+      console.log("Corretor Dashboard: Serviço premium alterado", e.detail);
+      // Recarregar dados quando serviços premium mudam
+      carregarDados();
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key?.includes("Active")) {
+        // Recarregar dados quando há mudanças nos serviços
+        carregarDados();
+      }
+    };
+
+    window.addEventListener(
+      "premiumServiceToggled",
+      handleServiceToggle as EventListener,
+    );
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener(
+        "premiumServiceToggled",
+        handleServiceToggle as EventListener,
+      );
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, [location.state]);
 
   // Funções para gerenciar leads
