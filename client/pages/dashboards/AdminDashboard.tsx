@@ -1420,12 +1420,22 @@ export default function AdminDashboard() {
                     Enviado todo dia 1º do mês para
                     admin@siqueicamposimoveis.com.br
                   </p>
-                  <div className="flex space-x-2">
-                    <Button size="sm" variant="outline">
+                  <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => console.log("Editing monthly report")}
+                      className="w-full sm:w-auto"
+                    >
                       <Edit className="h-4 w-4 mr-1" />
                       Editar
                     </Button>
-                    <Button size="sm" variant="outline">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleSettings}
+                      className="w-full sm:w-auto"
+                    >
                       <Settings className="h-4 w-4 mr-1" />
                       Config
                     </Button>
