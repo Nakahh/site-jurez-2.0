@@ -1394,7 +1394,7 @@ export default function CorretorDashboard() {
           </TabsTrigger>
           <TabsTrigger value="configuracoes" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Config</span>
-            <span className="sm:hidden">⚙️</span>
+            <span className="sm:hidden">⚙���</span>
           </TabsTrigger>
         </TabsList>
 
@@ -2497,6 +2497,310 @@ Siqueira Campos Imóveis
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Visualização de Lead */}
+      {showViewLeadModal && selectedLeadCorretor && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">Detalhes do Lead</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowViewLeadModal(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="font-semibold">Nome</Label>
+                  <p className="text-muted-foreground">
+                    {selectedLeadCorretor.nome}
+                  </p>
+                </div>
+                <div>
+                  <Label className="font-semibold">Telefone</Label>
+                  <p className="text-muted-foreground">
+                    {selectedLeadCorretor.telefone}
+                  </p>
+                </div>
+                <div>
+                  <Label className="font-semibold">Email</Label>
+                  <p className="text-muted-foreground">
+                    {selectedLeadCorretor.email || "Não informado"}
+                  </p>
+                </div>
+                <div>
+                  <Label className="font-semibold">Status</Label>
+                  <Badge variant="secondary">
+                    {selectedLeadCorretor.status}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="font-semibold">Origem</Label>
+                  <p className="text-muted-foreground">
+                    {selectedLeadCorretor.origem}
+                  </p>
+                </div>
+                <div>
+                  <Label className="font-semibold">Data</Label>
+                  <p className="text-muted-foreground">
+                    {selectedLeadCorretor.criadoEm.toLocaleDateString("pt-BR")}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <Label className="font-semibold">Mensagem</Label>
+                <p className="text-muted-foreground p-3 bg-muted rounded-lg">
+                  {selectedLeadCorretor.mensagem}
+                </p>
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  onClick={() => {
+                    const phoneNumber = selectedLeadCorretor.telefone.replace(
+                      /\D/g,
+                      "",
+                    );
+                    window.open(`tel:${phoneNumber}`, "_self");
+                  }}
+                  className="flex-1"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Ligar
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const message = `Olá ${selectedLeadCorretor.nome}! Sou da Siqueira Campos Imóveis.`;
+                    const whatsappUrl = `https://wa.me/55${selectedLeadCorretor.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, "_blank");
+                  }}
+                  className="flex-1"
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  WhatsApp
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Edição de Lead */}
+      {showEditLeadModal && selectedLeadCorretor && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">Editar Lead</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowEditLeadModal(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="p-6">
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  // Atualizar lead
+                  alert("Lead atualizado com sucesso!");
+                  setShowEditLeadModal(false);
+                }}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-nome">Nome</Label>
+                    <Input
+                      id="edit-nome"
+                      defaultValue={selectedLeadCorretor.nome}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-telefone">Telefone</Label>
+                    <Input
+                      id="edit-telefone"
+                      defaultValue={selectedLeadCorretor.telefone}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-email">Email</Label>
+                    <Input
+                      id="edit-email"
+                      type="email"
+                      defaultValue={selectedLeadCorretor.email}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-status">Status</Label>
+                    <Select defaultValue={selectedLeadCorretor.status}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="NOVO">Novo</SelectItem>
+                        <SelectItem value="CONTATADO">Contatado</SelectItem>
+                        <SelectItem value="QUALIFICADO">Qualificado</SelectItem>
+                        <SelectItem value="PROPOSTA">Proposta</SelectItem>
+                        <SelectItem value="CONVERTIDO">Convertido</SelectItem>
+                        <SelectItem value="PERDIDO">Perdido</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="edit-observacoes">Observações</Label>
+                  <Textarea
+                    id="edit-observacoes"
+                    placeholder="Adicionar observações sobre o lead..."
+                    rows={3}
+                  />
+                </div>
+                <div className="flex space-x-2">
+                  <Button type="submit" className="flex-1">
+                    Salvar Alterações
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowEditLeadModal(false)}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Edição de Propriedade */}
+      {showEditPropertyModal && selectedProperty && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">Editar Imóvel</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowEditPropertyModal(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="p-6">
+              <form
+                className="space-y-6"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  // Atualizar propriedade
+                  alert("Imóvel atualizado com sucesso!");
+                  setShowEditPropertyModal(false);
+                }}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-titulo">Título</Label>
+                    <Input
+                      id="edit-titulo"
+                      defaultValue={selectedProperty.titulo}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-preco">Preço</Label>
+                    <Input
+                      id="edit-preco"
+                      type="number"
+                      defaultValue={selectedProperty.preco}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-tipo">Tipo</Label>
+                    <Select defaultValue={selectedProperty.tipo}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="APARTAMENTO">Apartamento</SelectItem>
+                        <SelectItem value="CASA">Casa</SelectItem>
+                        <SelectItem value="TERRENO">Terreno</SelectItem>
+                        <SelectItem value="COMERCIAL">Comercial</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-finalidade">Finalidade</Label>
+                    <Select defaultValue={selectedProperty.finalidade}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="VENDA">Venda</SelectItem>
+                        <SelectItem value="ALUGUEL">Aluguel</SelectItem>
+                        <SelectItem value="AMBOS">Venda e Aluguel</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-quartos">Quartos</Label>
+                    <Input
+                      id="edit-quartos"
+                      type="number"
+                      defaultValue={selectedProperty.quartos}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-banheiros">Banheiros</Label>
+                    <Input
+                      id="edit-banheiros"
+                      type="number"
+                      defaultValue={selectedProperty.banheiros}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="edit-endereco">Endereço</Label>
+                  <Input
+                    id="edit-endereco"
+                    defaultValue={selectedProperty.endereco}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-descricao">Descrição</Label>
+                  <Textarea
+                    id="edit-descricao"
+                    defaultValue={selectedProperty.descricao}
+                    rows={4}
+                  />
+                </div>
+                <div className="flex space-x-2">
+                  <Button type="submit" className="flex-1">
+                    Salvar Alterações
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowEditPropertyModal(false)}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
