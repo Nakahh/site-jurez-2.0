@@ -221,7 +221,7 @@ export default function Index() {
             </Link>
           </nav>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             <UserSwitcher />
             <NotificationBell />
             <Button
@@ -229,7 +229,7 @@ export default function Index() {
               size="sm"
               onClick={() => {
                 const userRole =
-                  localStorage.getItem("currentUserRole") || "CLIENTE";
+                  localStorage.getItem("currentUserRole") || "ADMIN";
                 const dashboardMap: Record<string, string> = {
                   ADMIN: "/dashboard/admin",
                   CORRETOR: "/dashboard/corretor",
@@ -239,11 +239,11 @@ export default function Index() {
                   CLIENTE: "/dashboard/cliente",
                 };
                 window.location.href =
-                  dashboardMap[userRole] || "/dashboard/cliente";
+                  dashboardMap[userRole] || "/dashboard/admin";
               }}
-              className="text-xs"
+              className="text-xs h-8 px-2"
             >
-              🎮 Demo Dashboard
+              📊
             </Button>
             <ThemeToggle />
             <Button
