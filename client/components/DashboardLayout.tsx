@@ -168,22 +168,27 @@ export function DashboardLayout({
 
         {/* Quick Stats */}
         {showStats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 lg:mb-8">
             {stats.map((stat, index) => (
-              <Card key={index} className="p-6 hover:shadow-lg transition-all">
+              <Card
+                key={index}
+                className="p-4 lg:p-6 hover:shadow-lg transition-all"
+              >
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
                       {stat.label}
                     </p>
-                    <p className="text-2xl font-bold">{stat.value}</p>
+                    <p className="text-xl sm:text-2xl font-bold truncate">
+                      {stat.value}
+                    </p>
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex flex-col items-end space-y-1 flex-shrink-0 ml-2">
                     <TrendingUp
                       className={`w-4 h-4 ${stat.positive ? "text-green-500" : "text-red-500"}`}
                     />
                     <span
-                      className={`text-sm font-medium ${stat.positive ? "text-green-500" : "text-red-500"}`}
+                      className={`text-xs sm:text-sm font-medium ${stat.positive ? "text-green-500" : "text-red-500"}`}
                     >
                       {stat.change}
                     </span>
