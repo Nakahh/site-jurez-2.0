@@ -40,6 +40,7 @@ import {
   PremiumServiceAlert,
   PremiumServiceBanner,
 } from "@/components/PremiumServiceAlert";
+import { useAdminDashboardData } from "@/services/dashboardDataService";
 
 interface DashboardStats {
   totalImoveis: number;
