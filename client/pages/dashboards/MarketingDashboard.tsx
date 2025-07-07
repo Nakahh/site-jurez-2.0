@@ -58,6 +58,7 @@ import {
   X,
 } from "lucide-react";
 import { BlogManagement } from "@/components/BlogManagement";
+import { DashboardLayout } from "@/components/DashboardLayout";
 
 interface MarketingStats {
   visitasSite: number;
