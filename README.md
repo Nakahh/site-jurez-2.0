@@ -130,7 +130,7 @@ Sistema imobiliário premium com dashboards especializados, automação N8N, int
 8. ✅ **Corretor responde "ASSUMIR"** via webhook `/resposta-corretor`
 9. ✅ **Lead atualizado como "assumido"** + corretor_id no banco
 10. ✅ **Outros corretores notificados** que lead foi assumido
-11. ✅ **Cliente informado** que corretor X irá atendê-lo
+11. ✅ **Cliente informado** que corretor X ir�� atendê-lo
 12. ✅ **Timer de 15 minutos** para fallback automático
 13. ✅ **Fallback**: Cliente avisado + email para gerente + lead marcado "expirado"
 
@@ -149,7 +149,7 @@ Sistema imobiliário premium com dashboards especializados, automação N8N, int
 - ✅ `n8n-imobiliaria-flow.json` - Fluxo completo para importar no N8N
 - ✅ Configurações Evolution API incluídas
 - ✅ Credenciais PostgreSQL configuradas
-- ✅ Integra��ão OpenAI para IA
+- ✅ Integração OpenAI para IA
 - ✅ Templates de email para fallback
 
 ## 🗄️ Banco de Dados
@@ -342,40 +342,53 @@ npm run db:setup
 # 5. Verificar lead assumido no dashboard
 ```
 
-### 6. Configuração Externa Necessária
+### 6. 🚀 Como Testar o Sistema Completo
 
-#### PostgreSQL
+#### Teste do Fluxo Premium:
 
 ```bash
-# Instalar PostgreSQL
-sudo apt install postgresql
+# 1. Sistema rodando
+npm run dev  # http://localhost:5173
 
-# Criar banco
-sudo -u postgres createdb bdsitejuarez
-sudo -u postgres createuser sitejuarez
+# 2. Acessar como corretor
+# Email: corretor@siqueicamposimoveis.com.br
+# Senha: corretor123
+
+# 3. Configurar WhatsApp
+# Dashboard > Configurações > WhatsApp Integration
+# Número: (62) 9 8556-3505
+# Status: ATIVO
+
+# 4. Testar chat do site
+# Abrir site > Chat flutuante
+# Enviar: "Quero agendar visita para apartamento"
+
+# 5. Verificar automação
+# - IA responde no chat
+# - Corretor recebe no WhatsApp
+# - Responder "ASSUMIR"
+# - Lead aparece no dashboard
+
+# 6. Testar agendamento
+# Dashboard > Agendamentos > Novo
+# Preencher dados > Salvar
+# Verificar sincronização Google Calendar
 ```
 
-#### N8N (Automação)
+#### Monitoramento:
 
 ```bash
-# Instalar N8N
-npm install -g n8n
+# Dashboard Desenvolvedor
+# http://localhost:5173/dashboard (dev@sistema.com / dev123)
+# Aba Premium > Ver status de todos os serviços
 
-# Importar fluxo
-# 1. Abrir N8N: http://localhost:5678
-# 2. Import > Upload JSON
-# 3. Selecionar: n8n-fluxo-imobiliaria-completo.json
-```
+# N8N Executions
+# http://localhost:5678/executions
+# Ver logs de execução do workflow
 
-#### Evolution API (WhatsApp)
-
-```bash
-# Via Docker
-docker run -d \
-  --name evolution-api \
-  -p 8080:8080 \
-  -e AUTHENTICATION_API_KEY=siqueira_key_2024 \
-  atendai/evolution-api:latest
+# Evolution API Manager
+# http://localhost:8080/manager
+# Status da instância WhatsApp
 ```
 
 ## 📋 Comandos Úteis
