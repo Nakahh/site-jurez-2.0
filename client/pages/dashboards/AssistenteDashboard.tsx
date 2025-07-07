@@ -669,7 +669,14 @@ export default function AssistenteDashboard() {
                                 >
                                   {tarefa.prioridade}
                                 </Badge>
-                                <Button size="sm" variant="outline">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    handleConcluirTarefa(tarefa.id)
+                                  }
+                                  title="Concluir tarefa"
+                                >
                                   <CheckCircle className="h-4 w-4" />
                                 </Button>
                               </div>
