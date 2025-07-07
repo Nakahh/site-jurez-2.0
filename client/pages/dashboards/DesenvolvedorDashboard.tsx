@@ -144,6 +144,10 @@ export default function DesenvolvedorDashboard() {
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
   const [backups, setBackups] = useState<BackupInfo[]>([]);
   const [apiEndpoints, setApiEndpoints] = useState<ApiEndpoint[]>([]);
+  const [premiumServices, setPremiumServices] = useState<PremiumService[]>([]);
+  const [clientSubscriptions, setClientSubscriptions] = useState<
+    ClientSubscription[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [maintenanceMode, setMaintenanceMode] = useState(false);
