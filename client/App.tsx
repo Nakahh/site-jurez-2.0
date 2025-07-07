@@ -40,6 +40,7 @@ const LazyAssistenteDashboard = lazy(
 );
 const LazyBlogPost = lazy(() => import("./pages/BlogPost"));
 const LazyForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const LazyHelp = lazy(() => import("./pages/Help"));
 
 // Optimized QueryClient configuration
 const queryClient = new QueryClient({
@@ -161,6 +162,22 @@ const App = () => {
                 <Route path="/contato" element={<LazyContato />} />
                 <Route path="/simulador" element={<LazySimulador />} />
                 <Route path="/desenvolvedor" element={<LazyDesenvolvedor />} />
+                <Route
+                  path="/help"
+                  element={
+                    <Suspense fallback={<div>Carregando...</div>}>
+                      <LazyHelp />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/docs/help"
+                  element={
+                    <Suspense fallback={<div>Carregando...</div>}>
+                      <LazyHelp />
+                    </Suspense>
+                  }
+                />
                 <Route path="/blog" element={<LazyBlog />} />
                 <Route
                   path="/blog/post/:id"
