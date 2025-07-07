@@ -889,7 +889,7 @@ export default function CorretorDashboard() {
           id: "2",
           nome: "Carlos Santos",
           telefone: "(62) 9 9876-5432",
-          mensagem: "Procuro casa com piscina no Jardim Goiás",
+          mensagem: "Procuro casa com piscina no Jardim Goi��s",
           origem: "WHATSAPP",
           status: "ASSUMIDO",
           criadoEm: new Date(),
@@ -1415,108 +1415,6 @@ export default function CorretorDashboard() {
               userId={localStorage.getItem("userId") || "corretor1"}
               userName={localStorage.getItem("userName") || "Corretor"}
             />
-
-            {/* Calendar Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <StatsCard
-                title="Hoje"
-                value="3"
-                icon={Calendar}
-                description="Visitas agendadas"
-                color="blue"
-              />
-              <StatsCard
-                title="Esta Semana"
-                value={stats?.visitasAgendadas || 0}
-                icon={CalendarDays}
-                description="Total agendadas"
-                color="green"
-              />
-              <StatsCard
-                title="Realizadas"
-                value={stats?.visitasRealizadas || 0}
-                icon={CheckSquare}
-                description="Este mês"
-                color="yellow"
-              />
-              <StatsCard
-                title="Taxa Sucesso"
-                value="85%"
-                icon={Target}
-                description="Conversão"
-                color="purple"
-              />
-            </div>
-
-            {/* Lista de Agendamentos */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Próximas Visitas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {agendamentos.map((agendamento) => (
-                    <div
-                      key={agendamento.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                          <Calendar className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-bold">{agendamento.clienteNome}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {agendamento.clienteTelefone}
-                          </p>
-                          <p className="text-sm font-medium">
-                            {agendamento.imovelTitulo}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            <MapPin className="h-3 w-3 inline mr-1" />
-                            {agendamento.imovelEndereco}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                          <p className="font-bold">
-                            {agendamento.dataHora.toLocaleDateString("pt-BR")}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            <Clock className="h-3 w-3 inline mr-1" />
-                            {agendamento.dataHora.toLocaleTimeString("pt-BR", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </p>
-                          <Badge
-                            variant={
-                              agendamento.status === "AGENDADA"
-                                ? "default"
-                                : "secondary"
-                            }
-                          >
-                            {agendamento.status}
-                          </Badge>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Phone className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           {/* Vendas */}
