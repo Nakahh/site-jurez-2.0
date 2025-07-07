@@ -478,26 +478,23 @@ export default function AssistenteDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Header */}
-      <div className="bg-card border-b px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              Dashboard Assistente
-            </h1>
-            <p className="text-muted-foreground">
-              Gerencie leads, agendamentos e suporte aos corretores
-            </p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm">
-              <Bell className="h-4 w-4 mr-2" />
-              Notificações
-            </Button>
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Configurações
+    <DashboardLayout
+      title="Dashboard Assistente"
+      subtitle="Gerencie leads, agendamentos e suporte aos corretores"
+      userRole="ASSISTENTE"
+      actions={
+        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
+            <Bell className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Notificações</span>
+          </Button>
+          <Button size="sm" className="w-full sm:w-auto">
+            <Plus className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Nova Tarefa</span>
+          </Button>
+        </div>
+      }
+    >
             </Button>
           </div>
         </div>
