@@ -276,53 +276,53 @@ export function SharedNavigation({
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t bg-card/95 backdrop-blur-sm">
+        <div className="lg:hidden border-t bg-card/95 backdrop-blur-sm max-h-[80vh] overflow-y-auto">
           <nav className="container mx-auto px-4 py-4 space-y-2">
             {navigationItems.map((item) => (
               <Button
                 key={item.to}
                 variant={location.pathname === item.to ? "default" : "ghost"}
-                className="w-full justify-start"
+                className="w-full justify-start h-12 text-left"
                 asChild
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Link to={item.to} className="flex items-center space-x-2">
+                <Link to={item.to} className="flex items-center space-x-3">
                   {item.icon}
-                  <span>{item.label}</span>
+                  <span className="text-base">{item.label}</span>
                 </Link>
               </Button>
             ))}
 
             <div className="pt-4 border-t border-border/50 space-y-2">
-              <h4 className="font-medium text-sm text-muted-foreground px-2">
+              <h4 className="font-medium text-sm text-muted-foreground px-2 mb-3">
                 Ações Rápidas
               </h4>
               {quickActions.map((action, index) => (
                 <Button
                   key={index}
                   variant="ghost"
-                  className="w-full justify-start"
+                  className="w-full justify-start h-12 text-left"
                   onClick={() => {
                     action.action();
                     setMobileMenuOpen(false);
                   }}
                 >
-                  <span className="mr-2">{action.icon}</span>
-                  {action.label}
+                  <span className="mr-3 text-lg">{action.icon}</span>
+                  <span className="text-base">{action.label}</span>
                 </Button>
               ))}
             </div>
 
             {!isDashboard && (
-              <div className="pt-4 border-t border-border/50 space-y-2">
-                <Button variant="outline" className="w-full" asChild>
+              <div className="pt-4 border-t border-border/50 space-y-3">
+                <Button variant="outline" className="w-full h-12" asChild>
                   <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                    Entrar
+                    <span className="text-base">Entrar</span>
                   </Link>
                 </Button>
-                <Button className="w-full" asChild>
+                <Button className="w-full h-12" asChild>
                   <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
-                    Cadastrar
+                    <span className="text-base">Cadastrar</span>
                   </Link>
                 </Button>
               </div>
