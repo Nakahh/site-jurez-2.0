@@ -1017,7 +1017,12 @@ export default function AdminDashboard() {
                         <p className="text-xs font-medium text-primary">
                           {relatorio.stats}
                         </p>
-                        <Button size="sm" className="mt-4 w-full">
+                        <Button
+                          size="sm"
+                          className="mt-4 w-full"
+                          onClick={() => handleGenerateReport(relatorio.tipo)}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
                           Gerar Relatório
                         </Button>
                       </div>
