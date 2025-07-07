@@ -165,8 +165,8 @@ export default function AssistenteDashboard() {
   const handleAgendarLead = (leadId: string) => {
     const lead = leads.find((l) => l.id === leadId);
     if (lead) {
-      alert(`Redirecionando para agenda para agendar com ${lead.nome}`);
-      setActiveTab("agendamentos");
+      setSelectedLead(lead);
+      setShowAgendarVisita(true);
     }
   };
 
@@ -533,7 +533,7 @@ export default function AssistenteDashboard() {
           </TabsTrigger>
           <TabsTrigger value="suporte" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Suporte</span>
-            <span className="sm:hidden">🛠️</span>
+            <span className="sm:hidden">🛠��</span>
           </TabsTrigger>
         </TabsList>
 
