@@ -1068,7 +1068,7 @@ export default function CorretorDashboard() {
                   title="Comissões"
                   value={formatarPreco(stats.minhasComissoes)}
                   icon={DollarSign}
-                  description="Este m��s"
+                  description="Este mês"
                   trend={`${formatarPreco(stats.comissoesTotais)} total`}
                   color="yellow"
                 />
@@ -1410,23 +1410,11 @@ export default function CorretorDashboard() {
 
           {/* Agenda */}
           <TabsContent value="agenda" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Agenda de Visitas</h2>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Hoje
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtrar
-                </Button>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Agendar Visita
-                </Button>
-              </div>
-            </div>
+            <AdvancedCalendar
+              userRole="CORRETOR"
+              userId={localStorage.getItem("userId") || "corretor1"}
+              userName={localStorage.getItem("userName") || "Corretor"}
+            />
 
             {/* Calendar Summary */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
