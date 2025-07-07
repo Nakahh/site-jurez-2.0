@@ -157,9 +157,27 @@ export default function DesenvolvedorDashboard() {
 
   useEffect(() => {
     carregarDados();
+    initializePremiumServices();
     const interval = setInterval(carregarDados, 30000); // Atualizar a cada 30s
     return () => clearInterval(interval);
   }, []);
+
+  const initializePremiumServices = () => {
+    // Inicializar status dos serviços premium do localStorage
+    setPremiumServices((prev) =>
+      prev.map((service) => {
+        const savedStatus = localStorage.getItem(`${service.id}Active`);
+        if (savedStatus !== null) {
+          return {
+            ...service,
+            active: savedStatus === "true",
+            status: savedStatus === "true" ? "ACTIVE" : "INACTIVE",
+          };
+        }
+        return service;
+      }),
+    );
+  };
 
   const carregarDados = async () => {
     try {
@@ -332,6 +350,23 @@ export default function DesenvolvedorDashboard() {
           status: "INACTIVE",
           lastUpdated: new Date(),
         },
+        {
+          id: "n8n-automation",
+          name: "N8N Automation Integration",
+          description: "Automação completa de processos e integrações com APIs",
+          active: false,
+          price: 147.0,
+          features: [
+            "Workflows automáticos",
+            "Integração com múltiplas APIs",
+            "Processamento de dados",
+            "Notificações automáticas",
+            "Backup de workflows",
+            "Suporte técnico especializado",
+          ],
+          status: "INACTIVE",
+          lastUpdated: new Date(),
+        },
       ];
 
       const clientSubscriptionsSimulados: ClientSubscription[] = [
@@ -399,6 +434,8 @@ export default function DesenvolvedorDashboard() {
         localStorage.setItem("whatsappBusinessActive", newStatus.toString());
       } else if (serviceId === "google-calendar") {
         localStorage.setItem("googleCalendarActive", newStatus.toString());
+      } else if (serviceId === "n8n-automation") {
+        localStorage.setItem("n8nAutomationActive", newStatus.toString());
       }
 
       alert(
