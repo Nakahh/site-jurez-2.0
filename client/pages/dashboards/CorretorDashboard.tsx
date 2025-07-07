@@ -975,7 +975,7 @@ export default function CorretorDashboard() {
             <Bell className="h-4 w-4 mr-2" />
             Notificações
           </Button>
-          <Button size="sm" onClick={() => setModalCadastroImovel(true)}>
+          <Button size="sm" onClick={() => setShowCriarImovel(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Novo Imóvel
           </Button>
