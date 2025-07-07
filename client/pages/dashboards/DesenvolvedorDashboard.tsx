@@ -66,6 +66,7 @@ import {
   Home,
   Target,
 } from "lucide-react";
+import { SystemMonitoring } from "@/components/SystemMonitoring";
 
 interface SystemStats {
   uptime: string;
