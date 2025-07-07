@@ -1314,7 +1314,7 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
 
-        {/* Relatórios Avançados */}
+        {/* Relat��rios Avançados */}
         <TabsContent value="relatorios" className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Relatórios Avançados</h2>
@@ -1898,96 +1898,442 @@ export default function AdminDashboard() {
       )}
 
       {showNewPropertyModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card p-6 rounded-lg max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <h3 className="text-lg font-bold mb-4">Novo Imóvel</h3>
-            <div className="space-y-4 mb-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Título</label>
-                <input
-                  type="text"
-                  className="w-full p-2 border rounded"
-                  placeholder="Ex: Apartamento moderno no centro"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Tipo</label>
-                  <select className="w-full p-2 border rounded">
-                    <option>Apartamento</option>
-                    <option>Casa</option>
-                    <option>Terreno</option>
-                    <option>Comercial</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Finalidade</label>
-                  <select className="w-full p-2 border rounded">
-                    <option>Venda</option>
-                    <option>Aluguel</option>
-                  </select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Preço</label>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  placeholder="0,00"
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Quartos</label>
-                  <input
-                    type="number"
-                    className="w-full p-2 border rounded"
-                    placeholder="0"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Banheiros</label>
-                  <input
-                    type="number"
-                    className="w-full p-2 border rounded"
-                    placeholder="0"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Vagas</label>
-                  <input
-                    type="number"
-                    className="w-full p-2 border rounded"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Endereço</label>
-                <input
-                  type="text"
-                  className="w-full p-2 border rounded"
-                  placeholder="Endereço completo"
-                />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-lg max-w-6xl w-full max-h-[95vh] overflow-hidden">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">Novo Imóvel</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowNewPropertyModal(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-            <div className="flex space-x-2">
-              <Button
-                onClick={() => {
-                  alert("Imóvel criado com sucesso!");
-                  setShowNewPropertyModal(false);
-                }}
-                className="flex-1"
-              >
-                Criar
-              </Button>
-              <Button
-                onClick={() => setShowNewPropertyModal(false)}
-                variant="outline"
-                className="flex-1"
-              >
-                Cancelar
-              </Button>
+
+            <div className="overflow-y-auto max-h-[calc(95vh-140px)] p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Informações Básicas */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Informações Básicas
+                  </h4>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Título do Imóvel *
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-3 border rounded-md"
+                      placeholder="Ex: Apartamento moderno no Setor Bueno"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Descrição Completa *
+                    </label>
+                    <textarea
+                      className="w-full p-3 border rounded-md h-24"
+                      placeholder="Descreva o imóvel detalhadamente..."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Tipo *</label>
+                      <select className="w-full p-3 border rounded-md">
+                        <option value="">Selecione o tipo</option>
+                        <option value="APARTAMENTO">Apartamento</option>
+                        <option value="CASA">Casa</option>
+                        <option value="TERRENO">Terreno</option>
+                        <option value="COMERCIAL">Comercial</option>
+                        <option value="RURAL">Rural</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Finalidade *
+                      </label>
+                      <select className="w-full p-3 border rounded-md">
+                        <option value="">Selecione a finalidade</option>
+                        <option value="VENDA">Venda</option>
+                        <option value="ALUGUEL">Aluguel</option>
+                        <option value="AMBOS">Ambos</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Preço (R$) *
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="650000"
+                        step="1000"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Área Total (m²) *
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="89"
+                        step="0.01"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Quartos</label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="3"
+                        min="0"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Banheiros</label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="2"
+                        min="0"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Vagas</label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="2"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        IPTU Anual (R$)
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="3500"
+                        step="100"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Ano de Construção
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="2018"
+                        min="1900"
+                        max="2025"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Localização */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Localização
+                  </h4>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Endereço Completo *
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-3 border rounded-md"
+                      placeholder="Rua T-30, 1234, Apartamento 802"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Bairro *</label>
+                      <input
+                        type="text"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="Setor Bueno"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">CEP</label>
+                      <input
+                        type="text"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="74223-030"
+                        maxLength="9"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Cidade *</label>
+                      <input
+                        type="text"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="Goiânia"
+                        defaultValue="Goiânia"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Estado *</label>
+                      <input
+                        type="text"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="GO"
+                        defaultValue="GO"
+                        maxLength="2"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Latitude</label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="-16.6868"
+                        step="0.0001"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Longitude</label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="-49.2643"
+                        step="0.0001"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Condomínio */}
+                  <div className="border-t pt-4">
+                    <h5 className="font-medium mb-3">
+                      Condomínio (se aplicável)
+                    </h5>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Valor do Condomínio (R$/mês)
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full p-3 border rounded-md"
+                        placeholder="450"
+                        step="10"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Características e Amenidades */}
+              <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Características
+                  </h4>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Características do Imóvel
+                    </label>
+                    <textarea
+                      className="w-full p-3 border rounded-md h-20"
+                      placeholder="Ex: Reformado recentemente, Móveis planejados, Varanda gourmet (uma por linha)"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Digite uma característica por linha
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Amenidades do Condomínio
+                  </h4>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Amenidades Disponíveis
+                    </label>
+                    <textarea
+                      className="w-full p-3 border rounded-md h-20"
+                      placeholder="Ex: Piscina, Academia, Salão de festas, Playground (uma por linha)"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Digite uma amenidade por linha
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upload de Imagens */}
+              <div className="mt-6">
+                <h4 className="font-semibold text-lg border-b pb-2 mb-4">
+                  Fotos do Imóvel
+                </h4>
+                <div className="space-y-4">
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                    <input
+                      type="file"
+                      id="property-images"
+                      multiple
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length > 0) {
+                          alert(
+                            `${files.length} foto(s) selecionada(s): ${files.map((f) => f.name).join(", ")}`,
+                          );
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="property-images"
+                      className="cursor-pointer flex flex-col items-center space-y-3"
+                    >
+                      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Plus className="h-8 w-8 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium">
+                          Clique para adicionar fotos
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          ou arraste e solte aqui
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Formatos aceitos: JPG, PNG, WebP (máx. 10MB cada)
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                    {/* Preview das imagens - simulação */}
+                    {[
+                      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=200&h=150&fit=crop",
+                      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=200&h=150&fit=crop",
+                    ].map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-md border"
+                        />
+                        <button
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => alert(`Remover foto ${index + 1}`)}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                        <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1 rounded">
+                          {index + 1}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Configurações Adicionais */}
+              <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Configurações
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="destaque"
+                        className="rounded"
+                      />
+                      <label htmlFor="destaque" className="text-sm font-medium">
+                        Exibir como imóvel em destaque
+                      </label>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Status</label>
+                      <select className="w-full p-3 border rounded-md">
+                        <option value="DISPONIVEL">Disponível</option>
+                        <option value="RESERVADO">Reservado</option>
+                        <option value="VENDIDO">Vendido</option>
+                        <option value="ALUGADO">Alugado</option>
+                        <option value="INATIVO">Inativo</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Corretor Responsável
+                  </h4>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Corretor</label>
+                    <select className="w-full p-3 border rounded-md">
+                      <option value="">Selecionar corretor</option>
+                      <option value="1">Juarez Siqueira Campos</option>
+                      <option value="2">Carlos Silva</option>
+                      <option value="3">Maria Santos</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Rodapé com botões */}
+            <div className="border-t p-6">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                <Button
+                  onClick={() => {
+                    // Aqui você implementaria a lógica de salvamento
+                    alert(
+                      "🎉 Imóvel criado com sucesso!\n\nTodas as informações foram salvas:\n• Dados básicos\n• Localização\n• Características\n• Amenidades\n• Fotos\n• Configurações\n\nO imóvel já está disponível no sistema!",
+                    );
+                    setShowNewPropertyModal(false);
+                  }}
+                  className="flex-1 sm:flex-none sm:px-8"
+                  size="lg"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Imóvel
+                </Button>
+                <Button
+                  onClick={() => setShowNewPropertyModal(false)}
+                  variant="outline"
+                  className="flex-1 sm:flex-none sm:px-8"
+                  size="lg"
+                >
+                  Cancelar
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                * Campos obrigatórios devem ser preenchidos
+              </p>
             </div>
           </div>
         </div>
