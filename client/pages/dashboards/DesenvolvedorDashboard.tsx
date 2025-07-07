@@ -364,6 +364,43 @@ export default function DesenvolvedorDashboard() {
     }
   };
 
+  const togglePremiumService = async (serviceId: string) => {
+    try {
+      // Simular toggle do serviço premium
+      setPremiumServices((prev) =>
+        prev.map((service) =>
+          service.id === serviceId
+            ? {
+                ...service,
+                active: !service.active,
+                status: !service.active ? "ACTIVE" : "INACTIVE",
+                lastUpdated: new Date(),
+              }
+            : service,
+        ),
+      );
+    } catch (error) {
+      console.error("Erro ao alterar serviço:", error);
+    }
+  };
+
+  const toggleClientService = async (clientId: string, serviceType: string) => {
+    try {
+      setClientSubscriptions((prev) =>
+        prev.map((client) =>
+          client.id === clientId
+            ? {
+                ...client,
+                [serviceType]: !client[serviceType as keyof ClientSubscription],
+              }
+            : client,
+        ),
+      );
+    } catch (error) {
+      console.error("Erro ao alterar serviço do cliente:", error);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "ONLINE":
