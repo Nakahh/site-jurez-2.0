@@ -642,6 +642,11 @@ export default function DesenvolvedorDashboard() {
             )}
           </TabsContent>
 
+          {/* Monitoramento em Tempo Real */}
+          <TabsContent value="realtime" className="space-y-6">
+            <SystemMonitoring />
+          </TabsContent>
+
           {/* Monitoramento */}
           <TabsContent value="monitoring" className="space-y-6">
             <div className="flex justify-between items-center">
