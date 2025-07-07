@@ -49,6 +49,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { AdvancedCalendar } from "@/components/AdvancedCalendar";
 
 // Types
 interface CorretorStats {
@@ -1067,7 +1068,7 @@ export default function CorretorDashboard() {
                   title="Comissões"
                   value={formatarPreco(stats.minhasComissoes)}
                   icon={DollarSign}
-                  description="Este mês"
+                  description="Este m��s"
                   trend={`${formatarPreco(stats.comissoesTotais)} total`}
                   color="yellow"
                 />
