@@ -508,37 +508,37 @@ export default function AdminDashboard() {
 
         {/* Visão Geral */}
         <TabsContent value="overview" className="space-y-6">
-          {stats && (
+          {realData && (
             <>
-              {/* Cards de Estatísticas */}
+              {/* Cards de Estatísticas - Dados Reais */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 <StatsCard
                   title="Faturamento Mensal"
-                  value={formatCurrency(stats.faturamentoMes)}
+                  value={formatCurrency(realData.faturamentoMes)}
                   icon={DollarSign}
-                  description={`Meta: ${formatCurrency(stats.metaMensal)}`}
-                  trend={`${((stats.faturamentoMes / stats.metaMensal) * 100).toFixed(0)}% da meta`}
+                  description={`Meta: ${formatCurrency(realData.metaMensal)}`}
+                  trend={`${((realData.faturamentoMes / realData.metaMensal) * 100).toFixed(0)}% da meta`}
                   color="green"
                 />
                 <StatsCard
                   title="Total de Imóveis"
-                  value={stats.totalImoveis}
+                  value={realData.totalImoveis}
                   icon={Home}
-                  description={`${stats.imoveisDisponiveis} disponíveis`}
-                  trend="+12 este mês"
+                  description={`${realData.imoveisDisponiveis} disponíveis`}
+                  trend={`+${realData.imoveisVendidos + realData.imoveisAlugados} vendidos/alugados`}
                 />
                 <StatsCard
                   title="Usuários Ativos"
-                  value={stats.totalUsuarios}
+                  value={realData.totalUsuarios}
                   icon={Users}
-                  description={`${stats.corretoresAtivos} corretores ativos`}
+                  description={`${realData.corretoresAtivos} corretores ativos`}
                   trend="+5 novos esta semana"
                 />
                 <StatsCard
                   title="Leads Ativos"
-                  value={stats.leadsAtivos}
+                  value={realData.leadsAtivos}
                   icon={Activity}
-                  description={`${stats.visitasAgendadas} visitas agendadas`}
+                  description={`${realData.visitasAgendadas} visitas agendadas`}
                   trend="+8 hoje"
                 />
               </div>
