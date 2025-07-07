@@ -229,30 +229,41 @@ export default function Index() {
                     </Badge>
                   </div>
 
-                  <CardContent className="p-6">
+                  <CardContent className="p-4 lg:p-6">
                     <div className="mb-4">
-                      <h3 className="font-bold text-xl mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                      <h3 className="font-bold text-lg lg:text-xl mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                         {imovel.titulo}
                       </h3>
-                      <p className="text-muted-foreground flex items-center">
-                        <MapPin className="h-4 w-4 mr-2 text-primary" />
-                        {imovel.bairro}, {imovel.cidade}
+                      <p className="text-sm lg:text-base text-muted-foreground flex items-center">
+                        <MapPin className="h-4 w-4 mr-2 text-primary flex-shrink-0" />
+                        <span className="truncate">
+                          {imovel.bairro}, {imovel.cidade}
+                        </span>
                       </p>
                     </div>
 
-                    <div className="flex items-center space-x-6 mb-6 text-sm font-medium">
+                    <div className="flex flex-wrap items-center gap-2 lg:gap-4 mb-4 lg:mb-6 text-xs lg:text-sm font-medium">
                       <div className="flex items-center text-muted-foreground">
-                        <Bed className="h-5 w-5 mr-2 text-primary" />
-                        {imovel.quartos} quartos
+                        <Bed className="h-4 w-4 mr-1 text-primary" />
+                        <span className="hidden sm:inline">
+                          {imovel.quartos} quartos
+                        </span>
+                        <span className="sm:hidden">{imovel.quartos}q</span>
                       </div>
                       <div className="flex items-center text-muted-foreground">
-                        <Bath className="h-5 w-5 mr-2 text-primary" />
-                        {imovel.banheiros} banheiros
+                        <Bath className="h-4 w-4 mr-1 text-primary" />
+                        <span className="hidden sm:inline">
+                          {imovel.banheiros} banheiros
+                        </span>
+                        <span className="sm:hidden">{imovel.banheiros}b</span>
                       </div>
                       {imovel.vagas && (
                         <div className="flex items-center text-muted-foreground">
-                          <Car className="h-5 w-5 mr-2 text-primary" />
-                          {imovel.vagas} vagas
+                          <Car className="h-4 w-4 mr-1 text-primary" />
+                          <span className="hidden sm:inline">
+                            {imovel.vagas} vagas
+                          </span>
+                          <span className="sm:hidden">{imovel.vagas}v</span>
                         </div>
                       )}
                     </div>
