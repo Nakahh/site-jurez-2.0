@@ -1181,10 +1181,22 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                       <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewReport(relatorio.id)}
+                          title="Visualizar relatório"
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            handleDownloadReport(relatorio.id, relatorio.tipo)
+                          }
+                          title="Baixar relatório"
+                        >
                           <Download className="h-4 w-4" />
                         </Button>
                       </div>
