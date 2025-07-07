@@ -363,21 +363,25 @@ export default function MarketingDashboard() {
     trendValue?: string;
     color?: string;
   }) => (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-3xl font-bold">{value}</p>
+    <Card className="hover:shadow-lg transition-shadow h-full">
+      <CardContent className="p-4 lg:p-6 h-full flex flex-col">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1 min-w-0 pr-3">
+            <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
+              {title}
+            </p>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">
+              {value}
+            </p>
             {trendValue && (
               <div className="flex items-center mt-2">
                 <TrendingUp
-                  className={`h-4 w-4 mr-1 ${
+                  className={`h-3 w-3 lg:h-4 lg:w-4 mr-1 flex-shrink-0 ${
                     trend === "up" ? "text-green-600" : "text-red-600"
                   } ${trend === "down" ? "rotate-180" : ""}`}
                 />
                 <span
-                  className={`text-sm font-medium ${
+                  className={`text-xs sm:text-sm font-medium truncate ${
                     trend === "up" ? "text-green-600" : "text-red-600"
                   }`}
                 >
