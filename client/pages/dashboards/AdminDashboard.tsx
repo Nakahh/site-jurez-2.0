@@ -33,7 +33,10 @@ import {
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useLocation } from "react-router-dom";
-import { PremiumServiceAlert } from "@/components/PremiumServiceAlert";
+import {
+  PremiumServiceAlert,
+  PremiumServiceBanner,
+} from "@/components/PremiumServiceAlert";
 
 interface DashboardStats {
   totalImoveis: number;
