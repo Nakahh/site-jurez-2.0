@@ -91,11 +91,30 @@ Sistema imobiliário premium com dashboards especializados, automação N8N, int
 
 #### 🏘️ Corretor Dashboard
 
-- ✅ **Integração WhatsApp**: Configurar número e status ativo/inativo
+- ✅ **WhatsApp Business Premium**: Configuração completa, templates, estatísticas
+- ✅ **Google Calendar Integration**: Agendamentos sincronizados automaticamente
 - ✅ **Gestão de Leads**: Assumir leads via WhatsApp ("ASSUMIR")
-- ✅ **Estatísticas**: Dashboard com métricas pessoais completas
-- ✅ **Atividade**: Feed de atividades recentes
-- ✅ **Tutorial**: Explicação completa do funcionamento
+- ✅ **Configuração de Disponibilidade**: Horários de trabalho por dia da semana
+- ✅ **Estatísticas Avançadas**: Tempo de resposta, taxa de conversão, performance
+- ✅ **Templates de Mensagens**: Biblioteca de mensagens profissionais
+- ✅ **Chat Integrado**: Acesso direto ao WhatsApp Web
+
+#### 👨‍💼 Assistente Dashboard
+
+- ✅ **WhatsApp Business para Assistentes**: Ferramentas especializadas de suporte
+- ✅ **Google Calendar Completo**: Visualização de agenda de todos os corretores
+- ✅ **Central de Notificações**: Email + WhatsApp + N8N integrados
+- ✅ **Gestão de Follow-ups**: Automação de acompanhamento de leads
+- ✅ **Status do Sistema**: Monitoramento de todas as integrações
+- ✅ **Configuração N8N**: Interface para workflows de automação
+
+#### 🛠️ Desenvolvedor Dashboard
+
+- ✅ **Controle de Serviços Premium**: Ativar/desativar WhatsApp e N8N por cliente
+- ✅ **Monitoramento de Sistema**: Uptime, performance, logs em tempo real
+- ✅ **Configuração de Automação**: N8N Server, Evolution API, OpenAI
+- ✅ **Gestão de Assinantes**: Controle de clientes premium
+- ✅ **Estatísticas de Uso**: Métricas de utilização dos serviços
 
 ## 🤖 Automação Inteligente (N8N)
 
@@ -239,7 +258,7 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ## 📞 Contatos Configurados
 
-### 🏢 Empresa
+### ���� Empresa
 
 - **WhatsApp**: (62) 9 8556-3505
 - **Instagram**: @imoveissiqueiracampos
@@ -402,7 +421,7 @@ docker-compose -f docker-compose.prod.yml up -d
 - ✅ Breakpoints: sm, md, lg, xl, 2xl
 - ✅ Touch-friendly em dispositivos móveis
 - ✅ Navegação adaptável
-- ��� Formulários otimizados para mobile
+- ✅ Formulários otimizados para mobile
 
 ## 🎨 Design System
 
