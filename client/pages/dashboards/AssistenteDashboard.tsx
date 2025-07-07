@@ -495,264 +495,556 @@ export default function AssistenteDashboard() {
         </div>
       }
     >
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-6"
-        >
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-            <TabsTrigger value="leads">Leads</TabsTrigger>
-            <TabsTrigger value="agendamentos">Agendamentos</TabsTrigger>
-            <TabsTrigger value="tarefas">Tarefas</TabsTrigger>
-            <TabsTrigger value="suporte">Suporte</TabsTrigger>
-          </TabsList>
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="leads">Leads</TabsTrigger>
+          <TabsTrigger value="agendamentos">Agendamentos</TabsTrigger>
+          <TabsTrigger value="tarefas">Tarefas</TabsTrigger>
+          <TabsTrigger value="suporte">Suporte</TabsTrigger>
+        </TabsList>
 
-          {/* Visão Geral */}
-          <TabsContent value="overview" className="space-y-6">
-            {stats && (
-              <>
-                {/* Métricas Principais */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <MetricCard
-                    title="Leads Atribuídos"
-                    value={stats.leadsAtribuidos}
-                    icon={Users}
-                    description="Total sob sua responsabilidade"
-                    color="blue"
-                  />
-                  <MetricCard
-                    title="Leads Contatados"
-                    value={stats.leadsContatados}
-                    icon={Phone}
-                    description={`${((stats.leadsContatados / stats.leadsAtribuidos) * 100).toFixed(0)}% de conversão`}
-                    color="green"
-                  />
-                  <MetricCard
-                    title="Visitas Agendadas"
-                    value={stats.visitasAgendadas}
-                    icon={Calendar}
-                    description={`${stats.visitasRealizadas} já realizadas`}
-                    color="purple"
-                  />
-                  <MetricCard
-                    title="Tarefas Pendentes"
-                    value={stats.tarefasPendentes}
-                    icon={CheckCircle}
-                    description="Precisam de atenção"
-                    color="orange"
-                  />
-                </div>
+        {/* Visão Geral */}
+        <TabsContent value="overview" className="space-y-6">
+          {stats && (
+            <>
+              {/* Métricas Principais */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard
+                  title="Leads Atribuídos"
+                  value={stats.leadsAtribuidos}
+                  icon={Users}
+                  description="Total sob sua responsabilidade"
+                  color="blue"
+                />
+                <MetricCard
+                  title="Leads Contatados"
+                  value={stats.leadsContatados}
+                  icon={Phone}
+                  description={`${((stats.leadsContatados / stats.leadsAtribuidos) * 100).toFixed(0)}% de conversão`}
+                  color="green"
+                />
+                <MetricCard
+                  title="Visitas Agendadas"
+                  value={stats.visitasAgendadas}
+                  icon={Calendar}
+                  description={`${stats.visitasRealizadas} já realizadas`}
+                  color="purple"
+                />
+                <MetricCard
+                  title="Tarefas Pendentes"
+                  value={stats.tarefasPendentes}
+                  icon={CheckCircle}
+                  description="Precisam de atenção"
+                  color="orange"
+                />
+              </div>
 
-                {/* Performance */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <MetricCard
-                    title="Seguimentos Ativos"
-                    value={stats.seguimentosAtivos}
-                    icon={Activity}
-                    description="Leads em acompanhamento"
-                    color="indigo"
-                  />
-                  <MetricCard
-                    title="Clientes Ativos"
-                    value={stats.clientesAtivos}
-                    icon={UserCheck}
-                    description="Em processo de negociação"
-                    color="teal"
-                  />
-                  <MetricCard
-                    title="Tempo Médio Resposta"
-                    value={stats.mediaResposta}
-                    icon={Clock}
-                    description="Para primeiro contato"
-                    color="pink"
-                  />
-                  <MetricCard
-                    title="Taxa de Conversão"
-                    value={`${((stats.visitasRealizadas / stats.leadsAtribuidos) * 100).toFixed(1)}%`}
-                    icon={Target}
-                    description="Leads → Visitas"
-                    color="cyan"
-                  />
-                </div>
+              {/* Performance */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard
+                  title="Seguimentos Ativos"
+                  value={stats.seguimentosAtivos}
+                  icon={Activity}
+                  description="Leads em acompanhamento"
+                  color="indigo"
+                />
+                <MetricCard
+                  title="Clientes Ativos"
+                  value={stats.clientesAtivos}
+                  icon={UserCheck}
+                  description="Em processo de negociação"
+                  color="teal"
+                />
+                <MetricCard
+                  title="Tempo Médio Resposta"
+                  value={stats.mediaResposta}
+                  icon={Clock}
+                  description="Para primeiro contato"
+                  color="pink"
+                />
+                <MetricCard
+                  title="Taxa de Conversão"
+                  value={`${((stats.visitasRealizadas / stats.leadsAtribuidos) * 100).toFixed(1)}%`}
+                  icon={Target}
+                  description="Leads → Visitas"
+                  color="cyan"
+                />
+              </div>
 
-                {/* Resumo de Atividades */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Atividades Recentes</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-start space-x-3">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                          <div>
-                            <p className="font-medium">
-                              Novo lead: Maria Silva
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Interessada em apartamento no Setor Bueno
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Há 10 minutos
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start space-x-3">
-                          <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                          <div>
-                            <p className="font-medium">
-                              Visita confirmada: Ana Costa
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Apartamento no Setor Bueno - Amanhã 10h
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Há 1 hora
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start space-x-3">
-                          <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
-                          <div>
-                            <p className="font-medium">
-                              Documento enviado: João Santos
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Documentação de financiamento via email
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Há 2 horas
-                            </p>
-                          </div>
+              {/* Resumo de Atividades */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Atividades Recentes</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                        <div>
+                          <p className="font-medium">Novo lead: Maria Silva</p>
+                          <p className="text-sm text-muted-foreground">
+                            Interessada em apartamento no Setor Bueno
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Há 10 minutos
+                          </p>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                        <div>
+                          <p className="font-medium">
+                            Visita confirmada: Ana Costa
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Apartamento no Setor Bueno - Amanhã 10h
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Há 1 hora
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                        <div>
+                          <p className="font-medium">
+                            Documento enviado: João Santos
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Documentação de financiamento via email
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Há 2 horas
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Próximas Ações</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {tarefas
-                          .filter((t) => t.status === "PENDENTE")
-                          .slice(0, 3)
-                          .map((tarefa) => (
-                            <div
-                              key={tarefa.id}
-                              className="flex items-center justify-between p-3 border rounded-lg"
-                            >
-                              <div>
-                                <p className="font-medium">{tarefa.titulo}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {tarefa.descricao}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  Prazo: {tarefa.prazo.toLocaleString("pt-BR")}
-                                </p>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Badge
-                                  className={getPriorityColor(
-                                    tarefa.prioridade,
-                                  )}
-                                >
-                                  {tarefa.prioridade}
-                                </Badge>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() =>
-                                    handleConcluirTarefa(tarefa.id)
-                                  }
-                                  title="Concluir tarefa"
-                                >
-                                  <CheckCircle className="h-4 w-4" />
-                                </Button>
-                              </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Próximas Ações</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {tarefas
+                        .filter((t) => t.status === "PENDENTE")
+                        .slice(0, 3)
+                        .map((tarefa) => (
+                          <div
+                            key={tarefa.id}
+                            className="flex items-center justify-between p-3 border rounded-lg"
+                          >
+                            <div>
+                              <p className="font-medium">{tarefa.titulo}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {tarefa.descricao}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Prazo: {tarefa.prazo.toLocaleString("pt-BR")}
+                              </p>
                             </div>
-                          ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </>
-            )}
-          </TabsContent>
+                            <div className="flex items-center space-x-2">
+                              <Badge
+                                className={getPriorityColor(tarefa.prioridade)}
+                              >
+                                {tarefa.prioridade}
+                              </Badge>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleConcluirTarefa(tarefa.id)}
+                                title="Concluir tarefa"
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          )}
+        </TabsContent>
 
-          {/* Leads */}
-          <TabsContent value="leads" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Gestão de Leads</h2>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
-                  <Search className="h-4 w-4 mr-2" />
-                  Buscar
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtrar
-                </Button>
-                <Dialog open={novoLead} onOpenChange={setNovoLead}>
-                  <DialogTrigger asChild>
-                    <Button size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Novo Lead
+        {/* Leads */}
+        <TabsContent value="leads" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Gestão de Leads</h2>
+            <div className="flex space-x-2">
+              <Button variant="outline" size="sm">
+                <Search className="h-4 w-4 mr-2" />
+                Buscar
+              </Button>
+              <Button variant="outline" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                Filtrar
+              </Button>
+              <Dialog open={novoLead} onOpenChange={setNovoLead}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Novo Lead
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Cadastrar Novo Lead</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Nome Completo</Label>
+                      <Input placeholder="Nome do cliente" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Telefone</Label>
+                      <Input placeholder="(62) 99999-9999" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email</Label>
+                      <Input placeholder="email@exemplo.com" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Origem</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Como chegou até n��s" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="site">Site</SelectItem>
+                          <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                          <SelectItem value="instagram">Instagram</SelectItem>
+                          <SelectItem value="facebook">Facebook</SelectItem>
+                          <SelectItem value="indicacao">Indicação</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="col-span-2 space-y-2">
+                      <Label>Mensagem/Interesse</Label>
+                      <Textarea
+                        placeholder="Descreva o interesse do cliente..."
+                        rows={3}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Corretor Responsável</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o corretor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="juarez">
+                            Juarez Siqueira
+                          </SelectItem>
+                          <SelectItem value="carlos">Carlos Silva</SelectItem>
+                          <SelectItem value="maria">Maria Santos</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Prioridade</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a prioridade" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALTA">Alta</SelectItem>
+                          <SelectItem value="MEDIA">Média</SelectItem>
+                          <SelectItem value="BAIXA">Baixa</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setNovoLead(false)}
+                    >
+                      Cancelar
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Cadastrar Novo Lead</DialogTitle>
-                    </DialogHeader>
+                    <Button onClick={() => setNovoLead(false)}>
+                      Cadastrar Lead
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+
+          {/* Lista de Leads */}
+          <div className="space-y-4">
+            {leads.map((lead) => (
+              <Card key={lead.id} className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-start space-x-4">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                        <User className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg mb-2">{lead.nome}</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+                          <div className="flex items-center space-x-2">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">{lead.telefone}</span>
+                          </div>
+                          {lead.email && (
+                            <div className="flex items-center space-x-2">
+                              <Mail className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{lead.email}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center space-x-2">
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">
+                              {lead.criadoEm.toLocaleDateString("pt-BR")}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">{lead.corretor}</span>
+                          </div>
+                        </div>
+                        <p className="text-muted-foreground mb-3">
+                          {lead.mensagem}
+                        </p>
+                        <div className="flex items-center space-x-2">
+                          <Badge className={getStatusColor(lead.status)}>
+                            {lead.status}
+                          </Badge>
+                          <Badge className={getPriorityColor(lead.prioridade)}>
+                            {lead.prioridade}
+                          </Badge>
+                          <Badge variant="outline">{lead.origem}</Badge>
+                          {lead.ultimoContato && (
+                            <span className="text-xs text-muted-foreground">
+                              Último contato:{" "}
+                              {lead.ultimoContato.toLocaleString("pt-BR")}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col space-y-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleLigarLead(lead.id)}
+                        title="Ligar para o lead"
+                      >
+                        <Phone className="h-4 w-4 mr-1" />
+                        Ligar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleWhatsAppLead(lead.id)}
+                        title="Enviar WhatsApp"
+                      >
+                        <MessageSquare className="h-4 w-4 mr-1" />
+                        WhatsApp
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleAgendarLead(lead.id)}
+                        title="Agendar visita"
+                      >
+                        <Calendar className="h-4 w-4 mr-1" />
+                        Agendar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEditarLead(lead.id)}
+                        title="Editar lead"
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Editar
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* Agendamentos */}
+        <TabsContent value="agendamentos" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Agendamentos de Visitas</h2>
+            <div className="flex space-x-2">
+              <Button variant="outline" size="sm">
+                <Calendar className="h-4 w-4 mr-2" />
+                Calendário
+              </Button>
+              <Button variant="outline" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                Filtrar por Status
+              </Button>
+            </div>
+          </div>
+
+          {/* Lista de Agendamentos */}
+          <div className="space-y-4">
+            {agendamentos.map((agendamento) => (
+              <Card
+                key={agendamento.id}
+                className="hover:shadow-lg transition-shadow"
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-start space-x-4">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Calendar className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg mb-2">
+                          {agendamento.clienteNome}
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+                          <div className="flex items-center space-x-2">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">
+                              {agendamento.clienteTelefone}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">
+                              {agendamento.corretor}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <p className="font-semibold">
+                            {agendamento.imovelTitulo}
+                          </p>
+                          <p className="text-sm text-muted-foreground flex items-center">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            {agendamento.imovelEndereco}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2 mb-3">
+                          <Clock className="h-4 w-4 text-primary" />
+                          <span className="font-semibold">
+                            {agendamento.dataHora.toLocaleString("pt-BR")}
+                          </span>
+                        </div>
+                        {agendamento.observacoes && (
+                          <p className="text-sm text-muted-foreground mb-3">
+                            Obs: {agendamento.observacoes}
+                          </p>
+                        )}
+                        <Badge className={getStatusColor(agendamento.status)}>
+                          {agendamento.status}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex flex-col space-y-2">
+                      {agendamento.status === "AGENDADO" && (
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            handleConfirmarAgendamento(agendamento.id)
+                          }
+                          title="Confirmar agendamento"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Confirmar
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleLigarAgendamento(agendamento.id)}
+                        title="Ligar para cliente"
+                      >
+                        <Phone className="h-4 w-4 mr-1" />
+                        Ligar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEditarAgendamento(agendamento.id)}
+                        title="Editar agendamento"
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Editar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          handleDetalhesAgendamento(agendamento.id)
+                        }
+                        title="Ver detalhes"
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Detalhes
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* Tarefas */}
+        <TabsContent value="tarefas" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Minhas Tarefas</h2>
+            <div className="flex space-x-2">
+              <Button variant="outline" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                Filtrar
+              </Button>
+              <Dialog open={novaTarefa} onOpenChange={setNovaTarefa}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nova Tarefa
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Criar Nova Tarefa</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Título</Label>
+                      <Input placeholder="Título da tarefa" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Descrição</Label>
+                      <Textarea placeholder="Descreva a tarefa..." rows={3} />
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Nome Completo</Label>
-                        <Input placeholder="Nome do cliente" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Telefone</Label>
-                        <Input placeholder="(62) 99999-9999" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Email</Label>
-                        <Input placeholder="email@exemplo.com" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Origem</Label>
+                        <Label>Tipo</Label>
                         <Select>
                           <SelectTrigger>
-                            <SelectValue placeholder="Como chegou até n��s" />
+                            <SelectValue placeholder="Tipo da tarefa" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="site">Site</SelectItem>
-                            <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                            <SelectItem value="instagram">Instagram</SelectItem>
-                            <SelectItem value="facebook">Facebook</SelectItem>
-                            <SelectItem value="indicacao">Indicação</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="col-span-2 space-y-2">
-                        <Label>Mensagem/Interesse</Label>
-                        <Textarea
-                          placeholder="Descreva o interesse do cliente..."
-                          rows={3}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Corretor Responsável</Label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o corretor" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="juarez">
-                              Juarez Siqueira
+                            <SelectItem value="LIGACAO">Ligação</SelectItem>
+                            <SelectItem value="EMAIL">Email</SelectItem>
+                            <SelectItem value="VISITA">Visita</SelectItem>
+                            <SelectItem value="DOCUMENTO">Documento</SelectItem>
+                            <SelectItem value="SEGUIMENTO">
+                              Seguimento
                             </SelectItem>
-                            <SelectItem value="carlos">Carlos Silva</SelectItem>
-                            <SelectItem value="maria">Maria Santos</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -760,7 +1052,7 @@ export default function AssistenteDashboard() {
                         <Label>Prioridade</Label>
                         <Select>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecione a prioridade" />
+                            <SelectValue placeholder="Prioridade" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="ALTA">Alta</SelectItem>
@@ -770,633 +1062,323 @@ export default function AssistenteDashboard() {
                         </Select>
                       </div>
                     </div>
-                    <div className="flex justify-end space-x-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => setNovoLead(false)}
+                    <div className="space-y-2">
+                      <Label>Prazo</Label>
+                      <Input type="datetime-local" />
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setNovaTarefa(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button onClick={() => setNovaTarefa(false)}>
+                      Criar Tarefa
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+
+          {/* Lista de Tarefas */}
+          <div className="grid gap-4">
+            {tarefas.map((tarefa) => (
+              <Card
+                key={tarefa.id}
+                className={`hover:shadow-lg transition-shadow ${
+                  tarefa.status === "CONCLUIDA" ? "opacity-75" : ""
+                }`}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-start space-x-4">
+                      <div
+                        className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                          tarefa.status === "CONCLUIDA"
+                            ? "bg-green-100"
+                            : tarefa.prioridade === "ALTA"
+                              ? "bg-red-100"
+                              : "bg-primary/10"
+                        }`}
                       >
-                        Cancelar
-                      </Button>
-                      <Button onClick={() => setNovoLead(false)}>
-                        Cadastrar Lead
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
-
-            {/* Lista de Leads */}
-            <div className="space-y-4">
-              {leads.map((lead) => (
-                <Card
-                  key={lead.id}
-                  className="hover:shadow-lg transition-shadow"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-start space-x-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                          <User className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-bold text-lg mb-2">
-                            {lead.nome}
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
-                            <div className="flex items-center space-x-2">
-                              <Phone className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{lead.telefone}</span>
-                            </div>
-                            {lead.email && (
-                              <div className="flex items-center space-x-2">
-                                <Mail className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm">{lead.email}</span>
-                              </div>
-                            )}
-                            <div className="flex items-center space-x-2">
-                              <Clock className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">
-                                {lead.criadoEm.toLocaleDateString("pt-BR")}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <User className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{lead.corretor}</span>
-                            </div>
-                          </div>
-                          <p className="text-muted-foreground mb-3">
-                            {lead.mensagem}
-                          </p>
+                        {tarefa.tipo === "LIGACAO" && (
+                          <Phone
+                            className={`h-6 w-6 ${
+                              tarefa.status === "CONCLUIDA"
+                                ? "text-green-600"
+                                : tarefa.prioridade === "ALTA"
+                                  ? "text-red-600"
+                                  : "text-primary"
+                            }`}
+                          />
+                        )}
+                        {tarefa.tipo === "EMAIL" && (
+                          <Mail
+                            className={`h-6 w-6 ${
+                              tarefa.status === "CONCLUIDA"
+                                ? "text-green-600"
+                                : tarefa.prioridade === "ALTA"
+                                  ? "text-red-600"
+                                  : "text-primary"
+                            }`}
+                          />
+                        )}
+                        {tarefa.tipo === "VISITA" && (
+                          <Calendar
+                            className={`h-6 w-6 ${
+                              tarefa.status === "CONCLUIDA"
+                                ? "text-green-600"
+                                : tarefa.prioridade === "ALTA"
+                                  ? "text-red-600"
+                                  : "text-primary"
+                            }`}
+                          />
+                        )}
+                        {tarefa.tipo === "DOCUMENTO" && (
+                          <FileText
+                            className={`h-6 w-6 ${
+                              tarefa.status === "CONCLUIDA"
+                                ? "text-green-600"
+                                : tarefa.prioridade === "ALTA"
+                                  ? "text-red-600"
+                                  : "text-primary"
+                            }`}
+                          />
+                        )}
+                        {tarefa.tipo === "SEGUIMENTO" && (
+                          <Activity
+                            className={`h-6 w-6 ${
+                              tarefa.status === "CONCLUIDA"
+                                ? "text-green-600"
+                                : tarefa.prioridade === "ALTA"
+                                  ? "text-red-600"
+                                  : "text-primary"
+                            }`}
+                          />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg mb-2">
+                          {tarefa.titulo}
+                        </h3>
+                        <p className="text-muted-foreground mb-3">
+                          {tarefa.descricao}
+                        </p>
+                        <div className="flex items-center space-x-4 mb-3">
                           <div className="flex items-center space-x-2">
-                            <Badge className={getStatusColor(lead.status)}>
-                              {lead.status}
-                            </Badge>
-                            <Badge
-                              className={getPriorityColor(lead.prioridade)}
-                            >
-                              {lead.prioridade}
-                            </Badge>
-                            <Badge variant="outline">{lead.origem}</Badge>
-                            {lead.ultimoContato && (
-                              <span className="text-xs text-muted-foreground">
-                                Último contato:{" "}
-                                {lead.ultimoContato.toLocaleString("pt-BR")}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col space-y-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleLigarLead(lead.id)}
-                          title="Ligar para o lead"
-                        >
-                          <Phone className="h-4 w-4 mr-1" />
-                          Ligar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleWhatsAppLead(lead.id)}
-                          title="Enviar WhatsApp"
-                        >
-                          <MessageSquare className="h-4 w-4 mr-1" />
-                          WhatsApp
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleAgendarLead(lead.id)}
-                          title="Agendar visita"
-                        >
-                          <Calendar className="h-4 w-4 mr-1" />
-                          Agendar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEditarLead(lead.id)}
-                          title="Editar lead"
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Editar
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          {/* Agendamentos */}
-          <TabsContent value="agendamentos" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Agendamentos de Visitas</h2>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Calendário
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtrar por Status
-                </Button>
-              </div>
-            </div>
-
-            {/* Lista de Agendamentos */}
-            <div className="space-y-4">
-              {agendamentos.map((agendamento) => (
-                <Card
-                  key={agendamento.id}
-                  className="hover:shadow-lg transition-shadow"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-start space-x-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                          <Calendar className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-bold text-lg mb-2">
-                            {agendamento.clienteNome}
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
-                            <div className="flex items-center space-x-2">
-                              <Phone className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">
-                                {agendamento.clienteTelefone}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <User className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">
-                                {agendamento.corretor}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="mb-3">
-                            <p className="font-semibold">
-                              {agendamento.imovelTitulo}
-                            </p>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                              <MapPin className="h-4 w-4 mr-1" />
-                              {agendamento.imovelEndereco}
-                            </p>
-                          </div>
-                          <div className="flex items-center space-x-2 mb-3">
-                            <Clock className="h-4 w-4 text-primary" />
-                            <span className="font-semibold">
-                              {agendamento.dataHora.toLocaleString("pt-BR")}
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">
+                              Prazo: {tarefa.prazo.toLocaleString("pt-BR")}
                             </span>
                           </div>
-                          {agendamento.observacoes && (
-                            <p className="text-sm text-muted-foreground mb-3">
-                              Obs: {agendamento.observacoes}
-                            </p>
-                          )}
-                          <Badge className={getStatusColor(agendamento.status)}>
-                            {agendamento.status}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge className={getStatusColor(tarefa.status)}>
+                            {tarefa.status}
                           </Badge>
-                        </div>
-                      </div>
-                      <div className="flex flex-col space-y-2">
-                        {agendamento.status === "AGENDADO" && (
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              handleConfirmarAgendamento(agendamento.id)
-                            }
-                            title="Confirmar agendamento"
+                          <Badge
+                            className={getPriorityColor(tarefa.prioridade)}
                           >
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Confirmar
-                          </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleLigarAgendamento(agendamento.id)}
-                          title="Ligar para cliente"
-                        >
-                          <Phone className="h-4 w-4 mr-1" />
-                          Ligar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            handleEditarAgendamento(agendamento.id)
-                          }
-                          title="Editar agendamento"
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Editar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            handleDetalhesAgendamento(agendamento.id)
-                          }
-                          title="Ver detalhes"
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Detalhes
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          {/* Tarefas */}
-          <TabsContent value="tarefas" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Minhas Tarefas</h2>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtrar
-                </Button>
-                <Dialog open={novaTarefa} onOpenChange={setNovaTarefa}>
-                  <DialogTrigger asChild>
-                    <Button size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Nova Tarefa
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-lg">
-                    <DialogHeader>
-                      <DialogTitle>Criar Nova Tarefa</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label>Título</Label>
-                        <Input placeholder="Título da tarefa" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Descrição</Label>
-                        <Textarea placeholder="Descreva a tarefa..." rows={3} />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Tipo</Label>
-                          <Select>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Tipo da tarefa" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="LIGACAO">Ligação</SelectItem>
-                              <SelectItem value="EMAIL">Email</SelectItem>
-                              <SelectItem value="VISITA">Visita</SelectItem>
-                              <SelectItem value="DOCUMENTO">
-                                Documento
-                              </SelectItem>
-                              <SelectItem value="SEGUIMENTO">
-                                Seguimento
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Prioridade</Label>
-                          <Select>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Prioridade" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="ALTA">Alta</SelectItem>
-                              <SelectItem value="MEDIA">Média</SelectItem>
-                              <SelectItem value="BAIXA">Baixa</SelectItem>
-                            </SelectContent>
-                          </Select>
+                            {tarefa.prioridade}
+                          </Badge>
+                          <Badge variant="outline">{tarefa.tipo}</Badge>
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label>Prazo</Label>
-                        <Input type="datetime-local" />
-                      </div>
                     </div>
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex flex-col space-y-2">
+                      {tarefa.status !== "CONCLUIDA" && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleConcluirTarefa(tarefa.id)}
+                          title="Concluir tarefa"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Concluir
+                        </Button>
+                      )}
                       <Button
+                        size="sm"
                         variant="outline"
-                        onClick={() => setNovaTarefa(false)}
+                        onClick={() => handleEditarTarefa(tarefa.id)}
+                        title="Editar tarefa"
                       >
-                        Cancelar
-                      </Button>
-                      <Button onClick={() => setNovaTarefa(false)}>
-                        Criar Tarefa
+                        <Edit className="h-4 w-4 mr-1" />
+                        Editar
                       </Button>
                     </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
 
-            {/* Lista de Tarefas */}
-            <div className="grid gap-4">
-              {tarefas.map((tarefa) => (
-                <Card
-                  key={tarefa.id}
-                  className={`hover:shadow-lg transition-shadow ${
-                    tarefa.status === "CONCLUIDA" ? "opacity-75" : ""
-                  }`}
+        {/* Suporte */}
+        <TabsContent value="suporte" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Central de Suporte</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Documentação */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Documentação e Guias</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() =>
+                    window.open("/manual-assistente.pdf", "_blank")
+                  }
                 >
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-start space-x-4">
-                        <div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                            tarefa.status === "CONCLUIDA"
-                              ? "bg-green-100"
-                              : tarefa.prioridade === "ALTA"
-                                ? "bg-red-100"
-                                : "bg-primary/10"
-                          }`}
-                        >
-                          {tarefa.tipo === "LIGACAO" && (
-                            <Phone
-                              className={`h-6 w-6 ${
-                                tarefa.status === "CONCLUIDA"
-                                  ? "text-green-600"
-                                  : tarefa.prioridade === "ALTA"
-                                    ? "text-red-600"
-                                    : "text-primary"
-                              }`}
-                            />
-                          )}
-                          {tarefa.tipo === "EMAIL" && (
-                            <Mail
-                              className={`h-6 w-6 ${
-                                tarefa.status === "CONCLUIDA"
-                                  ? "text-green-600"
-                                  : tarefa.prioridade === "ALTA"
-                                    ? "text-red-600"
-                                    : "text-primary"
-                              }`}
-                            />
-                          )}
-                          {tarefa.tipo === "VISITA" && (
-                            <Calendar
-                              className={`h-6 w-6 ${
-                                tarefa.status === "CONCLUIDA"
-                                  ? "text-green-600"
-                                  : tarefa.prioridade === "ALTA"
-                                    ? "text-red-600"
-                                    : "text-primary"
-                              }`}
-                            />
-                          )}
-                          {tarefa.tipo === "DOCUMENTO" && (
-                            <FileText
-                              className={`h-6 w-6 ${
-                                tarefa.status === "CONCLUIDA"
-                                  ? "text-green-600"
-                                  : tarefa.prioridade === "ALTA"
-                                    ? "text-red-600"
-                                    : "text-primary"
-                              }`}
-                            />
-                          )}
-                          {tarefa.tipo === "SEGUIMENTO" && (
-                            <Activity
-                              className={`h-6 w-6 ${
-                                tarefa.status === "CONCLUIDA"
-                                  ? "text-green-600"
-                                  : tarefa.prioridade === "ALTA"
-                                    ? "text-red-600"
-                                    : "text-primary"
-                              }`}
-                            />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-bold text-lg mb-2">
-                            {tarefa.titulo}
-                          </h3>
-                          <p className="text-muted-foreground mb-3">
-                            {tarefa.descricao}
-                          </p>
-                          <div className="flex items-center space-x-4 mb-3">
-                            <div className="flex items-center space-x-2">
-                              <Clock className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">
-                                Prazo: {tarefa.prazo.toLocaleString("pt-BR")}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge className={getStatusColor(tarefa.status)}>
-                              {tarefa.status}
-                            </Badge>
-                            <Badge
-                              className={getPriorityColor(tarefa.prioridade)}
-                            >
-                              {tarefa.prioridade}
-                            </Badge>
-                            <Badge variant="outline">{tarefa.tipo}</Badge>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col space-y-2">
-                        {tarefa.status !== "CONCLUIDA" && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleConcluirTarefa(tarefa.id)}
-                            title="Concluir tarefa"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Concluir
-                          </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEditarTarefa(tarefa.id)}
-                          title="Editar tarefa"
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Editar
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Manual do Assistente
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() =>
+                    window.open("/processos-atendimento.pdf", "_blank")
+                  }
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Processos de Atendimento
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => window.open("/guia-leads.pdf", "_blank")}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Como Gerenciar Leads
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() =>
+                    window.open("/guia-agendamentos.pdf", "_blank")
+                  }
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Agendamento de Visitas
+                </Button>
+              </CardContent>
+            </Card>
 
-          {/* Suporte */}
-          <TabsContent value="suporte" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Central de Suporte</h2>
-            </div>
+            {/* Contatos Importantes */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Contatos Importantes</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-semibold">Juarez Siqueira</p>
+                    <p className="text-sm text-muted-foreground">
+                      Corretor Principal
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button size="sm" variant="outline">
+                      <Phone className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="outline">
+                      <MessageSquare className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Documentação */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Documentação e Guias</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() =>
-                      window.open("/manual-assistente.pdf", "_blank")
-                    }
-                  >
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    Manual do Assistente
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() =>
-                      window.open("/processos-atendimento.pdf", "_blank")
-                    }
-                  >
-                    <FileText className="h-4 w-4 mr-2" />
-                    Processos de Atendimento
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() => window.open("/guia-leads.pdf", "_blank")}
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    Como Gerenciar Leads
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() =>
-                      window.open("/guia-agendamentos.pdf", "_blank")
-                    }
-                  >
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Agendamento de Visitas
-                  </Button>
-                </CardContent>
-              </Card>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-semibold">Carlos Silva</p>
+                    <p className="text-sm text-muted-foreground">Corretor</p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button size="sm" variant="outline">
+                      <Phone className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="outline">
+                      <MessageSquare className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
 
-              {/* Contatos Importantes */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Contatos Importantes</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-semibold">Juarez Siqueira</p>
-                      <p className="text-sm text-muted-foreground">
-                        Corretor Principal
-                      </p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button size="sm" variant="outline">
-                        <Phone className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <MessageSquare className="h-4 w-4" />
-                      </Button>
-                    </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-semibold">Suporte Técnico</p>
+                    <p className="text-sm text-muted-foreground">
+                      Problemas no sistema
+                    </p>
                   </div>
+                  <div className="flex space-x-2">
+                    <Button size="sm" variant="outline">
+                      <Mail className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="outline">
+                      <MessageSquare className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-semibold">Carlos Silva</p>
-                      <p className="text-sm text-muted-foreground">Corretor</p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button size="sm" variant="outline">
-                        <Phone className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <MessageSquare className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+            {/* Configurações Pessoais */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Configurações</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Nome de Exibição</Label>
+                  <Input defaultValue="Assistente do Corretor" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input defaultValue="assistente@siqueicamposimoveis.com.br" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Telefone</Label>
+                  <Input defaultValue="(62) 99999-9999" />
+                </div>
+                <Button className="w-full">Salvar Alterações</Button>
+              </CardContent>
+            </Card>
 
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-semibold">Suporte Técnico</p>
-                      <p className="text-sm text-muted-foreground">
-                        Problemas no sistema
-                      </p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button size="sm" variant="outline">
-                        <Mail className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <MessageSquare className="h-4 w-4" />
-                      </Button>
-                    </div>
+            {/* Estatísticas Pessoais */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Minhas Estatísticas</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between">
+                  <span>Leads Processados (Mês)</span>
+                  <span className="font-bold">45</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Taxa de Conversão</span>
+                  <span className="font-bold text-green-600">71%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tempo Médio Resposta</span>
+                  <span className="font-bold">2h 15m</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Satisfação do Cliente</span>
+                  <div className="flex items-center space-x-1">
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <span className="font-bold">4.8</span>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Configurações Pessoais */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Configurações</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Nome de Exibição</Label>
-                    <Input defaultValue="Assistente do Corretor" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input defaultValue="assistente@siqueicamposimoveis.com.br" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Telefone</Label>
-                    <Input defaultValue="(62) 99999-9999" />
-                  </div>
-                  <Button className="w-full">Salvar Alterações</Button>
-                </CardContent>
-              </Card>
-
-              {/* Estatísticas Pessoais */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Minhas Estatísticas</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between">
-                    <span>Leads Processados (Mês)</span>
-                    <span className="font-bold">45</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Taxa de Conversão</span>
-                    <span className="font-bold text-green-600">71%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Tempo Médio Resposta</span>
-                    <span className="font-bold">2h 15m</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Satisfação do Cliente</span>
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span className="font-bold">4.8</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </DashboardLayout>
   );
 }
