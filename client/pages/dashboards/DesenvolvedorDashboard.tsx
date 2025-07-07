@@ -384,14 +384,35 @@ export default function DesenvolvedorDashboard() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="realtime">Tempo Real</TabsTrigger>
-          <TabsTrigger value="monitoring">Monitoramento</TabsTrigger>
-          <TabsTrigger value="security">Segurança</TabsTrigger>
-          <TabsTrigger value="backups">Backups</TabsTrigger>
-          <TabsTrigger value="api">APIs</TabsTrigger>
-          <TabsTrigger value="config">Configurações</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Visão Geral</span>
+            <span className="sm:hidden">📊</span>
+          </TabsTrigger>
+          <TabsTrigger value="realtime" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Tempo Real</span>
+            <span className="sm:hidden">⏱️</span>
+          </TabsTrigger>
+          <TabsTrigger value="monitoring" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Monitoramento</span>
+            <span className="sm:hidden">📡</span>
+          </TabsTrigger>
+          <TabsTrigger value="security" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Segurança</span>
+            <span className="sm:hidden">🔒</span>
+          </TabsTrigger>
+          <TabsTrigger value="backups" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Backups</span>
+            <span className="sm:hidden">💾</span>
+          </TabsTrigger>
+          <TabsTrigger value="api" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">APIs</span>
+            <span className="sm:hidden">🔌</span>
+          </TabsTrigger>
+          <TabsTrigger value="config" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Configurações</span>
+            <span className="sm:hidden">⚙️</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* Visão Geral */}
