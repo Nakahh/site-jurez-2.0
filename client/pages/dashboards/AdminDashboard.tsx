@@ -70,7 +70,7 @@ export default function AdminDashboard() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const realData = useAdminDashboardData(); // Dados reais do serviço
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
@@ -942,7 +942,7 @@ export default function AdminDashboard() {
                 className="w-full sm:w-auto"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Nova Transação
+                Nova Transa��ão
               </Button>
             </div>
           </div>
