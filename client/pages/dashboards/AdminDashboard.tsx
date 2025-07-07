@@ -1583,7 +1583,18 @@ export default function AdminDashboard() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => console.log("Editing automated report")}
+                      onClick={() => {
+                        const novoDia = prompt(
+                          "Dia da semana (1=Segunda, 7=Domingo):",
+                          "1",
+                        );
+                        const novoHorario = prompt("Horário (HH:MM):", "08:00");
+                        if (novoDia && novoHorario) {
+                          alert(
+                            "Configurações do relatório semanal atualizadas!",
+                          );
+                        }
+                      }}
                       className="w-full sm:w-auto"
                     >
                       <Edit className="h-4 w-4 mr-1" />
@@ -1593,8 +1604,14 @@ export default function AdminDashboard() {
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        console.log("Toggling automated report");
-                        alert("Relatório automático ativado/desativado!");
+                        const confirmar = confirm(
+                          "Deseja ativar o relatório automático de Performance Semanal?",
+                        );
+                        if (confirmar) {
+                          alert(
+                            "Relatório de Performance Semanal ativado! Será enviado toda segunda-feira às 08:00.",
+                          );
+                        }
                       }}
                       className="w-full sm:w-auto"
                     >
