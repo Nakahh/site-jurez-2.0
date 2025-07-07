@@ -369,9 +369,18 @@ export default function Index() {
             </div>
           )}
 
-          <div className="text-center mt-16">
-            <Button size="lg" className="px-8 py-4 text-lg" asChild>
-              <Link to="/imoveis">Ver todos os imóveis</Link>
+          <div className="text-center mt-12 lg:mt-16">
+            <Button
+              size="lg"
+              className="w-full sm:w-auto px-6 lg:px-8 py-3 lg:py-4 text-base lg:text-lg"
+              asChild
+            >
+              <Link to="/imoveis">
+                <span className="flex items-center justify-center">
+                  <Building className="h-5 w-5 mr-2" />
+                  Ver todos os imóveis
+                </span>
+              </Link>
             </Button>
           </div>
         </div>
