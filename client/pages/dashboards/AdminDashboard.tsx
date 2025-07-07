@@ -254,28 +254,34 @@ export default function AdminDashboard() {
     trend?: string;
     color?: string;
   }) => (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-3xl font-bold">{value}</p>
+    <Card className="hover:shadow-lg transition-shadow h-full">
+      <CardContent className="p-4 lg:p-6 h-full flex flex-col">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1 min-w-0 pr-3">
+            <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
+              {title}
+            </p>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">
+              {value}
+            </p>
             {description && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                 {description}
               </p>
             )}
           </div>
           <div
-            className={`h-12 w-12 bg-${color}/10 rounded-full flex items-center justify-center`}
+            className={`h-10 w-10 lg:h-12 lg:w-12 bg-${color}/10 rounded-full flex items-center justify-center flex-shrink-0`}
           >
-            <Icon className={`h-6 w-6 text-${color}`} />
+            <Icon className={`h-5 w-5 lg:h-6 lg:w-6 text-${color}`} />
           </div>
         </div>
         {trend && (
-          <div className="flex items-center mt-4 pt-4 border-t">
-            <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
-            <span className="text-sm text-green-600 font-medium">{trend}</span>
+          <div className="flex items-center mt-auto pt-3 border-t">
+            <TrendingUp className="h-3 w-3 lg:h-4 lg:w-4 text-green-600 mr-1 flex-shrink-0" />
+            <span className="text-xs sm:text-sm text-green-600 font-medium truncate">
+              {trend}
+            </span>
           </div>
         )}
       </CardContent>
