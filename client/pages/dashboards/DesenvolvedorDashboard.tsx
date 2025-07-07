@@ -275,6 +275,82 @@ export default function DesenvolvedorDashboard() {
         },
       ];
 
+      const premiumServicesSimulados: PremiumService[] = [
+        {
+          id: "1",
+          name: "WhatsApp Business Integration",
+          description:
+            "Integração completa com Evolution API para automação de leads",
+          active: true,
+          price: 97.0,
+          features: [
+            "Resposta automática de leads",
+            "Distribuição inteligente para corretores",
+            "Fallback após 15 minutos",
+            "Histórico completo de conversas",
+            "Notificações em tempo real",
+          ],
+          status: "ACTIVE",
+          lastUpdated: new Date(),
+        },
+        {
+          id: "2",
+          name: "N8N Automation Suite",
+          description: "Automação completa de processos com N8N e IA",
+          active: true,
+          price: 147.0,
+          features: [
+            "Integração com OpenAI GPT-3.5",
+            "Processamento automático de leads",
+            "Agendamento Google Calendar",
+            "Email marketing automatizado",
+            "Relatórios avançados",
+            "Backup automático",
+          ],
+          status: "ACTIVE",
+          lastUpdated: new Date(),
+        },
+        {
+          id: "3",
+          name: "Google Calendar Integration",
+          description: "Agendamento automático de visitas com sincronização",
+          active: false,
+          price: 47.0,
+          features: [
+            "Sincronização com Google Calendar",
+            "Agendamento automático de visitas",
+            "Lembretes por email e WhatsApp",
+            "Gestão de disponibilidade",
+            "Relatórios de agendamentos",
+          ],
+          status: "INACTIVE",
+          lastUpdated: new Date(),
+        },
+      ];
+
+      const clientSubscriptionsSimulados: ClientSubscription[] = [
+        {
+          id: "1",
+          clientName: "Siqueira Campos Imóveis",
+          email: "admin@siqueicamposimoveis.com.br",
+          whatsappEnabled: true,
+          n8nEnabled: true,
+          googleCalendarEnabled: false,
+          expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          status: "ACTIVE",
+        },
+        {
+          id: "2",
+          clientName: "Imobiliária Exemplo",
+          email: "contato@exemplo.com.br",
+          whatsappEnabled: false,
+          n8nEnabled: false,
+          googleCalendarEnabled: false,
+          expiryDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+          status: "EXPIRED",
+        },
+      ];
+
       setSystemStats(statsSimuladas);
       setSecurityEvents(securityEventsSimulados);
       setBackups(backupsSimulados);
@@ -433,7 +509,7 @@ export default function DesenvolvedorDashboard() {
           </TabsTrigger>
           <TabsTrigger value="backups" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Backups</span>
-            <span className="sm:hidden">💾</span>
+            <span className="sm:hidden">��</span>
           </TabsTrigger>
           <TabsTrigger value="api" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">APIs</span>
@@ -1280,7 +1356,7 @@ export default function DesenvolvedorDashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Tempo Sessão (minutos)</Label>
+                  <Label>Tempo Sess��o (minutos)</Label>
                   <Input type="number" defaultValue="60" />
                 </div>
                 <div className="space-y-2">
