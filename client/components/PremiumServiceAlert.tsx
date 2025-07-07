@@ -61,6 +61,32 @@ export function PremiumServiceAlert({
 
   useEffect(() => {
     checkServices();
+
+    // Escutar mudanças nos serviços premium
+    const handleServiceToggle = (e: CustomEvent) => {
+      console.log("PremiumServiceAlert: Serviço alterado", e.detail);
+      checkServices();
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key?.includes("Active")) {
+        checkServices();
+      }
+    };
+
+    window.addEventListener(
+      "premiumServiceToggled",
+      handleServiceToggle as EventListener,
+    );
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener(
+        "premiumServiceToggled",
+        handleServiceToggle as EventListener,
+      );
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, [userRole, services]);
 
   const checkServices = () => {
