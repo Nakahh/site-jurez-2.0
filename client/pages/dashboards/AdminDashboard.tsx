@@ -1208,7 +1208,7 @@ export default function AdminDashboard() {
                       Alugados
                     </p>
                     <p className="text-3xl font-bold text-orange-600">
-                      {stats?.imoveisAlugados}
+                      {realData.imoveisAlugados}
                     </p>
                   </div>
                   <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center">
