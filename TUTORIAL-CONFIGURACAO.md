@@ -1,402 +1,508 @@
-# Tutorial Completo - Configuração Siqueira Campos Imóveis
+# 🔧 Tutorial Completo de Configuração - Sistema Premium
 
-Este tutorial te guiará passo a passo para configurar todo o sistema, desde a instalação local até a configuração do N8N e Evolution API.
+**Guia passo-a-passo para configurar N8N + WhatsApp Business + Evolution API + Google Calendar**
 
-## 📋 O que você vai precisar fazer fora do sistema
+---
 
-### 1. 🗄️ Configurar PostgreSQL
+## 📋 Pré-requisitos
+
+Antes de começar, certifique-se de ter:
+
+- ✅ Sistema básico rodando (`npm run dev`)
+- ✅ PostgreSQL instalado e configurado
+- ✅ Docker instalado (recomendado)
+- ✅ Node.js 18+ instalado
+- ✅ Acesso à internet para APIs externas
+
+---
+
+## 🗄️ Etapa 1: Configurar PostgreSQL (5 minutos)
+
+### 1.1 Instalar PostgreSQL
 
 ```bash
 # Ubuntu/Debian
 sudo apt update
 sudo apt install postgresql postgresql-contrib
 
-# Iniciar serviço
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
+# macOS
+brew install postgresql
 
-# Criar banco e usuário
+# Windows
+# Baixar de: https://www.postgresql.org/download/windows/
+```
+
+### 1.2 Configurar Banco
+
+```bash
+# Conectar como superusuário
 sudo -u postgres psql
+
+# No prompt do PostgreSQL:
 CREATE DATABASE bdsitejuarez;
-CREATE USER sitejuarez WITH PASSWORD 'juarez123';
+CREATE USER sitejuarez WITH PASSWORD 'nakah123';
 GRANT ALL PRIVILEGES ON DATABASE bdsitejuarez TO sitejuarez;
 \q
 ```
 
-### 2. 🤖 Configurar N8N
+### 1.3 Adicionar Campos para Premium
 
 ```bash
-# Instalar globalmente
-npm install -g n8n
-
-# Ou usar Docker
-docker run -it --rm \
-  --name n8n \
-  -p 5678:5678 \
-  -v ~/.n8n:/home/node/.n8n \
-  n8io/n8n
-
-# Acessar http://localhost:5678
+# No projeto, atualizar schema Prisma
+npm run db:migrate
+npm run db:seed  # Dados de teste
 ```
 
-#### Importar Fluxo N8N:
-
-1. Abra N8N em http://localhost:5678
-2. Vá em **Settings → Import**
-3. Carregue o arquivo `n8n-fluxo-imobiliaria-completo.json`
-4. Configure as credenciais (detalhes abaixo)
-
-#### Configurar Credenciais no N8N:
-
-**📊 PostgreSQL**:
-
-- Name: `PostgreSQL Siqueira Campos`
-- Host: `localhost`
-- Database: `bdsitejuarez`
-- User: `sitejuarez`
-- Password: `juarez123`
-- Port: `5432`
-
-**🤖 OpenAI**:
-
-- Name: `OpenAI Siqueira Campos`
-- API Key: Sua chave da OpenAI (obtenha em https://platform.openai.com/api-keys)
-
-**📱 Evolution API**:
-
-- Name: `Evolution API Siqueira Campos`
-- URL: `http://localhost:8080` (ou sua URL do Evolution)
-- API Key: Sua chave do Evolution
-
-**📧 SMTP Email**:
-
-- Name: `SMTP Siqueira Campos`
-- Host: `smtp.gmail.com`
-- Port: `587`
-- User: `siqueiraecamposimoveisgoiania@gmail.com`
-- Password: `Juarez.123`
-
-### 3. 📱 Configurar Evolution API (WhatsApp)
+### 1.4 Verificar Configuração
 
 ```bash
-# Via Docker
+# Testar conexão
+psql -h localhost -U sitejuarez -d bdsitejuarez
+# Se conectou com sucesso: ✅ PostgreSQL configurado
+```
+
+---
+
+## 🤖 Etapa 2: Configurar N8N (15 minutos)
+
+### 2.1 Instalar N8N via Docker (Recomendado)
+
+```bash
+# Criar diretório para dados
+mkdir ~/.n8n
+
+# Rodar N8N
+docker run -d \
+  --name n8n-imobiliaria \
+  -p 5678:5678 \
+  -v ~/.n8n:/home/node/.n8n \
+  -e N8N_BASIC_AUTH_ACTIVE=true \
+  -e N8N_BASIC_AUTH_USER=admin \
+  -e N8N_BASIC_AUTH_PASSWORD=siqueira2024 \
+  n8nio/n8n
+
+# Verificar se está rodando
+docker ps | grep n8n
+```
+
+### 2.2 Acessar N8N
+
+```bash
+# Abrir no navegador
+http://localhost:5678
+
+# Login:
+# Usuário: admin
+# Senha: siqueira2024
+```
+
+### 2.3 Configurar Credenciais
+
+#### PostgreSQL Credential:
+
+1. **Settings** > **Credentials** > **Add Credential**
+2. Selecionar **Postgres**
+3. Configurar:
+   - **Host**: localhost
+   - **Database**: bdsitejuarez
+   - **User**: sitejuarez
+   - **Password**: nakah123
+   - **Port**: 5432
+4. **Save** com nome: `PostgreSQL - Imobiliária`
+
+#### OpenAI Credential:
+
+1. **Add Credential** > **OpenAI**
+2. **API Key**: `sk-sua-chave-openai`
+3. **Save** com nome: `OpenAI - Imobiliária`
+
+### 2.4 Importar Workflow
+
+```bash
+# 1. Baixar arquivo do projeto
+cp n8n-imobiliaria-flow.json ~/Downloads/
+
+# 2. No N8N interface:
+# - Settings > Import workflow
+# - Upload: n8n-imobiliaria-flow.json
+# - Import
+
+# 3. Ativar workflow
+# - Clicar no workflow importado
+# - Toggle "Active" no canto superior direito
+```
+
+### 2.5 Configurar Webhooks
+
+```bash
+# Webhook URLs que o N8N irá gerar:
+# http://localhost:5678/webhook/lead-site
+# http://localhost:5678/webhook/resposta-corretor
+
+# Anotar essas URLs para usar no sistema
+```
+
+---
+
+## 📱 Etapa 3: Configurar Evolution API (15 minutos)
+
+### 3.1 Instalar Evolution API
+
+```bash
+# Via Docker (método mais simples)
 docker run -d \
   --name evolution-api \
   -p 8080:8080 \
-  -e AUTHENTICATION_API_KEY=siqueira_api_key_2024 \
-  -e AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true \
+  -e AUTHENTICATION_API_KEY=siqueira_key_2024 \
+  -e STORE_MESSAGES=true \
+  -e STORE_MESSAGE_UP=true \
+  -e STORE_CONTACTS=true \
+  -e STORE_CHATS=true \
+  -e CLEAN_STORE_CLEANING_INTERVAL=7200 \
+  -e CLEAN_STORE_MESSAGES=true \
+  -e CLEAN_STORE_MESSAGE_UP=true \
+  -e CLEAN_STORE_CONTACTS=true \
+  -e CLEAN_STORE_CHATS=true \
   atendai/evolution-api:latest
+
+# Verificar se está rodando
+curl http://localhost:8080
 ```
 
-#### Configurar Instância WhatsApp:
-
-1. Acesse http://localhost:8080/manager
-2. Clique em **"Create Instance"**
-3. Nome da instância: `siqueira`
-4. Configure webhook para N8N:
-   - URL: `http://localhost:5678/webhook/resposta-corretor`
-   - Events: `messages.upsert`
-5. Conecte com QR Code
-
-### 4. 🔑 Configurar Google OAuth
-
-1. Vá para [Google Cloud Console](https://console.cloud.google.com/)
-2. Crie um novo projeto ou use existente
-3. Ative a **Google+ API**
-4. Vá em **Credenciais → Criar Credenciais → ID do cliente OAuth**
-5. Tipo: Aplicação Web
-6. URLs autorizadas:
-   - `http://localhost:3000`
-   - `https://siqueicamposimoveis.com.br`
-7. Copie Client ID e Client Secret para o `.env`
-
-### 5. 🔑 Configurar OpenAI
-
-1. Crie conta em https://platform.openai.com/
-2. Vá em **API Keys**
-3. Clique **"Create new secret key"**
-4. Copie a chave para o `.env`
-
-## 🚀 Passo a Passo para Rodar o Sistema
-
-### Passo 1: Preparar o Ambiente
+### 3.2 Acessar Manager
 
 ```bash
-# Clonar o repositório
-git clone <url-do-repositorio>
-cd siqueira-campos-imoveis
+# Abrir no navegador
+http://localhost:8080/manager
 
-# Instalar dependências
-npm install
-
-# Copiar configurações
-cp .env.example .env
+# Página de gerenciamento da Evolution API
 ```
 
-### Passo 2: Configurar .env
-
-Edite o arquivo `.env` com suas configurações:
-
-```env
-# Banco de dados
-DATABASE_URL="postgresql://sitejuarez:juarez123@localhost:5432/bdsitejuarez?schema=public"
-
-# JWT
-JWT_SECRET=468465454567653554546524
-JWT_EXPIRES_IN=7d
-COOKIE_SECRET=645454564867654575565
-
-# Portas
-PORT=3000
-ADMIN_PORT=3001
-APP_PORT=3002
-
-# Email
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=siqueiraecamposimoveisgoiania@gmail.com
-EMAIL_PASS=Juarez.123
-
-# Google OAuth (substitua pelos seus)
-GOOGLE_CLIENT_ID=7452076957-v6740revpqo1s3f0ek25dr1tpua6q893.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=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
-GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback
-
-# N8N e Evolution API
-N8N_WEBHOOK_URL=http://localhost:5678/webhook
-EVOLUTION_API_URL=http://localhost:8080
-EVOLUTION_API_KEY=siqueira_api_key_2024
-
-# OpenAI (substitua pela sua)
-OPENAI_API_KEY=sk-...your-key-here...
-```
-
-### Passo 3: Configurar Banco de Dados
+### 3.3 Criar Instância WhatsApp
 
 ```bash
-# Gerar cliente Prisma
-npx prisma generate
+# 1. No Manager, clicar "Create Instance"
+# 2. Configurar:
+#    - Instance Name: siqueirainstance
+#    - Token: siqueira_instance_token
+#    - Webhook URL: http://localhost:5678/webhook/resposta-corretor
 
-# Executar migrações
-npx prisma migrate dev --name init
-
-# (Opcional) Visualizar banco
-npx prisma studio
+# 3. Gerar QR Code
+# 4. Escanear com WhatsApp Business do telefone
 ```
 
-### Passo 4: Iniciar Serviços
-
-**Terminal 1 - Aplicação Principal**:
+### 3.4 Testar Instância
 
 ```bash
-npm run dev
-# Acesse: http://localhost:3000
+# Testar envio de mensagem via API
+curl -X POST http://localhost:8080/message/sendText/siqueirainstance \
+  -H "Content-Type: application/json" \
+  -H "apikey: siqueira_key_2024" \
+  -d '{
+    "number": "5562999999999",
+    "text": "Teste Evolution API - Siqueira Campos Imóveis"
+  }'
+
+# Se receber mensagem no WhatsApp: ✅ Evolution API configurada
 ```
 
-**Terminal 2 - N8N**:
+---
+
+## 🧠 Etapa 4: Configurar OpenAI (5 minutos)
+
+### 4.1 Obter API Key
 
 ```bash
-n8n start
-# Acesse: http://localhost:5678
+# 1. Acessar: https://platform.openai.com/api-keys
+# 2. Fazer login ou criar conta
+# 3. Clicar "Create new secret key"
+# 4. Copiar chave: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# 5. Salvar em local seguro
 ```
 
-**Terminal 3 - Evolution API**:
+### 4.2 Configurar no N8N
 
 ```bash
-# Se usando Docker, já está rodando
-# Se local, siga documentação da Evolution API
+# Já foi feito na Etapa 2.3
+# Mas verificar se está funcionando:
+
+# 1. No N8N, abrir workflow
+# 2. Clicar no nó "🤖 Gerar Resposta com IA"
+# 3. Credentials > OpenAI - Imobiliária
+# 4. Test connection
+# Se OK: ✅ OpenAI configurada
 ```
 
-### Passo 5: Configurar N8N
-
-1. Abra http://localhost:5678
-2. Importe o fluxo `n8n-fluxo-imobiliaria-completo.json`
-3. Configure todas as credenciais conforme seção anterior
-4. Ative o workflow
-
-### Passo 6: Testar o Sistema
-
-1. **Teste o chat**: Acesse http://localhost:3000 e use o chat
-2. **Teste WhatsApp**: Envie mensagem no chat, verifique se chega no WhatsApp
-3. **Teste "ASSUMIR"**: Responda "ASSUMIR" no WhatsApp
-4. **Teste login**: Faça login em http://localhost:3000/login
-5. **Teste dashboard**: Configure WhatsApp no dashboard do corretor
-
-## 👥 Usuários de Teste
-
-O sistema criará automaticamente estes usuários após a primeira migração:
-
-```sql
--- Admin
-Email: admin@siqueicamposimoveis.com.br
-Senha: admin123
-
--- Corretor
-Email: corretor@siqueicamposimoveis.com.br
-Senha: corretor123
-
--- Cliente
-Email: cliente@siqueicamposimoveis.com.br
-Senha: cliente123
-```
-
-## 🧪 Como Testar Cada Funcionalidade
-
-### 1. Teste do Chat com IA
+### 4.3 Configurar Modelo
 
 ```bash
-# No site principal, clique no balão do chat
-# Digite: "Olá, gostaria de agendar uma visita"
-# Verifique se a IA responde
+# No nó OpenAI do N8N:
+# - Model: gpt-3.5-turbo
+# - Temperature: 0.7
+# - Max Tokens: 150
+
+# Sistema já vem pré-configurado no workflow
 ```
 
-### 2. Teste do Fluxo N8N
+---
+
+## 📅 Etapa 5: Configurar Google Calendar (Opcional - 10 minutos)
+
+### 5.1 Criar Projeto Google Cloud
 
 ```bash
-# Certifique-se que N8N está rodando
-# No chat, envie: "Quero comprar um apartamento"
-# Verifique logs do N8N
-# Confirme se chegou WhatsApp do corretor ativo
+# 1. Acessar: https://console.cloud.google.com/
+# 2. Criar novo projeto: "Siqueira Campos Imóveis"
+# 3. Ativar APIs:
+#    - Google Calendar API
+#    - Google+ API (para OAuth)
 ```
 
-### 3. Teste WhatsApp Integration
+### 5.2 Configurar OAuth 2.0
 
 ```bash
-# Faça login como corretor
-# Configure seu WhatsApp no dashboard
-# Marque status como "ATIVO"
-# Envie mensagem no chat do site
-# Responda "ASSUMIR" no WhatsApp
+# 1. APIs & Services > Credentials
+# 2. Create Credentials > OAuth 2.0 Client ID
+# 3. Application type: Web application
+# 4. Authorized redirect URIs:
+#    - http://localhost:5173/auth/google/callback
+# 5. Baixar JSON das credenciais
 ```
 
-### 4. Teste Google OAuth
+### 5.3 Configurar no Sistema
 
 ```bash
-# Na tela de login, clique "Continuar com Google"
-# Autorize a aplicação
-# Verifique se foi redirecionado corretamente
+# 1. Copiar Client ID e Client Secret
+# 2. No dashboard do sistema:
+#    - Corretor > Integrações > Google Calendar
+#    - Inserir Client ID e Client Secret
+#    - Conectar conta
 ```
 
-## 🔧 Solução de Problemas Comuns
+---
 
-### Erro de Conexão com Banco
+## 🔗 Etapa 6: Conectar Tudo no Sistema (10 minutos)
+
+### 6.1 Dashboard do Desenvolvedor
+
+```bash
+# 1. Acessar: http://localhost:5173/dashboard
+# 2. Login: dev@sistema.com / dev123
+# 3. Aba "Premium" > Configurações:
+#    - N8N URL: http://localhost:5678
+#    - Evolution API URL: http://localhost:8080
+#    - Evolution API Key: siqueira_key_2024
+#    - OpenAI API Key: sk-sua-chave
+# 4. Ativar serviços para "Siqueira Campos Imóveis"
+```
+
+### 6.2 Dashboard do Corretor
+
+```bash
+# 1. Acessar como corretor:
+#    Email: corretor@siqueicamposimoveis.com.br
+#    Senha: corretor123
+
+# 2. Aba "Configurações" > WhatsApp Integration:
+#    - Número: (62) 98556-3505
+#    - Status: ATIVO
+#    - Salvar
+
+# 3. Google Calendar (se configurado):
+#    - Conectar conta
+#    - Configurar disponibilidade
+```
+
+### 6.3 Configurar Webhooks no Sistema
+
+```bash
+# No código do projeto, atualizar URLs:
+
+# src/config/n8n.ts
+export const N8N_CONFIG = {
+  baseURL: 'http://localhost:5678',
+  webhooks: {
+    leadSite: 'http://localhost:5678/webhook/lead-site',
+    respostaCorretor: 'http://localhost:5678/webhook/resposta-corretor'
+  }
+};
+
+# src/config/evolution.ts
+export const EVOLUTION_CONFIG = {
+  baseURL: 'http://localhost:8080',
+  apiKey: 'siqueira_key_2024',
+  instanceName: 'siqueirainstance'
+};
+```
+
+---
+
+## ✅ Etapa 7: Teste Completo (5 minutos)
+
+### 7.1 Teste Manual do Fluxo
+
+```bash
+# 1. Sistema rodando
+npm run dev  # http://localhost:5173
+
+# 2. Abrir site > Chat flutuante
+# 3. Enviar mensagem: "Quero conhecer apartamentos"
+# 4. Verificar:
+#    ✅ IA respondeu no chat
+#    ✅ Corretor recebeu no WhatsApp
+#    ✅ Lead apareceu no N8N executions
+
+# 5. No WhatsApp, responder: "ASSUMIR"
+# 6. Verificar:
+#    ✅ Lead mudou status no dashboard
+#    ✅ Outros corretores foram notificados
+#    ✅ Cliente foi informado
+```
+
+### 7.2 Teste do Fallback
+
+```bash
+# 1. Enviar nova mensagem no chat
+# 2. NÃO responder no WhatsApp
+# 3. Aguardar 15 minutos
+# 4. Verificar:
+#    ✅ Cliente recebeu mensagem de fallback
+#    ✅ Gerente recebeu email
+#    ✅ Lead marcado como "expirado"
+```
+
+### 7.3 Teste do Google Calendar
+
+```bash
+# 1. Dashboard Corretor > Agendamentos > Novo
+# 2. Preencher dados da visita
+# 3. Salvar
+# 4. Verificar:
+#    ✅ Evento criado no Google Calendar
+#    ✅ Lembrete configurado
+#    ✅ Email de confirmação enviado
+```
+
+---
+
+## 🚨 Troubleshooting
+
+### Problemas Comuns:
+
+#### N8N não conecta ao PostgreSQL:
 
 ```bash
 # Verificar se PostgreSQL está rodando
 sudo systemctl status postgresql
 
-# Testar conexão
-psql -h localhost -U sitejuarez -d bdsitejuarez
+# Verificar credenciais no N8N
+# Settings > Credentials > PostgreSQL - Imobiliária
 ```
 
-### N8N não está recebendo webhooks
+#### Evolution API não recebe mensagens:
 
 ```bash
-# Verificar se N8N está rodando na porta 5678
-curl http://localhost:5678/webhook/lead-site
-
-# Verificar firewall
-sudo ufw allow 5678
-```
-
-### Evolution API não conecta
-
-```bash
-# Verificar container Docker
-docker ps | grep evolution
-
-# Ver logs
-docker logs evolution-api
-
-# Reconectar WhatsApp
-# Vá em http://localhost:8080/manager
-# Conecte novamente com QR Code
-```
-
-### Chat não funciona
-
-```bash
-# Verificar se OpenAI está configurada
-# Verificar se endpoint /api/chat responde
-curl -X POST http://localhost:3000/api/chat \
+# Verificar webhook no N8N
+curl -X POST http://localhost:5678/webhook/resposta-corretor \
   -H "Content-Type: application/json" \
-  -d '{"mensagem":"teste"}'
+  -d '{"message": "teste", "from": "5562999999999"}'
+
+# Verificar instância WhatsApp
+curl http://localhost:8080/instance/siqueirainstance
 ```
 
-## 📱 Configuração Mobile
-
-### Para testar no celular na mesma rede:
+#### OpenAI retorna erro:
 
 ```bash
-# Descobrir IP local
-ip addr show | grep inet
-
-# Iniciar app com IP
-npm run dev -- --host 0.0.0.0
-
-# Acessar no celular: http://SEU_IP:3000
+# Verificar saldo da conta OpenAI
+# Verificar se API Key está correta
+# Verificar rate limits
 ```
 
-## 🚀 Deploy para Produção
-
-### Docker Compose
+#### Google Calendar não sincroniza:
 
 ```bash
-# Criar arquivo docker-compose.yml (já incluído no projeto)
-docker-compose up -d
-
-# Verificar serviços
-docker-compose ps
+# Verificar credenciais OAuth
+# Verificar se APIs estão ativadas no Google Cloud
+# Verificar se redirect URI está correto
 ```
-
-### Configurar SSL (Certbot)
-
-```bash
-# Instalar Certbot
-sudo apt install certbot nginx
-
-# Configurar Nginx
-sudo nano /etc/nginx/sites-available/siqueira-campos
-
-# Obter certificado
-sudo certbot --nginx -d siqueicamposimoveis.com.br
-```
-
-## 📞 Suporte
-
-Se encontrar problemas:
-
-1. **Verifique os logs**: `npm run dev` mostra erros em tempo real
-2. **Consulte este tutorial**: Revisit seções específicas
-3. **Entre em contato**:
-   - WhatsApp Desenvolvedor: (17) 9 8180-5327
-   - Instagram: @kryon.ix
-
-## ✅ Checklist Final
-
-Antes de considerar o sistema funcionando:
-
-- [ ] PostgreSQL conectando
-- [ ] N8N importado e rodando
-- [ ] Evolution API conectada ao WhatsApp
-- [ ] OpenAI configurada
-- [ ] Chat do site respondendo
-- [ ] WhatsApp recebendo leads
-- [ ] "ASSUMIR" funcionando
-- [ ] Login com Google
-- [ ] Dashboard do corretor carregando
-- [ ] Configuração WhatsApp salvando
-
-## 🎯 Próximos Passos
-
-Após configurar tudo:
-
-1. **Personalize**: Ajuste textos, cores e imagens
-2. **Adicione Dados**: Cadastre imóveis e usuários reais
-3. **Configure Backups**: Automatize backup do banco
-4. **Monitore**: Use dashboard do desenvolvedor
-5. **Expanda**: Adicione novas funcionalidades
 
 ---
 
-**🎉 Parabéns! Seu sistema está pronto para uso!**
+## 📊 Monitoramento
+
+### URLs de Monitoramento:
+
+- **Sistema Principal**: http://localhost:5173
+- **N8N Dashboard**: http://localhost:5678
+- **Evolution API Manager**: http://localhost:8080/manager
+- **Dashboard Desenvolvedor**: http://localhost:5173/dashboard
+
+### Logs Importantes:
+
+```bash
+# Logs do N8N
+docker logs n8n-imobiliaria
+
+# Logs da Evolution API
+docker logs evolution-api
+
+# Logs do Sistema
+npm run dev  # Console do Vite
+
+# Logs do PostgreSQL
+sudo tail -f /var/log/postgresql/postgresql-*.log
+```
+
+---
+
+## ��� Resumo de URLs e Credenciais
+
+### URLs:
+
+- **Sistema**: http://localhost:5173
+- **N8N**: http://localhost:5678 (admin / siqueira2024)
+- **Evolution API**: http://localhost:8080
+- **PostgreSQL**: localhost:5432
+
+### Credenciais Importantes:
+
+- **N8N**: admin / siqueira2024
+- **Evolution API Key**: siqueira_key_2024
+- **PostgreSQL**: sitejuarez / nakah123
+- **Instance WhatsApp**: siqueirainstance
+
+### Webhooks:
+
+- **Lead Site**: http://localhost:5678/webhook/lead-site
+- **Resposta Corretor**: http://localhost:5678/webhook/resposta-corretor
+
+---
+
+## ✅ Checklist Final
+
+- [ ] PostgreSQL configurado e rodando
+- [ ] N8N instalado e workflow importado
+- [ ] Evolution API rodando com instância conectada
+- [ ] OpenAI API configurada
+- [ ] Dashboard desenvolvedor configurado
+- [ ] Dashboard corretor com WhatsApp ativo
+- [ ] Teste completo realizado com sucesso
+- [ ] Fallback testado e funcionando
+- [ ] Google Calendar conectado (opcional)
+- [ ] Monitoramento configurado
+
+**🎉 Parabéns! Sistema Premium 100% configurado e funcionando!**
+
+---
+
+**📞 Suporte Técnico:**
+
+- WhatsApp: (17) 9 8180-5327
+- Instagram: @kryon.ix
+- Email: contato@kryonix.dev
+
+---
+
+_Desenvolvido por Kryonix - Vitor Jayme Fernandes Ferreira_
+_Tutorial criado em: Dezembro 2024_
