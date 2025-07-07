@@ -268,25 +268,28 @@ export default function Index() {
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="text-3xl font-bold text-primary">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-3 lg:space-y-0">
+                      <div className="text-xl lg:text-2xl xl:text-3xl font-bold text-primary">
                         {formatarPreco(Number(imovel.preco))}
                         {imovel.finalidade === Finalidade.ALUGUEL && (
-                          <span className="text-sm font-normal text-muted-foreground">
+                          <span className="text-xs lg:text-sm font-normal text-muted-foreground">
                             /mês
                           </span>
                         )}
                       </div>
-                      <div className="space-y-3">
+                      <div className="space-y-2 lg:space-y-3 lg:w-32">
                         {/* Botão principal */}
                         <Button
                           size="sm"
-                          className="w-full bg-primary hover:bg-primary/90 font-medium"
+                          className="w-full bg-primary hover:bg-primary/90 font-medium h-9"
                           asChild
                         >
                           <Link to={`/imovel/${imovel.id}`}>
                             <Eye className="h-4 w-4 mr-2" />
-                            Ver Detalhes
+                            <span className="hidden sm:inline">
+                              Ver Detalhes
+                            </span>
+                            <span className="sm:hidden">Ver</span>
                           </Link>
                         </Button>
 
@@ -308,7 +311,8 @@ export default function Index() {
                             }}
                           >
                             <Calendar className="h-3 w-3 mr-1" />
-                            Visita
+                            <span className="hidden sm:inline">Visita</span>
+                            <span className="sm:hidden">📅</span>
                           </Button>
                           <Button
                             size="sm"
@@ -326,7 +330,8 @@ export default function Index() {
                             }}
                           >
                             <MessageCircle className="h-3 w-3 mr-1" />
-                            Chat
+                            <span className="hidden sm:inline">Chat</span>
+                            <span className="sm:hidden">💬</span>
                           </Button>
                         </div>
 
@@ -353,7 +358,8 @@ export default function Index() {
                           }}
                         >
                           <Share2 className="h-3 w-3 mr-1" />
-                          Compartilhar
+                          <span className="hidden sm:inline">Compartilhar</span>
+                          <span className="sm:hidden">📤</span>
                         </Button>
                       </div>
                     </div>
