@@ -563,28 +563,30 @@ export default function AdminDashboard() {
                 {transacoes.map((transacao) => (
                   <div
                     key={transacao.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors space-y-3 sm:space-y-0"
                   >
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-4 min-w-0">
                       <div
-                        className={`h-3 w-3 rounded-full ${
+                        className={`h-3 w-3 rounded-full flex-shrink-0 ${
                           transacao.tipo === "ENTRADA"
                             ? "bg-green-500"
                             : "bg-red-500"
                         }`}
                       ></div>
-                      <div>
-                        <p className="font-medium">{transacao.descricao}</p>
-                        <p className="text-sm text-muted-foreground">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium truncate">
+                          {transacao.descricao}
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate">
                           {transacao.categoria} •{" "}
                           {transacao.data.toLocaleDateString("pt-BR")}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right">
+                    <div className="flex items-center justify-between sm:justify-end sm:space-x-4">
+                      <div className="text-left sm:text-right">
                         <p
-                          className={`font-bold ${
+                          className={`font-bold text-sm sm:text-base ${
                             transacao.tipo === "ENTRADA"
                               ? "text-green-600"
                               : "text-red-600"
