@@ -377,11 +377,45 @@ function CriarImovelModal({
       });
 
       if (response.ok) {
+        const imovelCriado = await response.json();
+
+        // Verificar se integração Meta está ativa
+        const metaActive =
+          localStorage.getItem("metaIntegrationActive") === "true";
+
+        if (metaActive) {
+          try {
+            // Criar posts automáticos nas redes sociais
+            const autoPostResult = await createAutoPost({
+              ...imovelCriado,
+              fotos: selectedImages,
+            });
+
+            if (autoPostResult.success) {
+              alert(
+                "🎉 Imóvel criado com sucesso!\n\n✅ Todas as informações foram salvas\n📱 Publicado automaticamente nas redes sociais\n\n" +
+                  autoPostResult.message,
+              );
+            } else {
+              alert(
+                "🎉 Imóvel criado com sucesso!\n\n✅ Todas as informações foram salvas\n⚠️ Erro na publicação automática: " +
+                  autoPostResult.message,
+              );
+            }
+          } catch (error) {
+            console.error("Erro no auto-post:", error);
+            alert(
+              "🎉 Imóvel criado com sucesso!\n\n✅ Todas as informações foram salvas\n⚠️ Erro na publicação automática",
+            );
+          }
+        } else {
+          alert(
+            "🎉 Imóvel criado com sucesso!\n\n✅ Todas as informações foram salvas\n\n💡 Dica: Ative a integração Meta no Dashboard de Marketing para publicação automática nas redes sociais!",
+          );
+        }
+
         onSuccess();
         handleCloseModal();
-        alert(
-          "🎉 Imóvel criado com sucesso! Todas as informações foram salvas.",
-        );
       }
     } catch (error) {
       console.error("Erro ao criar imóvel:", error);
