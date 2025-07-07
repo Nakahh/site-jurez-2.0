@@ -1418,6 +1418,8 @@ export default function CorretorDashboard() {
         </div>
       }
     >
+      <PremiumServiceAlert userRole="CORRETOR" />
+
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
