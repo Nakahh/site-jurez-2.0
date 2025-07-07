@@ -52,6 +52,7 @@ import {
   CalendarCheck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { DashboardLayout } from "@/components/DashboardLayout";
 
 interface AssistenteStats {
   leadsAtribuidos: number;
