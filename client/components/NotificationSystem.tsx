@@ -445,13 +445,15 @@ export function UserSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-1 h-8 px-2">
           <img
             src={currentUser.avatar}
             alt={currentUser.name}
-            className="w-5 h-5 rounded-full"
+            className="w-4 h-4 rounded-full"
           />
-          <span className="hidden md:inline">{currentUser.name}</span>
+          <span className="hidden md:inline text-xs max-w-16 truncate">
+            {currentUser.name.split(" ")[0]}
+          </span>
           <ChevronDown className="h-3 w-3" />
         </Button>
       </DropdownMenuTrigger>
