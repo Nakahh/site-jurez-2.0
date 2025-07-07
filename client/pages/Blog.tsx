@@ -25,6 +25,7 @@ import {
   Share2,
 } from "lucide-react";
 import { ChatBubble } from "@/components/ChatBubble";
+import { SharedNavigation } from "@/components/SharedNavigation";
 
 interface Article {
   id: string;
