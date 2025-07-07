@@ -149,6 +149,14 @@ const App = () => {
                 <Route path="/" element={<LazyIndex />} />
                 <Route path="/login" element={<LazyLogin />} />
                 <Route path="/register" element={<LazyLogin />} />
+                <Route
+                  path="/forgot-password"
+                  element={
+                    <Suspense fallback={<div>Carregando...</div>}>
+                      <LazyForgotPassword />
+                    </Suspense>
+                  }
+                />
                 <Route path="/sobre" element={<LazySobre />} />
                 <Route path="/contato" element={<LazyContato />} />
                 <Route path="/simulador" element={<LazySimulador />} />
