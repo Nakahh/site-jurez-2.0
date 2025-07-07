@@ -168,29 +168,32 @@ export function SharedNavigation({
         </nav>
 
         {/* Actions and Controls */}
-        <div className="flex items-center space-x-1">
-          {/* Quick Actions Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 px-2">
-                <span className="text-xs">Ações</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>Ações Rápidas</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {quickActions.map((action, index) => (
-                <DropdownMenuItem
-                  key={index}
-                  onClick={action.action}
-                  className="cursor-pointer"
-                >
-                  <span className="mr-2">{action.icon}</span>
-                  {action.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex items-center space-x-1 lg:space-x-2 flex-shrink-0">
+          {/* Quick Actions Dropdown - Hidden on small screens */}
+          <div className="hidden sm:block">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 px-2">
+                  <span className="text-xs hidden lg:inline">Ações</span>
+                  <span className="text-xs lg:hidden">⚡</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>Ações Rápidas</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {quickActions.map((action, index) => (
+                  <DropdownMenuItem
+                    key={index}
+                    onClick={action.action}
+                    className="cursor-pointer"
+                  >
+                    <span className="mr-2">{action.icon}</span>
+                    {action.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
           <UserSwitcher />
           <NotificationBell />
@@ -198,7 +201,7 @@ export function SharedNavigation({
           {/* Dashboard Navigation Button */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 px-2">
+              <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                 📊
               </Button>
             </DropdownMenuTrigger>
@@ -232,7 +235,8 @@ export function SharedNavigation({
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleDashboardNavigation}>
                 <LayoutDashboard className="w-4 h-4 mr-2" />
-                Dashboard Atual (
+                <span className="hidden sm:inline">Dashboard Atual (</span>
+                <span className="sm:hidden">Atual (</span>
                 {localStorage.getItem("currentUserRole") || "ADMIN"})
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -240,9 +244,9 @@ export function SharedNavigation({
 
           <ThemeToggle />
 
-          {/* Auth Buttons - Hidden on Dashboards */}
+          {/* Auth Buttons - Hidden on Dashboards and small screens */}
           {!isDashboard && (
-            <div className="hidden md:flex items-center space-x-2">
+            <div className="hidden lg:flex items-center space-x-2">
               <Button variant="outline" size="sm" asChild>
                 <Link to="/login">Entrar</Link>
               </Button>
@@ -258,7 +262,7 @@ export function SharedNavigation({
               variant="outline"
               size="sm"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 flex-shrink-0"
             >
               {mobileMenuOpen ? (
                 <X className="h-4 w-4" />
