@@ -31,6 +31,7 @@ import {
   generateCustomReport,
 } from "@/utils/pdfGenerator";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { useToast } from "@/hooks/use-toast";
 
 interface DashboardStats {
   totalImoveis: number;
