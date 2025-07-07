@@ -114,7 +114,7 @@ Sistema imobiliário premium com dashboards especializados, automação N8N, int
 - ✅ **Monitoramento de Sistema**: Uptime, performance, logs em tempo real
 - ✅ **Configuração de Automação**: N8N Server, Evolution API, OpenAI
 - ✅ **Gestão de Assinantes**: Controle de clientes premium
-- ✅ **Estatísticas de Uso**: Métricas de utilização dos servi��os
+- ✅ **Estatísticas de Uso**: Métricas de utilização dos serviços
 
 ## 🤖 Automação Premium N8N + WhatsApp Business + IA
 
@@ -149,7 +149,7 @@ Sistema imobiliário premium com dashboards especializados, automação N8N, int
 - ✅ `n8n-imobiliaria-flow.json` - Fluxo completo para importar no N8N
 - ✅ Configurações Evolution API incluídas
 - ✅ Credenciais PostgreSQL configuradas
-- ✅ Integração OpenAI para IA
+- ✅ Integra��ão OpenAI para IA
 - ✅ Templates de email para fallback
 
 ## 🗄️ Banco de Dados
@@ -208,7 +208,141 @@ Email: cliente@siqueicamposimoveis.com.br
 Senha: cliente123
 ```
 
-### 3. Configuração Externa Necessária
+### 3. ⚙️ Configuração das Integrações Premium
+
+#### 🗄️ PostgreSQL
+
+```sql
+-- Executar no PostgreSQL
+CREATE DATABASE bdsitejuarez;
+CREATE USER sitejuarez WITH PASSWORD 'senha123';
+GRANT ALL PRIVILEGES ON DATABASE bdsitejuarez TO sitejuarez;
+
+-- Adicionar campos necessários para N8N
+ALTER TABLE usuarios ADD COLUMN whatsapp VARCHAR(20);
+ALTER TABLE usuarios ADD COLUMN ativo BOOLEAN DEFAULT true;
+ALTER TABLE leads ADD COLUMN status VARCHAR(20) DEFAULT 'pendente';
+ALTER TABLE leads ADD COLUMN corretor_id INTEGER REFERENCES usuarios(id);
+ALTER TABLE leads ADD COLUMN resposta_ia TEXT;
+ALTER TABLE leads ADD COLUMN assumido_em TIMESTAMP;
+```
+
+#### 🤖 N8N (Servidor de Automação)
+
+```bash
+# Opção 1: Docker (Recomendado)
+docker run -d \
+  --name n8n-imobiliaria \
+  -p 5678:5678 \
+  -v ~/.n8n:/home/node/.n8n \
+  n8nio/n8n
+
+# Opção 2: NPM
+npm install -g n8n
+n8n start
+
+# Acessar: http://localhost:5678
+# 1. Criar conta
+# 2. Settings > Import workflow
+# 3. Upload: n8n-imobiliaria-flow.json
+# 4. Ativar workflow
+```
+
+#### 📱 Evolution API (WhatsApp Business)
+
+```bash
+# Docker com configurações prontas
+docker run -d \
+  --name evolution-api \
+  -p 8080:8080 \
+  -e AUTHENTICATION_API_KEY=siqueira_key_2024 \
+  -e STORE_MESSAGES=true \
+  -e STORE_MESSAGE_UP=true \
+  -e STORE_CONTACTS=true \
+  -e STORE_CHATS=true \
+  atendai/evolution-api:latest
+
+# Acessar: http://localhost:8080/manager
+# Configurar instância WhatsApp
+```
+
+#### 🧠 OpenAI (IA para Respostas)
+
+```bash
+# 1. Criar conta: https://platform.openai.com/
+# 2. Gerar API Key
+# 3. Configurar no N8N:
+#    - Node OpenAI
+#    - Model: gpt-3.5-turbo
+#    - API Key: sk-...
+```
+
+#### 📅 Google Calendar (Opcional)
+
+```bash
+# 1. Google Cloud Console: https://console.cloud.google.com/
+# 2. Criar projeto
+# 3. Ativar Calendar API
+# 4. Criar credenciais OAuth 2.0
+# 5. Configurar no dashboard
+```
+
+### 4. 🔧 Configuração Passo-a-Passo no Sistema
+
+#### Dashboard do Desenvolvedor:
+
+1. **Acessar**: `/dashboard` (login: dev@sistema.com / dev123)
+2. **Aba Premium**: Configurar serviços
+3. **N8N Server**: URL e token do N8N
+4. **Evolution API**: URL e chave da API
+5. **OpenAI**: Chave da API
+6. **Ativar serviços** para cliente
+
+#### Dashboard do Corretor:
+
+1. **Aba Configurações**: Integração WhatsApp
+2. **Número WhatsApp**: (62) 9 8556-3505
+3. **Status**: Ativo para receber leads
+4. **Google Calendar**: Conectar conta
+5. **Disponibilidade**: Configurar horários
+
+#### Dashboard do Assistente:
+
+1. **Aba Integrações**: Configurar automações
+2. **Email SMTP**: Para notificações
+3. **N8N Workflows**: Monitorar atividade
+4. **Relatórios**: Visualizar performance
+
+### 5. 📋 Checklist de Configuração
+
+```bash
+# ✅ Sistema básico funcionando
+npm run dev  # http://localhost:5173
+
+# ✅ PostgreSQL com dados
+npm run db:setup
+
+# ✅ N8N rodando
+# http://localhost:5678 + workflow importado
+
+# ✅ Evolution API
+# http://localhost:8080 + instância WhatsApp
+
+# ✅ OpenAI configurada
+# API Key no N8N
+
+# ✅ Dashboards configurados
+# Corretor com WhatsApp + status ativo
+
+# ✅ Teste completo
+# 1. Enviar mensagem no chat do site
+# 2. Verificar resposta da IA
+# 3. Verificar mensagem no WhatsApp do corretor
+# 4. Responder "ASSUMIR"
+# 5. Verificar lead assumido no dashboard
+```
+
+### 6. Configuração Externa Necessária
 
 #### PostgreSQL
 
