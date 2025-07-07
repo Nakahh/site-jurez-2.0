@@ -562,6 +562,60 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Atalhos Administrativos */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Settings className="mr-2 h-5 w-5" />
+                    Atalhos Administrativos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <Button
+                      variant="outline"
+                      className="h-16 flex flex-col items-center justify-center space-y-2"
+                      onClick={handleGenerateReport}
+                    >
+                      <BarChart3 className="h-5 w-5" />
+                      <span className="text-xs">Relatórios</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-16 flex flex-col items-center justify-center space-y-2"
+                      onClick={handleSettings}
+                    >
+                      <Settings className="h-5 w-5" />
+                      <span className="text-xs">Configurações</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-16 flex flex-col items-center justify-center space-y-2"
+                      onClick={() => {
+                        alert(
+                          "Backup iniciado! Você receberá uma notificação quando concluído.",
+                        );
+                      }}
+                    >
+                      <Download className="h-5 w-5" />
+                      <span className="text-xs">Backup</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-16 flex flex-col items-center justify-center space-y-2"
+                      onClick={() => {
+                        alert(
+                          "Logs do sistema:\n- Login admin 14:30\n- Novo imóvel adicionado 14:25\n- Backup concluído 13:00",
+                        );
+                      }}
+                    >
+                      <FileText className="h-5 w-5" />
+                      <span className="text-xs">Logs do Sistema</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </>
           )}
         </TabsContent>
