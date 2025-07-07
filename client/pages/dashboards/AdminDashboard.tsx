@@ -390,14 +390,23 @@ export default function AdminDashboard() {
       subtitle="Controle total do seu negócio imobiliário"
       userRole="ADMIN"
       actions={
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
+        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNotifications}
+            className="w-full sm:w-auto"
+          >
             <Bell className="h-4 w-4 mr-2" />
-            Notificações
+            <span className="hidden sm:inline">Notificações</span>
           </Button>
-          <Button size="sm">
+          <Button
+            size="sm"
+            onClick={handleNewItem}
+            className="w-full sm:w-auto"
+          >
             <Plus className="h-4 w-4 mr-2" />
-            Novo
+            <span className="hidden sm:inline">Novo</span>
           </Button>
         </div>
       }
