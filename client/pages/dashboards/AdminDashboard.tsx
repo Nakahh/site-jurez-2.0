@@ -24,7 +24,6 @@ import {
   Bell,
   FileText,
   X,
-  Trash2,
 } from "lucide-react";
 import {
   generateSalesReport,
