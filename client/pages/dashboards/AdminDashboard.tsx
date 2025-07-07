@@ -562,16 +562,30 @@ export default function AdminDashboard() {
         <TabsContent value="financeiro" className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Controle Financeiro</h2>
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleFilter}
+                className="w-full sm:w-auto"
+              >
                 <Filter className="h-4 w-4 mr-2" />
                 Filtrar
               </Button>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExport}
+                className="w-full sm:w-auto"
+              >
                 <Download className="h-4 w-4 mr-2" />
                 Exportar
               </Button>
-              <Button size="sm">
+              <Button
+                size="sm"
+                onClick={handleNewTransaction}
+                className="w-full sm:w-auto"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Transação
               </Button>
