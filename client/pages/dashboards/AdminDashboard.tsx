@@ -431,7 +431,7 @@ export default function AdminDashboard() {
           </TabsTrigger>
           <TabsTrigger value="usuarios" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Usuários</span>
-            <span className="sm:hidden">👤</span>
+            <span className="sm:hidden">��</span>
           </TabsTrigger>
           <TabsTrigger value="relatorios" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Relatórios</span>
@@ -971,16 +971,31 @@ export default function AdminDashboard() {
         <TabsContent value="usuarios" className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Gestão de Usuários</h2>
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSearch("users")}
+                className="w-full sm:w-auto"
+              >
                 <Search className="h-4 w-4 mr-2" />
                 Buscar
               </Button>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleFilter}
+                className="w-full sm:w-auto"
+              >
                 <Filter className="h-4 w-4 mr-2" />
-                Filtrar por Papel
+                <span className="hidden lg:inline">Filtrar por Papel</span>
+                <span className="lg:hidden">Filtrar</span>
               </Button>
-              <Button size="sm">
+              <Button
+                size="sm"
+                onClick={handleNewUser}
+                className="w-full sm:w-auto"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Usuário
               </Button>
