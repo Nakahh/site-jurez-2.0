@@ -122,6 +122,99 @@ export default function MarketingDashboard() {
     carregarDados();
   }, []);
 
+  const handleExportReport = async () => {
+    try {
+      // Generate marketing report data
+      const marketingData = [
+        {
+          campanha: "Jardim Goiás Premium",
+          tipo: "Social Media",
+          orcamento: 8000,
+          gastoAtual: 4200,
+          conversoes: 45,
+          roi: "235%",
+        },
+        {
+          campanha: "Casas Aldeota",
+          tipo: "Google Ads",
+          orcamento: 5000,
+          gastoAtual: 3800,
+          conversoes: 32,
+          roi: "180%",
+        },
+        {
+          campanha: "Apartamentos Centro",
+          tipo: "Email Marketing",
+          orcamento: 1500,
+          gastoAtual: 1200,
+          conversoes: 28,
+          roi: "220%",
+        },
+        {
+          campanha: "Blog Imobiliário",
+          tipo: "SEO/Conteúdo",
+          orcamento: 2000,
+          gastoAtual: 1800,
+          conversoes: 15,
+          roi: "150%",
+        },
+      ];
+
+      // Create a simple report
+      const reportContent = `
+        <div id="marketing-report" style="padding: 20px; font-family: Arial, sans-serif;">
+          <h1>Relatório de Marketing - ${new Date().toLocaleDateString("pt-BR")}</h1>
+          <h2>Resumo de Campanhas</h2>
+          <table border="1" style="width: 100%; border-collapse: collapse;">
+            <tr style="background-color: #f0f0f0;">
+              <th style="padding: 10px;">Campanha</th>
+              <th style="padding: 10px;">Tipo</th>
+              <th style="padding: 10px;">Orçamento</th>
+              <th style="padding: 10px;">Gasto Atual</th>
+              <th style="padding: 10px;">Conversões</th>
+              <th style="padding: 10px;">ROI</th>
+            </tr>
+            ${marketingData
+              .map(
+                (item) => `
+              <tr>
+                <td style="padding: 10px;">${item.campanha}</td>
+                <td style="padding: 10px;">${item.tipo}</td>
+                <td style="padding: 10px;">R$ ${item.orcamento.toLocaleString("pt-BR")}</td>
+                <td style="padding: 10px;">R$ ${item.gastoAtual.toLocaleString("pt-BR")}</td>
+                <td style="padding: 10px;">${item.conversoes}</td>
+                <td style="padding: 10px;">${item.roi}</td>
+              </tr>
+            `,
+              )
+              .join("")}
+          </table>
+          <br>
+          <p><strong>Total de Leads Gerados:</strong> ${stats?.leadsGerados || 0}</p>
+          <p><strong>Taxa de Conversão:</strong> ${stats?.conversaoLeads || 0}%</p>
+          <p><strong>Alcance Total:</strong> ${stats?.alcanceTotal?.toLocaleString("pt-BR") || 0}</p>
+        </div>
+      `;
+
+      // Create temporary element
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = reportContent;
+      document.body.appendChild(tempDiv);
+
+      // Import and use the PDF generator
+      const { generateCustomReport } = await import("@/utils/pdfGenerator");
+      await generateCustomReport("marketing-report", "Relatório de Marketing");
+
+      // Cleanup
+      document.body.removeChild(tempDiv);
+
+      alert("Relatório de marketing exportado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao exportar relatório:", error);
+      alert("Erro ao exportar relatório. Tente novamente.");
+    }
+  };
+
   const carregarDados = async () => {
     try {
       // Simular dados de marketing
