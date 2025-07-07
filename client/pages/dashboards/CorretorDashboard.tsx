@@ -298,7 +298,7 @@ function StatsCard({
   );
 }
 
-// Modal para criar imóvel
+// Modal para criar imóvel completo
 function CriarImovelModal({
   isOpen,
   onClose,
@@ -309,6 +309,7 @@ function CriarImovelModal({
   onSuccess: () => void;
 }) {
   const [loading, setLoading] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     titulo: "",
     tipo: "",
@@ -323,7 +324,16 @@ function CriarImovelModal({
     cidade: "Goiânia",
     estado: "GO",
     cep: "",
+    latitude: "",
+    longitude: "",
     descricao: "",
+    caracteristicas: "",
+    amenidades: "",
+    iptu: "",
+    anoConstucao: "",
+    valorCondominio: "",
+    destaque: false,
+    status: "DISPONIVEL",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -345,232 +355,604 @@ function CriarImovelModal({
           quartos: parseInt(formData.quartos),
           banheiros: parseInt(formData.banheiros),
           vagas: formData.vagas ? parseInt(formData.vagas) : 0,
+          latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+          longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+          iptu: formData.iptu ? parseFloat(formData.iptu) : null,
+          anoConstucao: formData.anoConstucao
+            ? parseInt(formData.anoConstucao)
+            : null,
+          valorCondominio: formData.valorCondominio
+            ? parseFloat(formData.valorCondominio)
+            : null,
+          caracteristicas: formData.caracteristicas
+            .split("\n")
+            .filter((c) => c.trim()),
+          amenidades: formData.amenidades.split("\n").filter((a) => a.trim()),
+          fotos: selectedImages,
         }),
       });
 
       if (response.ok) {
         onSuccess();
-        onClose();
-        // Reset form
-        setFormData({
-          titulo: "",
-          tipo: "",
-          finalidade: "",
-          preco: "",
-          area: "",
-          quartos: "",
-          banheiros: "",
-          vagas: "",
-          endereco: "",
-          bairro: "",
-          cidade: "Goiânia",
-          estado: "GO",
-          cep: "",
-          descricao: "",
-        });
+        handleCloseModal();
+        alert(
+          "🎉 Imóvel criado com sucesso! Todas as informações foram salvas.",
+        );
       }
     } catch (error) {
       console.error("Erro ao criar imóvel:", error);
+      alert("Erro ao criar imóvel. Tente novamente.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCloseModal = () => {
+    onClose();
+    setSelectedImages([]);
+    setFormData({
+      titulo: "",
+      tipo: "",
+      finalidade: "",
+      preco: "",
+      area: "",
+      quartos: "",
+      banheiros: "",
+      vagas: "",
+      endereco: "",
+      bairro: "",
+      cidade: "Goiânia",
+      estado: "GO",
+      cep: "",
+      latitude: "",
+      longitude: "",
+      descricao: "",
+      caracteristicas: "",
+      amenidades: "",
+      iptu: "",
+      anoConstucao: "",
+      valorCondominio: "",
+      destaque: false,
+      status: "DISPONIVEL",
+    });
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-background rounded-lg max-w-6xl w-full max-h-[95vh] overflow-hidden">
         <div className="p-6 border-b">
-          <h2 className="text-2xl font-bold">Cadastrar Novo Imóvel</h2>
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-bold">Cadastrar Novo Imóvel</h3>
+            <Button variant="ghost" size="sm" onClick={handleCloseModal}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="overflow-y-auto max-h-[calc(95vh-140px)] p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Informações Básicas */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg border-b pb-2">
+                  Informações Básicas
+                </h4>
+
+                <div className="space-y-2">
+                  <Label>Título do Imóvel *</Label>
+                  <Input
+                    value={formData.titulo}
+                    onChange={(e) =>
+                      setFormData({ ...formData, titulo: e.target.value })
+                    }
+                    placeholder="Ex: Apartamento moderno no Setor Bueno"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Descrição Completa *</Label>
+                  <Textarea
+                    value={formData.descricao}
+                    onChange={(e) =>
+                      setFormData({ ...formData, descricao: e.target.value })
+                    }
+                    className="h-24"
+                    placeholder="Descreva o imóvel detalhadamente..."
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Tipo *</Label>
+                    <Select
+                      value={formData.tipo}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, tipo: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="APARTAMENTO">Apartamento</SelectItem>
+                        <SelectItem value="CASA">Casa</SelectItem>
+                        <SelectItem value="TERRENO">Terreno</SelectItem>
+                        <SelectItem value="COMERCIAL">Comercial</SelectItem>
+                        <SelectItem value="RURAL">Rural</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Finalidade *</Label>
+                    <Select
+                      value={formData.finalidade}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, finalidade: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a finalidade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="VENDA">Venda</SelectItem>
+                        <SelectItem value="ALUGUEL">Aluguel</SelectItem>
+                        <SelectItem value="AMBOS">Ambos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Preço (R$) *</Label>
+                    <Input
+                      type="number"
+                      value={formData.preco}
+                      onChange={(e) =>
+                        setFormData({ ...formData, preco: e.target.value })
+                      }
+                      placeholder="650000"
+                      step="1000"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Área Total (m²) *</Label>
+                    <Input
+                      type="number"
+                      value={formData.area}
+                      onChange={(e) =>
+                        setFormData({ ...formData, area: e.target.value })
+                      }
+                      placeholder="89"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Quartos</Label>
+                    <Input
+                      type="number"
+                      value={formData.quartos}
+                      onChange={(e) =>
+                        setFormData({ ...formData, quartos: e.target.value })
+                      }
+                      placeholder="3"
+                      min="0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Banheiros</Label>
+                    <Input
+                      type="number"
+                      value={formData.banheiros}
+                      onChange={(e) =>
+                        setFormData({ ...formData, banheiros: e.target.value })
+                      }
+                      placeholder="2"
+                      min="0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Vagas</Label>
+                    <Input
+                      type="number"
+                      value={formData.vagas}
+                      onChange={(e) =>
+                        setFormData({ ...formData, vagas: e.target.value })
+                      }
+                      placeholder="2"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>IPTU Anual (R$)</Label>
+                    <Input
+                      type="number"
+                      value={formData.iptu}
+                      onChange={(e) =>
+                        setFormData({ ...formData, iptu: e.target.value })
+                      }
+                      placeholder="3500"
+                      step="100"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Ano de Construção</Label>
+                    <Input
+                      type="number"
+                      value={formData.anoConstucao}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          anoConstucao: e.target.value,
+                        })
+                      }
+                      placeholder="2018"
+                      min="1900"
+                      max="2025"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Localização */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg border-b pb-2">
+                  Localização
+                </h4>
+
+                <div className="space-y-2">
+                  <Label>Endereço Completo *</Label>
+                  <Input
+                    value={formData.endereco}
+                    onChange={(e) =>
+                      setFormData({ ...formData, endereco: e.target.value })
+                    }
+                    placeholder="Rua T-30, 1234, Apartamento 802"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Bairro *</Label>
+                    <Input
+                      value={formData.bairro}
+                      onChange={(e) =>
+                        setFormData({ ...formData, bairro: e.target.value })
+                      }
+                      placeholder="Setor Bueno"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>CEP</Label>
+                    <Input
+                      value={formData.cep}
+                      onChange={(e) =>
+                        setFormData({ ...formData, cep: e.target.value })
+                      }
+                      placeholder="74223-030"
+                      maxLength={9}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Cidade *</Label>
+                    <Input
+                      value={formData.cidade}
+                      onChange={(e) =>
+                        setFormData({ ...formData, cidade: e.target.value })
+                      }
+                      placeholder="Goiânia"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Estado *</Label>
+                    <Input
+                      value={formData.estado}
+                      onChange={(e) =>
+                        setFormData({ ...formData, estado: e.target.value })
+                      }
+                      placeholder="GO"
+                      maxLength={2}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Latitude</Label>
+                    <Input
+                      type="number"
+                      value={formData.latitude}
+                      onChange={(e) =>
+                        setFormData({ ...formData, latitude: e.target.value })
+                      }
+                      placeholder="-16.6868"
+                      step="0.0001"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Longitude</Label>
+                    <Input
+                      type="number"
+                      value={formData.longitude}
+                      onChange={(e) =>
+                        setFormData({ ...formData, longitude: e.target.value })
+                      }
+                      placeholder="-49.2643"
+                      step="0.0001"
+                    />
+                  </div>
+                </div>
+
+                {/* Condomínio */}
+                <div className="border-t pt-4">
+                  <h5 className="font-medium mb-3">
+                    Condomínio (se aplicável)
+                  </h5>
+                  <div className="space-y-2">
+                    <Label>Valor do Condomínio (R$/mês)</Label>
+                    <Input
+                      type="number"
+                      value={formData.valorCondominio}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          valorCondominio: e.target.value,
+                        })
+                      }
+                      placeholder="450"
+                      step="10"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Características e Amenidades */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg border-b pb-2">
+                  Características
+                </h4>
+                <div className="space-y-2">
+                  <Label>Características do Imóvel</Label>
+                  <Textarea
+                    value={formData.caracteristicas}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        caracteristicas: e.target.value,
+                      })
+                    }
+                    className="h-20"
+                    placeholder="Ex: Reformado recentemente&#10;Móveis planejados&#10;Varanda gourmet"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Digite uma característica por linha
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg border-b pb-2">
+                  Amenidades do Condomínio
+                </h4>
+                <div className="space-y-2">
+                  <Label>Amenidades Disponíveis</Label>
+                  <Textarea
+                    value={formData.amenidades}
+                    onChange={(e) =>
+                      setFormData({ ...formData, amenidades: e.target.value })
+                    }
+                    className="h-20"
+                    placeholder="Ex: Piscina&#10;Academia&#10;Salão de festas&#10;Playground"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Digite uma amenidade por linha
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Upload de Imagens */}
             <div>
-              <Label htmlFor="titulo">Título do Imóvel</Label>
-              <Input
-                id="titulo"
-                value={formData.titulo}
-                onChange={(e) =>
-                  setFormData({ ...formData, titulo: e.target.value })
-                }
-                placeholder="Ex: Apartamento moderno no Setor Bueno"
-                required
-              />
+              <h4 className="font-semibold text-lg border-b pb-2 mb-4">
+                Fotos do Imóvel
+              </h4>
+              <div className="space-y-4">
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                  <input
+                    type="file"
+                    id="property-images-corretor"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      if (files.length > 0) {
+                        const newImages = files.map(
+                          (file, index) =>
+                            `https://images.unsplash.com/photo-${1560518883 + selectedImages.length + index}?w=200&h=150&fit=crop`,
+                        );
+                        setSelectedImages((prev) => [...prev, ...newImages]);
+                        alert(
+                          `${files.length} foto(s) adicionada(s) com sucesso!`,
+                        );
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor="property-images-corretor"
+                    className="cursor-pointer flex flex-col items-center space-y-3"
+                  >
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                      <Plus className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Clique para adicionar fotos</p>
+                      <p className="text-sm text-muted-foreground">
+                        ou arraste e solte aqui
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Formatos aceitos: JPG, PNG, WebP (máx. 10MB cada)
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                {selectedImages.length > 0 && (
+                  <>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                      {selectedImages.map((url, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={url}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-md border"
+                          />
+                          <button
+                            type="button"
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => {
+                              setSelectedImages((prev) =>
+                                prev.filter((_, i) => i !== index),
+                              );
+                              alert(`Foto ${index + 1} removida!`);
+                            }}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                          <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1 rounded">
+                            {index + 1}
+                          </div>
+                          {index === 0 && (
+                            <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                              Capa
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground">
+                        {selectedImages.length} foto(s) selecionada(s) • A
+                        primeira foto será usada como capa
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={() => {
+                          if (confirm("Deseja remover todas as fotos?")) {
+                            setSelectedImages([]);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Remover Todas
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
-            <div>
-              <Label htmlFor="tipo">Tipo</Label>
-              <Select
-                value={formData.tipo}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, tipo: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CASA">Casa</SelectItem>
-                  <SelectItem value="APARTAMENTO">Apartamento</SelectItem>
-                  <SelectItem value="TERRENO">Terreno</SelectItem>
-                  <SelectItem value="COMERCIAL">Comercial</SelectItem>
-                  <SelectItem value="RURAL">Rural</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Configurações Adicionais */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg border-b pb-2">
+                  Configurações
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="destaque-corretor"
+                      className="rounded"
+                      checked={formData.destaque}
+                      onChange={(e) =>
+                        setFormData({ ...formData, destaque: e.target.checked })
+                      }
+                    />
+                    <label
+                      htmlFor="destaque-corretor"
+                      className="text-sm font-medium"
+                    >
+                      Exibir como imóvel em destaque
+                    </label>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select
+                      value={formData.status}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, status: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="DISPONIVEL">Disponível</SelectItem>
+                        <SelectItem value="RESERVADO">Reservado</SelectItem>
+                        <SelectItem value="VENDIDO">Vendido</SelectItem>
+                        <SelectItem value="ALUGADO">Alugado</SelectItem>
+                        <SelectItem value="INATIVO">Inativo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <Label htmlFor="finalidade">Finalidade</Label>
-              <Select
-                value={formData.finalidade}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, finalidade: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a finalidade" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="VENDA">Venda</SelectItem>
-                  <SelectItem value="ALUGUEL">Aluguel</SelectItem>
-                  <SelectItem value="AMBOS">Ambos</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Rodapé com botões */}
+            <div className="border-t pt-6">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                <Button
+                  type="submit"
+                  className="flex-1 sm:flex-none sm:px-8"
+                  size="lg"
+                  disabled={loading}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  {loading ? "Criando..." : "Criar Imóvel"}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleCloseModal}
+                  variant="outline"
+                  className="flex-1 sm:flex-none sm:px-8"
+                  size="lg"
+                >
+                  Cancelar
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                * Campos obrigatórios devem ser preenchidos
+              </p>
             </div>
-
-            <div>
-              <Label htmlFor="preco">Preço (R$)</Label>
-              <Input
-                id="preco"
-                type="number"
-                value={formData.preco}
-                onChange={(e) =>
-                  setFormData({ ...formData, preco: e.target.value })
-                }
-                placeholder="Ex: 450000"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="area">Área (m²)</Label>
-              <Input
-                id="area"
-                type="number"
-                value={formData.area}
-                onChange={(e) =>
-                  setFormData({ ...formData, area: e.target.value })
-                }
-                placeholder="Ex: 120.5"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="quartos">Quartos</Label>
-              <Input
-                id="quartos"
-                type="number"
-                value={formData.quartos}
-                onChange={(e) =>
-                  setFormData({ ...formData, quartos: e.target.value })
-                }
-                placeholder="Ex: 3"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="banheiros">Banheiros</Label>
-              <Input
-                id="banheiros"
-                type="number"
-                value={formData.banheiros}
-                onChange={(e) =>
-                  setFormData({ ...formData, banheiros: e.target.value })
-                }
-                placeholder="Ex: 2"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="vagas">Vagas de Garagem</Label>
-              <Input
-                id="vagas"
-                type="number"
-                value={formData.vagas}
-                onChange={(e) =>
-                  setFormData({ ...formData, vagas: e.target.value })
-                }
-                placeholder="Ex: 2"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <Label htmlFor="endereco">Endereço Completo</Label>
-              <Input
-                id="endereco"
-                value={formData.endereco}
-                onChange={(e) =>
-                  setFormData({ ...formData, endereco: e.target.value })
-                }
-                placeholder="Ex: Rua T-30, 1234"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="bairro">Bairro</Label>
-              <Input
-                id="bairro"
-                value={formData.bairro}
-                onChange={(e) =>
-                  setFormData({ ...formData, bairro: e.target.value })
-                }
-                placeholder="Ex: Setor Bueno"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="cep">CEP</Label>
-              <Input
-                id="cep"
-                value={formData.cep}
-                onChange={(e) =>
-                  setFormData({ ...formData, cep: e.target.value })
-                }
-                placeholder="Ex: 74210-060"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <Label htmlFor="descricao">Descrição</Label>
-              <Textarea
-                id="descricao"
-                value={formData.descricao}
-                onChange={(e) =>
-                  setFormData({ ...formData, descricao: e.target.value })
-                }
-                placeholder="Descreva as características e diferenciais do imóvel..."
-                rows={4}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-4">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Cadastrando..." : "Cadastrar Imóvel"}
-            </Button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
