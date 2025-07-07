@@ -58,6 +58,7 @@ import {
   Camera,
 } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { useNavigate, useLocation } from "react-router-dom";
 
 // Types
 interface Imovel {
