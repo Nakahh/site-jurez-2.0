@@ -117,6 +117,28 @@ interface ApiEndpoint {
   lastUsed: Date;
 }
 
+interface PremiumService {
+  id: string;
+  name: string;
+  description: string;
+  active: boolean;
+  price: number;
+  features: string[];
+  status: "ACTIVE" | "INACTIVE" | "MAINTENANCE";
+  lastUpdated: Date;
+}
+
+interface ClientSubscription {
+  id: string;
+  clientName: string;
+  email: string;
+  whatsappEnabled: boolean;
+  n8nEnabled: boolean;
+  googleCalendarEnabled: boolean;
+  expiryDate: Date;
+  status: "ACTIVE" | "EXPIRED" | "SUSPENDED";
+}
+
 export default function DesenvolvedorDashboard() {
   const [systemStats, setSystemStats] = useState<SystemStats | null>(null);
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
