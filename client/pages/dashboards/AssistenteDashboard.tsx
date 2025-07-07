@@ -119,6 +119,10 @@ export default function AssistenteDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [novoLead, setNovoLead] = useState(false);
   const [novaTarefa, setNovaTarefa] = useState(false);
+  const [showCriarImovel, setShowCriarImovel] = useState(false);
+  const [selectedPropertyImages, setSelectedPropertyImages] = useState<
+    string[]
+  >([]);
 
   useEffect(() => {
     carregarDados();
