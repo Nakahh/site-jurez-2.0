@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AdvancedCalendar } from "@/components/AdvancedCalendar";
+import { DashboardLayout } from "@/components/DashboardLayout";
 
 // Types
 interface CorretorStats {
