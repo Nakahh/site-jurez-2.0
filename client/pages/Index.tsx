@@ -224,6 +224,27 @@ export default function Index() {
           <div className="flex items-center space-x-2">
             <UserSwitcher />
             <NotificationBell />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const userRole =
+                  localStorage.getItem("currentUserRole") || "CLIENTE";
+                const dashboardMap: Record<string, string> = {
+                  ADMIN: "/dashboard/admin",
+                  CORRETOR: "/dashboard/corretor",
+                  ASSISTENTE: "/dashboard/assistente",
+                  MARKETING: "/dashboard/marketing",
+                  DESENVOLVEDOR: "/dashboard/desenvolvedor",
+                  CLIENTE: "/dashboard/cliente",
+                };
+                window.location.href =
+                  dashboardMap[userRole] || "/dashboard/cliente";
+              }}
+              className="text-xs"
+            >
+              🎮 Demo Dashboard
+            </Button>
             <ThemeToggle />
             <Button
               variant="outline"
@@ -745,7 +766,7 @@ export default function Index() {
               Blog Imobiliário
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Fique por dentro das últimas tend��ncias e dicas do mercado
+              Fique por dentro das últimas tendências e dicas do mercado
               imobiliário
             </p>
           </div>
