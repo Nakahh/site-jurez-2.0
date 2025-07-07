@@ -590,28 +590,28 @@ export default function AdminDashboard() {
                       <div className="flex justify-between items-center">
                         <span>Vendas</span>
                         <span className="font-bold">
-                          {stats.imoveisVendidos}
+                          {realData.imoveisVendidos}
                         </span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
                         <div
                           className="bg-green-600 h-2 rounded-full"
                           style={{
-                            width: `${(stats.imoveisVendidos / 60) * 100}%`,
+                            width: `${(realData.imoveisVendidos / 60) * 100}%`,
                           }}
                         ></div>
                       </div>
                       <div className="flex justify-between items-center">
                         <span>Locações</span>
                         <span className="font-bold">
-                          {stats.imoveisAlugados}
+                          {realData.imoveisAlugados}
                         </span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
                         <div
                           className="bg-blue-600 h-2 rounded-full"
                           style={{
-                            width: `${(stats.imoveisAlugados / 30) * 100}%`,
+                            width: `${(realData.imoveisAlugados / 30) * 100}%`,
                           }}
                         ></div>
                       </div>
