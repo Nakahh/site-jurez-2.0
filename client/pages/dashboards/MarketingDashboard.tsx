@@ -57,6 +57,7 @@ import {
   AlertCircle,
   X,
 } from "lucide-react";
+import { BlogManagement } from "@/components/BlogManagement";
 
 interface MarketingStats {
   visitasSite: number;
