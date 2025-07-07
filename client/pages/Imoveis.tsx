@@ -48,6 +48,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import { ChatBubble } from "@/components/ChatBubble";
+import { SharedNavigation } from "@/components/SharedNavigation";
 import { TipoImovel, Finalidade, StatusImovel } from "@shared/types";
 
 interface Imovel {
