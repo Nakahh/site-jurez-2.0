@@ -344,22 +344,7 @@ export default function AdminDashboard() {
 
   const carregarDados = async () => {
     try {
-      // Simular dados do dashboard admin
-      const statsSimuladas: DashboardStats = {
-        totalImoveis: 156,
-        imoveisDisponiveis: 89,
-        imoveisVendidos: 45,
-        imoveisAlugados: 22,
-        totalUsuarios: 234,
-        corretoresAtivos: 8,
-        leadsAtivos: 23,
-        visitasAgendadas: 12,
-        comissoesTotais: 125000,
-        comissoesPendentes: 45000,
-        faturamentoMes: 380000,
-        metaMensal: 500000,
-      };
-
+      // Simular dados de transações
       const transacoesSimuladas: Transacao[] = [
         {
           id: "1",
@@ -2604,8 +2589,8 @@ export default function AdminDashboard() {
                   {selectedPropertyImages.length > 0 && (
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground">
-                        {selectedPropertyImages.length} foto(s) selecionada(s) •
-                        A primeira foto será usada como capa
+                        {selectedPropertyImages.length} foto(s) selecionada(s)
+                        ��� A primeira foto será usada como capa
                       </p>
                       <Button
                         variant="outline"
