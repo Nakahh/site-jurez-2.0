@@ -21,6 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   BarChart3,
   TrendingUp,
@@ -112,6 +113,8 @@ interface ConteudoSocial {
 }
 
 export default function MarketingDashboard() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [stats, setStats] = useState<MarketingStats | null>(null);
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
   const [conteudos, setConteudos] = useState<ConteudoSocial[]>([]);
