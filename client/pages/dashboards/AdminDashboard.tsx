@@ -2369,7 +2369,10 @@ export default function AdminDashboard() {
                   Criar Imóvel
                 </Button>
                 <Button
-                  onClick={() => setShowNewPropertyModal(false)}
+                  onClick={() => {
+                    setShowNewPropertyModal(false);
+                    setSelectedPropertyImages([]);
+                  }}
                   variant="outline"
                   className="flex-1 sm:flex-none sm:px-8"
                   size="lg"
