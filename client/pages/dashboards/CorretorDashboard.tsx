@@ -1090,43 +1090,47 @@ export default function CorretorDashboard() {
           )}
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
             <Card
-              className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+              className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full"
               onClick={() => setShowCadastrarLead(true)}
             >
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <UserPlus className="h-8 w-8 text-green-600" />
+              <CardContent className="p-4 lg:p-6 text-center h-full flex flex-col justify-center">
+                <div className="w-12 h-12 lg:w-16 lg:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 lg:mb-4">
+                  <UserPlus className="h-6 w-6 lg:h-8 lg:w-8 text-green-600" />
                 </div>
-                <h3 className="font-bold mb-2">Cadastrar Lead</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-bold mb-2 text-sm lg:text-base">
+                  Cadastrar Lead
+                </h3>
+                <p className="text-xs lg:text-sm text-muted-foreground line-clamp-2">
                   Adicione um novo prospecto manualmente
                 </p>
               </CardContent>
             </Card>
 
             <Card
-              className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+              className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full"
               onClick={() => setShowCriarImovel(true)}
             >
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <PlusCircle className="h-8 w-8 text-blue-600" />
+              <CardContent className="p-4 lg:p-6 text-center h-full flex flex-col justify-center">
+                <div className="w-12 h-12 lg:w-16 lg:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 lg:mb-4">
+                  <PlusCircle className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" />
                 </div>
-                <h3 className="font-bold mb-2">Cadastrar Imóvel</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-bold mb-2 text-sm lg:text-base">
+                  Cadastrar Imóvel
+                </h3>
+                <p className="text-xs lg:text-sm text-muted-foreground line-clamp-2">
                   Adicione um novo imóvel ao portfólio
                 </p>
               </CardContent>
             </Card>
 
             <Card
-              className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+              className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full"
               onClick={() => setActiveTab("agenda")}
             >
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CardContent className="p-4 lg:p-6 text-center h-full flex flex-col justify-center">
+                <div className="w-12 h-12 lg:w-16 lg:h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 lg:mb-4">
                   <CalendarDays className="h-8 w-8 text-purple-600" />
                 </div>
                 <h3 className="font-bold mb-2">Ver Agenda</h3>
