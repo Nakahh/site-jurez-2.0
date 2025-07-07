@@ -437,13 +437,31 @@ export default function MarketingDashboard() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="campanhas">Campanhas</TabsTrigger>
-          <TabsTrigger value="conteudo">Conteúdo</TabsTrigger>
-          <TabsTrigger value="blog">Blog</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="leads">Leads</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Visão Geral</span>
+            <span className="sm:hidden">📊</span>
+          </TabsTrigger>
+          <TabsTrigger value="campanhas" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Campanhas</span>
+            <span className="sm:hidden">📱</span>
+          </TabsTrigger>
+          <TabsTrigger value="conteudo" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Conteúdo</span>
+            <span className="sm:hidden">📝</span>
+          </TabsTrigger>
+          <TabsTrigger value="blog" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Blog</span>
+            <span className="sm:hidden">📖</span>
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Analytics</span>
+            <span className="sm:hidden">📈</span>
+          </TabsTrigger>
+          <TabsTrigger value="leads" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Leads</span>
+            <span className="sm:hidden">👥</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* Visão Geral */}
