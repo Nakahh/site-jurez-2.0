@@ -426,7 +426,7 @@ export default function MarketingDashboard() {
             </Button>
             <Button variant="outline" size="sm">
               <Settings className="h-4 w-4 mr-2" />
-              Configurações
+              Configura��ões
             </Button>
           </div>
         </div>
@@ -1111,6 +1111,11 @@ export default function MarketingDashboard() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Blog */}
+          <TabsContent value="blog" className="space-y-6">
+            <BlogManagement userRole="MARKETING" />
           </TabsContent>
 
           {/* Leads */}
