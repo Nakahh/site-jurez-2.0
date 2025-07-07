@@ -57,6 +57,7 @@ import {
   Download,
   Camera,
 } from "lucide-react";
+import { DashboardLayout } from "@/components/DashboardLayout";
 
 // Types
 interface Imovel {
@@ -136,28 +137,34 @@ function StatsCard({
   trend?: string;
 }) {
   return (
-    <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-3xl font-bold text-foreground">{value}</p>
+    <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow h-full">
+      <CardContent className="p-4 lg:p-6 h-full flex flex-col">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1 min-w-0 pr-3">
+            <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
+              {title}
+            </p>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground truncate">
+              {value}
+            </p>
             {description && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                 {description}
               </p>
             )}
           </div>
           <div
-            className={`h-12 w-12 bg-${color}/10 rounded-full flex items-center justify-center`}
+            className={`h-10 w-10 lg:h-12 lg:w-12 bg-${color}/10 rounded-full flex items-center justify-center flex-shrink-0`}
           >
-            <Icon className={`h-6 w-6 text-${color}`} />
+            <Icon className={`h-5 w-5 lg:h-6 lg:w-6 text-${color}`} />
           </div>
         </div>
         {trend && (
-          <div className="flex items-center mt-4 pt-4 border-t">
-            <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
-            <span className="text-sm text-green-600 font-medium">{trend}</span>
+          <div className="flex items-center mt-auto pt-3 border-t">
+            <TrendingUp className="h-3 w-3 lg:h-4 lg:w-4 text-green-600 mr-1 flex-shrink-0" />
+            <span className="text-xs sm:text-sm text-green-600 font-medium truncate">
+              {trend}
+            </span>
           </div>
         )}
       </CardContent>
@@ -568,869 +575,868 @@ export default function ClienteDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Header */}
-      <div className="bg-card border-b px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              Dashboard do Cliente
-            </h1>
-            <p className="text-muted-foreground">
-              Gerencie seus imóveis favoritos, agendamentos e muito mais
-            </p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm">
-              <Bell className="h-4 w-4 mr-2" />
-              Notificações
-            </Button>
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Configurações
-            </Button>
-            <img
-              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=250"
-              alt="Siqueira Campos Imóveis"
-              className="h-14 w-auto dark:hidden"
-            />
-            <img
-              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-escuro-e97fe8?format=webp&width=250"
-              alt="Siqueira Campos Imóveis"
-              className="hidden h-14 w-auto dark:block"
-            />
-          </div>
+    <DashboardLayout
+      title="Dashboard do Cliente"
+      subtitle="Gerencie seus imóveis favoritos, agendamentos e muito mais"
+      userRole="CLIENTE"
+      actions={
+        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
+            <Bell className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Notificações</span>
+          </Button>
+          <Button size="sm" className="w-full sm:w-auto">
+            <Search className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Buscar Imóveis</span>
+            <span className="sm:hidden">Buscar</span>
+          </Button>
         </div>
-      </div>
+      }
+    >
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Visão Geral</span>
+            <span className="sm:hidden">📊</span>
+          </TabsTrigger>
+          <TabsTrigger value="favoritos" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Favoritos</span>
+            <span className="sm:hidden">❤️</span>
+          </TabsTrigger>
+          <TabsTrigger value="agendamentos" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Agendamentos</span>
+            <span className="sm:hidden">📅</span>
+          </TabsTrigger>
+          <TabsTrigger value="avaliacoes" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Avaliações</span>
+            <span className="sm:hidden">⭐</span>
+          </TabsTrigger>
+          <TabsTrigger value="buscas" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Buscas Salvas</span>
+            <span className="sm:hidden">🔍</span>
+          </TabsTrigger>
+          <TabsTrigger value="vistos" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Recentes</span>
+            <span className="sm:hidden">👁️</span>
+          </TabsTrigger>
+          <TabsTrigger value="perfil" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Perfil</span>
+            <span className="sm:hidden">👤</span>
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="p-6">
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-6"
-        >
-          <TabsList className="grid w-full grid-cols-7">
-            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-            <TabsTrigger value="favoritos">Favoritos</TabsTrigger>
-            <TabsTrigger value="agendamentos">Agendamentos</TabsTrigger>
-            <TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>
-            <TabsTrigger value="buscas">Buscas Salvas</TabsTrigger>
-            <TabsTrigger value="vistos">Recentes</TabsTrigger>
-            <TabsTrigger value="perfil">Perfil</TabsTrigger>
-          </TabsList>
-
-          {/* Visão Geral */}
-          <TabsContent value="overview" className="space-y-6">
-            {/* Recomendação Personalizada */}
-            <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold mb-2">
-                      🎯 Recomendação Personalizada
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Baseado no seu perfil e preferências, encontramos imóveis
-                      perfeitos para você!
-                    </p>
-                    <div className="flex items-center space-x-4">
-                      <Button>
-                        <Search className="h-4 w-4 mr-2" />
+        {/* Visão Geral */}
+        <TabsContent value="overview" className="space-y-6">
+          {/* Recomendação Personalizada */}
+          <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
+            <CardContent className="p-4 lg:p-6">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
+                <div className="flex-1">
+                  <h3 className="text-base lg:text-lg font-bold mb-2">
+                    🎯 Recomendação Personalizada
+                  </h3>
+                  <p className="text-sm lg:text-base text-muted-foreground mb-4">
+                    Baseado no seu perfil e preferências, encontramos imóveis
+                    perfeitos para você!
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                    <Button className="w-full sm:w-auto">
+                      <Search className="h-4 w-4 mr-2" />
+                      <span className="hidden sm:inline">
                         Ver Recomendações
-                      </Button>
-                      <Button variant="outline">
-                        <Target className="h-4 w-4 mr-2" />
-                        Refinar Perfil
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-3xl font-bold text-primary">23</p>
-                    <p className="text-sm text-muted-foreground">
-                      novos imóveis
-                    </p>
+                      </span>
+                      <span className="sm:hidden">Recomendações</span>
+                    </Button>
+                    <Button variant="outline" className="w-full sm:w-auto">
+                      <Target className="h-4 w-4 mr-2" />
+                      <span className="hidden sm:inline">Refinar Perfil</span>
+                      <span className="sm:hidden">Refinar</span>
+                    </Button>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <StatsCard
-                title="Imóveis Favoritos"
-                value={stats.favoritos}
-                icon={Heart}
-                description="Suas escolhas salvas"
-                color="red"
-                trend="+2 esta semana"
-              />
-              <StatsCard
-                title="Agendamentos"
-                value={stats.agendamentos}
-                icon={Calendar}
-                description="Próximas visitas"
-                color="blue"
-              />
-              <StatsCard
-                title="Avaliações"
-                value={stats.avaliacoes}
-                icon={Star}
-                description="Suas reviews"
-                color="yellow"
-              />
-              <StatsCard
-                title="Buscas Salvas"
-                value={stats.buscasSalvas}
-                icon={BookmarkPlus}
-                description="Alertas ativos"
-                color="green"
-              />
-              <StatsCard
-                title="Visitas Realizadas"
-                value={stats.visitasRealizadas}
-                icon={CheckCircle}
-                description="Total histórico"
-                color="purple"
-              />
-              <StatsCard
-                title="Economia Média"
-                value={formatarPreco(stats.economiaMedia)}
-                icon={DollarSign}
-                description="Por negociação"
-                color="green"
-                trend="Baseado no histórico"
-              />
-            </div>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Search className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <h3 className="font-bold mb-2">Buscar Imóveis</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Encontre o imóvel dos seus sonhos
+                <div className="text-center lg:text-right flex-shrink-0">
+                  <p className="text-2xl lg:text-3xl font-bold text-primary">
+                    23
                   </p>
-                </CardContent>
-              </Card>
-
-              <Card
-                className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
-                onClick={() => setShowComparador(true)}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <BarChart3 className="h-8 w-8 text-green-600" />
-                  </div>
-                  <h3 className="font-bold mb-2">Comparar Imóveis</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Compare até 4 imóveis lado a lado
+                  <p className="text-xs lg:text-sm text-muted-foreground">
+                    novos imóveis
                   </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Calendar className="h-8 w-8 text-purple-600" />
-                  </div>
-                  <h3 className="font-bold mb-2">Agendar Visita</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Marque uma visita com corretor
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <MessageSquare className="h-8 w-8 text-orange-600" />
-                  </div>
-                  <h3 className="font-bold mb-2">Chat com Corretor</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Tire suas dúvidas em tempo real
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Próximos Agendamentos */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Próximas Visitas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {agendamentos.slice(0, 3).map((agendamento) => (
-                    <div
-                      key={agendamento.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <img
-                          src={agendamento.imovel.fotos[0]}
-                          alt={agendamento.imovel.titulo}
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                        <div>
-                          <p className="font-bold">
-                            {agendamento.imovel.titulo}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            <MapPin className="h-3 w-3 inline mr-1" />
-                            {agendamento.imovel.bairro}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            <Calendar className="h-3 w-3 inline mr-1" />
-                            {agendamento.dataHora.toLocaleDateString(
-                              "pt-BR",
-                            )}{" "}
-                            às{" "}
-                            {agendamento.dataHora.toLocaleTimeString("pt-BR", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <Badge
-                          variant={
-                            agendamento.status === "CONFIRMADA"
-                              ? "default"
-                              : "secondary"
-                          }
-                        >
-                          {agendamento.status}
-                        </Badge>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {agendamento.corretor.nome}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Favoritos */}
-          <TabsContent value="favoritos" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Imóveis Favoritos</h2>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtrar
-                </Button>
-                <Button onClick={() => setShowComparador(true)}>
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Comparar
-                </Button>
               </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {favoritos.map((imovel) => (
-                <Card
-                  key={imovel.id}
-                  className="border-0 shadow-lg overflow-hidden"
-                >
-                  <div className="relative">
-                    <img
-                      src={imovel.fotos[0]}
-                      alt={imovel.titulo}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="absolute top-4 right-4">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="bg-white/90"
-                      >
-                        <Heart className="h-4 w-4 text-red-500 fill-current" />
-                      </Button>
-                    </div>
-                    <div className="absolute bottom-4 left-4">
-                      <Badge variant="default">{imovel.finalidade}</Badge>
-                    </div>
-                  </div>
-                  <CardContent className="p-6">
-                    <h3 className="font-bold text-lg mb-2">{imovel.titulo}</h3>
-                    <p className="text-muted-foreground mb-4">
-                      <MapPin className="h-4 w-4 inline mr-1" />
-                      {imovel.endereco}, {imovel.bairro}
-                    </p>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+            <StatsCard
+              title="Imóveis Favoritos"
+              value={stats.favoritos}
+              icon={Heart}
+              description="Suas escolhas salvas"
+              color="red"
+              trend="+2 esta semana"
+            />
+            <StatsCard
+              title="Agendamentos"
+              value={stats.agendamentos}
+              icon={Calendar}
+              description="Próximas visitas"
+              color="blue"
+            />
+            <StatsCard
+              title="Avaliações"
+              value={stats.avaliacoes}
+              icon={Star}
+              description="Suas reviews"
+              color="yellow"
+            />
+            <StatsCard
+              title="Buscas Salvas"
+              value={stats.buscasSalvas}
+              icon={BookmarkPlus}
+              description="Alertas ativos"
+              color="green"
+            />
+            <StatsCard
+              title="Visitas Realizadas"
+              value={stats.visitasRealizadas}
+              icon={CheckCircle}
+              description="Total histórico"
+              color="purple"
+            />
+            <StatsCard
+              title="Economia Média"
+              value={formatarPreco(stats.economiaMedia)}
+              icon={DollarSign}
+              description="Por negociação"
+              color="green"
+              trend="Baseado no histórico"
+            />
+          </div>
 
-                    <div className="flex items-center space-x-4 mb-4 text-sm">
-                      <div className="flex items-center">
-                        <Bed className="h-4 w-4 mr-1" />
-                        {imovel.quartos} quartos
-                      </div>
-                      <div className="flex items-center">
-                        <Bath className="h-4 w-4 mr-1" />
-                        {imovel.banheiros} banheiros
-                      </div>
-                      {imovel.vagas && (
-                        <div className="flex items-center">
-                          <Car className="h-4 w-4 mr-1" />
-                          {imovel.vagas} vagas
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-2xl font-bold text-primary">
-                          {formatarPreco(imovel.preco)}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Favoritado em{" "}
-                          {imovel.favoritadoEm?.toLocaleDateString("pt-BR")}
-                        </p>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Calendar className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          {/* Agendamentos */}
-          <TabsContent value="agendamentos" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Agendamentos de Visitas</h2>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Visita
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <StatsCard
-                title="Agendadas"
-                value={
-                  agendamentos.filter((a) => a.status === "AGENDADA").length
-                }
-                icon={Clock}
-                color="yellow"
-              />
-              <StatsCard
-                title="Confirmadas"
-                value={
-                  agendamentos.filter((a) => a.status === "CONFIRMADA").length
-                }
-                icon={CheckCircle}
-                color="green"
-              />
-              <StatsCard
-                title="Total Realizadas"
-                value={stats.visitasRealizadas}
-                icon={Calendar}
-                color="blue"
-              />
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Próximas Visitas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {agendamentos.map((agendamento) => (
-                    <div
-                      key={agendamento.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <img
-                          src={agendamento.imovel.fotos[0]}
-                          alt={agendamento.imovel.titulo}
-                          className="w-20 h-20 object-cover rounded"
-                        />
-                        <div>
-                          <p className="font-bold text-lg">
-                            {agendamento.imovel.titulo}
-                          </p>
-                          <p className="text-muted-foreground mb-1">
-                            <MapPin className="h-3 w-3 inline mr-1" />
-                            {agendamento.imovel.endereco},{" "}
-                            {agendamento.imovel.bairro}
-                          </p>
-                          <p className="text-sm text-muted-foreground mb-1">
-                            <Calendar className="h-3 w-3 inline mr-1" />
-                            {agendamento.dataHora.toLocaleDateString(
-                              "pt-BR",
-                            )}{" "}
-                            às{" "}
-                            {agendamento.dataHora.toLocaleTimeString("pt-BR", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            <User className="h-3 w-3 inline mr-1" />
-                            Corretor: {agendamento.corretor.nome}
-                          </p>
-                          {agendamento.observacoes && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                              Obs: {agendamento.observacoes}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-right space-y-2">
-                        <Badge
-                          variant={
-                            agendamento.status === "CONFIRMADA"
-                              ? "default"
-                              : agendamento.status === "AGENDADA"
-                                ? "secondary"
-                                : "destructive"
-                          }
-                        >
-                          {agendamento.status}
-                        </Badge>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Phone className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <MessageSquare className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="h-8 w-8 text-blue-600" />
                 </div>
+                <h3 className="font-bold mb-2">Buscar Imóveis</h3>
+                <p className="text-sm text-muted-foreground">
+                  Encontre o imóvel dos seus sonhos
+                </p>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          {/* Avaliações */}
-          <TabsContent value="avaliacoes" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Minhas Avaliações</h2>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Avaliação
-              </Button>
-            </div>
+            <Card
+              className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+              onClick={() => setShowComparador(true)}
+            >
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <BarChart3 className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="font-bold mb-2">Comparar Imóveis</h3>
+                <p className="text-sm text-muted-foreground">
+                  Compare até 4 imóveis lado a lado
+                </p>
+              </CardContent>
+            </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <StatsCard
-                title="Total Avaliações"
-                value={stats.avaliacoes}
-                icon={Star}
-                color="yellow"
-              />
-              <StatsCard
-                title="Nota Média"
-                value="4.8"
-                icon={Star}
-                color="yellow"
-                description="Suas avaliações"
-              />
-              <StatsCard
-                title="Aprovadas"
-                value={avaliacoes.filter((a) => a.aprovada).length}
-                icon={CheckCircle}
-                color="green"
-              />
-            </div>
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="h-8 w-8 text-purple-600" />
+                </div>
+                <h3 className="font-bold mb-2">Agendar Visita</h3>
+                <p className="text-sm text-muted-foreground">
+                  Marque uma visita com corretor
+                </p>
+              </CardContent>
+            </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Histórico de Avaliações</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {avaliacoes.map((avaliacao) => (
-                    <div
-                      key={avaliacao.id}
-                      className="flex items-start space-x-4 p-4 border rounded-lg"
-                    >
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageSquare className="h-8 w-8 text-orange-600" />
+                </div>
+                <h3 className="font-bold mb-2">Chat com Corretor</h3>
+                <p className="text-sm text-muted-foreground">
+                  Tire suas dúvidas em tempo real
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Próximos Agendamentos */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Próximas Visitas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {agendamentos.slice(0, 3).map((agendamento) => (
+                  <div
+                    key={agendamento.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center space-x-4">
                       <img
-                        src={avaliacao.imovel.fotos[0]}
-                        alt={avaliacao.imovel.titulo}
+                        src={agendamento.imovel.fotos[0]}
+                        alt={agendamento.imovel.titulo}
                         className="w-16 h-16 object-cover rounded"
                       />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="font-bold">{avaliacao.imovel.titulo}</p>
-                          <div className="flex items-center space-x-2">
-                            <div className="flex">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`h-4 w-4 ${
-                                    i < avaliacao.nota
-                                      ? "text-yellow-400 fill-current"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <Badge
-                              variant={
-                                avaliacao.aprovada ? "default" : "secondary"
-                              }
-                            >
-                              {avaliacao.aprovada ? "APROVADA" : "PENDENTE"}
-                            </Badge>
-                          </div>
-                        </div>
-                        <p className="text-muted-foreground mb-2">
-                          {avaliacao.comentario}
+                      <div>
+                        <p className="font-bold">{agendamento.imovel.titulo}</p>
+                        <p className="text-sm text-muted-foreground">
+                          <MapPin className="h-3 w-3 inline mr-1" />
+                          {agendamento.imovel.bairro}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {avaliacao.data.toLocaleDateString("pt-BR")}
+                          <Calendar className="h-3 w-3 inline mr-1" />
+                          {agendamento.dataHora.toLocaleDateString(
+                            "pt-BR",
+                          )} às{" "}
+                          {agendamento.dataHora.toLocaleTimeString("pt-BR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                    <div className="text-right">
+                      <Badge
+                        variant={
+                          agendamento.status === "CONFIRMADA"
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
+                        {agendamento.status}
+                      </Badge>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {agendamento.corretor.nome}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          {/* Buscas Salvas */}
-          <TabsContent value="buscas" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Buscas Salvas</h2>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Busca
+        {/* Favoritos */}
+        <TabsContent value="favoritos" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Imóveis Favoritos</h2>
+            <div className="flex space-x-2">
+              <Button variant="outline" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                Filtrar
+              </Button>
+              <Button onClick={() => setShowComparador(true)}>
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Comparar
               </Button>
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <StatsCard
-                title="Buscas Ativas"
-                value={buscasSalvas.filter((b) => b.alertasAtivos).length}
-                icon={Bell}
-                color="blue"
-              />
-              <StatsCard
-                title="Total Salvas"
-                value={stats.buscasSalvas}
-                icon={BookmarkPlus}
-                color="green"
-              />
-              <StatsCard
-                title="Novos Resultados"
-                value="12"
-                icon={Target}
-                color="orange"
-                description="Última semana"
-              />
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Suas Buscas Salvas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {buscasSalvas.map((busca) => (
-                    <div
-                      key={busca.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {favoritos.map((imovel) => (
+              <Card
+                key={imovel.id}
+                className="border-0 shadow-lg overflow-hidden"
+              >
+                <div className="relative">
+                  <img
+                    src={imovel.fotos[0]}
+                    alt={imovel.titulo}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute top-4 right-4">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="bg-white/90"
                     >
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="font-bold">{busca.nome}</h3>
-                          <Badge
-                            variant={
-                              busca.alertasAtivos ? "default" : "secondary"
-                            }
-                          >
-                            {busca.alertasAtivos ? "ALERTAS ATIVOS" : "PAUSADO"}
-                          </Badge>
-                        </div>
+                      <Heart className="h-4 w-4 text-red-500 fill-current" />
+                    </Button>
+                  </div>
+                  <div className="absolute bottom-4 left-4">
+                    <Badge variant="default">{imovel.finalidade}</Badge>
+                  </div>
+                </div>
+                <CardContent className="p-6">
+                  <h3 className="font-bold text-lg mb-2">{imovel.titulo}</h3>
+                  <p className="text-muted-foreground mb-4">
+                    <MapPin className="h-4 w-4 inline mr-1" />
+                    {imovel.endereco}, {imovel.bairro}
+                  </p>
 
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {busca.filtros.tipo && (
-                            <Badge variant="outline">
-                              {busca.filtros.tipo}
-                            </Badge>
-                          )}
-                          {busca.filtros.finalidade && (
-                            <Badge variant="outline">
-                              {busca.filtros.finalidade}
-                            </Badge>
-                          )}
-                          {busca.filtros.bairro && (
-                            <Badge variant="outline">
-                              {busca.filtros.bairro}
-                            </Badge>
-                          )}
-                          {busca.filtros.quartos && (
-                            <Badge variant="outline">
-                              {busca.filtros.quartos} quartos
-                            </Badge>
-                          )}
-                          {busca.filtros.precoMin && busca.filtros.precoMax && (
-                            <Badge variant="outline">
-                              {formatarPreco(busca.filtros.precoMin)} -{" "}
-                              {formatarPreco(busca.filtros.precoMax)}
-                            </Badge>
-                          )}
-                        </div>
-
-                        <p className="text-sm text-muted-foreground">
-                          Criada em {busca.criadaEm.toLocaleDateString("pt-BR")}
-                          {busca.ultimaNotificacao && (
-                            <>
-                              {" "}
-                              • Última notificação:{" "}
-                              {busca.ultimaNotificacao.toLocaleDateString(
-                                "pt-BR",
-                              )}
-                            </>
-                          )}
-                        </p>
+                  <div className="flex items-center space-x-4 mb-4 text-sm">
+                    <div className="flex items-center">
+                      <Bed className="h-4 w-4 mr-1" />
+                      {imovel.quartos} quartos
+                    </div>
+                    <div className="flex items-center">
+                      <Bath className="h-4 w-4 mr-1" />
+                      {imovel.banheiros} banheiros
+                    </div>
+                    {imovel.vagas && (
+                      <div className="flex items-center">
+                        <Car className="h-4 w-4 mr-1" />
+                        {imovel.vagas} vagas
                       </div>
+                    )}
+                  </div>
 
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-2xl font-bold text-primary">
+                        {formatarPreco(imovel.preco)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Favoritado em{" "}
+                        {imovel.favoritadoEm?.toLocaleDateString("pt-BR")}
+                      </p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="outline">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Calendar className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* Agendamentos */}
+        <TabsContent value="agendamentos" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Agendamentos de Visitas</h2>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Visita
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatsCard
+              title="Agendadas"
+              value={agendamentos.filter((a) => a.status === "AGENDADA").length}
+              icon={Clock}
+              color="yellow"
+            />
+            <StatsCard
+              title="Confirmadas"
+              value={
+                agendamentos.filter((a) => a.status === "CONFIRMADA").length
+              }
+              icon={CheckCircle}
+              color="green"
+            />
+            <StatsCard
+              title="Total Realizadas"
+              value={stats.visitasRealizadas}
+              icon={Calendar}
+              color="blue"
+            />
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Próximas Visitas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {agendamentos.map((agendamento) => (
+                  <div
+                    key={agendamento.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <img
+                        src={agendamento.imovel.fotos[0]}
+                        alt={agendamento.imovel.titulo}
+                        className="w-20 h-20 object-cover rounded"
+                      />
+                      <div>
+                        <p className="font-bold text-lg">
+                          {agendamento.imovel.titulo}
+                        </p>
+                        <p className="text-muted-foreground mb-1">
+                          <MapPin className="h-3 w-3 inline mr-1" />
+                          {agendamento.imovel.endereco},{" "}
+                          {agendamento.imovel.bairro}
+                        </p>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          <Calendar className="h-3 w-3 inline mr-1" />
+                          {agendamento.dataHora.toLocaleDateString(
+                            "pt-BR",
+                          )} às{" "}
+                          {agendamento.dataHora.toLocaleTimeString("pt-BR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          <User className="h-3 w-3 inline mr-1" />
+                          Corretor: {agendamento.corretor.nome}
+                        </p>
+                        {agendamento.observacoes && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Obs: {agendamento.observacoes}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right space-y-2">
+                      <Badge
+                        variant={
+                          agendamento.status === "CONFIRMADA"
+                            ? "default"
+                            : agendamento.status === "AGENDADA"
+                              ? "secondary"
+                              : "destructive"
+                        }
+                      >
+                        {agendamento.status}
+                      </Badge>
                       <div className="flex space-x-2">
                         <Button size="sm" variant="outline">
-                          <Search className="h-4 w-4" />
+                          <Phone className="h-4 w-4" />
                         </Button>
                         <Button size="sm" variant="outline">
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button size="sm" variant="outline">
-                          <Trash2 className="h-4 w-4" />
+                          <MessageSquare className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          {/* Recentemente Vistos */}
-          <TabsContent value="vistos" className="space-y-6">
-            <h2 className="text-2xl font-bold">Recentemente Visualizados</h2>
+        {/* Avaliações */}
+        <TabsContent value="avaliacoes" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Minhas Avaliações</h2>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Avaliação
+            </Button>
+          </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {recentementeVistos.map((imovel) => (
-                <Card
-                  key={imovel.id}
-                  className="border-0 shadow-lg overflow-hidden"
-                >
-                  <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatsCard
+              title="Total Avaliações"
+              value={stats.avaliacoes}
+              icon={Star}
+              color="yellow"
+            />
+            <StatsCard
+              title="Nota Média"
+              value="4.8"
+              icon={Star}
+              color="yellow"
+              description="Suas avaliações"
+            />
+            <StatsCard
+              title="Aprovadas"
+              value={avaliacoes.filter((a) => a.aprovada).length}
+              icon={CheckCircle}
+              color="green"
+            />
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Histórico de Avaliações</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {avaliacoes.map((avaliacao) => (
+                  <div
+                    key={avaliacao.id}
+                    className="flex items-start space-x-4 p-4 border rounded-lg"
+                  >
                     <img
-                      src={imovel.fotos[0]}
-                      alt={imovel.titulo}
-                      className="w-full h-48 object-cover"
+                      src={avaliacao.imovel.fotos[0]}
+                      alt={avaliacao.imovel.titulo}
+                      className="w-16 h-16 object-cover rounded"
                     />
-                    <div className="absolute bottom-4 left-4">
-                      <Badge variant="default">{imovel.finalidade}</Badge>
-                    </div>
-                    <div className="absolute bottom-4 right-4">
-                      <p className="text-white text-xs bg-black/60 rounded px-2 py-1">
-                        Visto há 2 dias
-                      </p>
-                    </div>
-                  </div>
-                  <CardContent className="p-6">
-                    <h3 className="font-bold text-lg mb-2">{imovel.titulo}</h3>
-                    <p className="text-muted-foreground mb-4">
-                      <MapPin className="h-4 w-4 inline mr-1" />
-                      {imovel.endereco}, {imovel.bairro}
-                    </p>
-
-                    <div className="flex items-center space-x-4 mb-4 text-sm">
-                      <div className="flex items-center">
-                        <Bed className="h-4 w-4 mr-1" />
-                        {imovel.quartos} quartos
-                      </div>
-                      <div className="flex items-center">
-                        <Bath className="h-4 w-4 mr-1" />
-                        {imovel.banheiros} banheiros
-                      </div>
-                      {imovel.vagas && (
-                        <div className="flex items-center">
-                          <Car className="h-4 w-4 mr-1" />
-                          {imovel.vagas} vagas
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="font-bold">{avaliacao.imovel.titulo}</p>
+                        <div className="flex items-center space-x-2">
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${
+                                  i < avaliacao.nota
+                                    ? "text-yellow-400 fill-current"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <Badge
+                            variant={
+                              avaliacao.aprovada ? "default" : "secondary"
+                            }
+                          >
+                            {avaliacao.aprovada ? "APROVADA" : "PENDENTE"}
+                          </Badge>
                         </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <p className="text-2xl font-bold text-primary">
-                        {formatarPreco(imovel.preco)}
-                      </p>
-                      <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">
-                          <Heart className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Calendar className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Share2 className="h-4 w-4" />
-                        </Button>
                       </div>
+                      <p className="text-muted-foreground mb-2">
+                        {avaliacao.comentario}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {avaliacao.data.toLocaleDateString("pt-BR")}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          {/* Perfil */}
-          <TabsContent value="perfil" className="space-y-6">
-            <h2 className="text-2xl font-bold">Meu Perfil</h2>
+        {/* Buscas Salvas */}
+        <TabsContent value="buscas" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Buscas Salvas</h2>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Busca
+            </Button>
+          </div>
 
-            {/* Configurações de Perfil */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Informações Pessoais</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Nome Completo</Label>
-                    <Input defaultValue="João da Silva" />
-                  </div>
-                  <div>
-                    <Label>Email</Label>
-                    <Input defaultValue="joao@email.com" />
-                  </div>
-                  <div>
-                    <Label>Telefone</Label>
-                    <Input defaultValue="(62) 9 9999-8888" />
-                  </div>
-                  <div>
-                    <Label>CPF</Label>
-                    <Input defaultValue="000.000.000-00" />
-                  </div>
-                </div>
-                <Button>Salvar Alterações</Button>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatsCard
+              title="Buscas Ativas"
+              value={buscasSalvas.filter((b) => b.alertasAtivos).length}
+              icon={Bell}
+              color="blue"
+            />
+            <StatsCard
+              title="Total Salvas"
+              value={stats.buscasSalvas}
+              icon={BookmarkPlus}
+              color="green"
+            />
+            <StatsCard
+              title="Novos Resultados"
+              value="12"
+              icon={Target}
+              color="orange"
+              description="Última semana"
+            />
+          </div>
 
-            {/* Preferências */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Preferências de Busca</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Tipo Preferido</Label>
-                    <Select defaultValue="APARTAMENTO">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="CASA">Casa</SelectItem>
-                        <SelectItem value="APARTAMENTO">Apartamento</SelectItem>
-                        <SelectItem value="TERRENO">Terreno</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Finalidade</Label>
-                    <Select defaultValue="VENDA">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="VENDA">Venda</SelectItem>
-                        <SelectItem value="ALUGUEL">Aluguel</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Faixa de Preço Mínima</Label>
-                    <Input placeholder="R$ 200.000" />
-                  </div>
-                  <div>
-                    <Label>Faixa de Preço Máxima</Label>
-                    <Input placeholder="R$ 800.000" />
-                  </div>
-                  <div>
-                    <Label>Bairros de Interesse</Label>
-                    <Textarea
-                      placeholder="Setor Bueno, Jardim Goiás, Centro..."
-                      rows={3}
-                    />
-                  </div>
-                </div>
-                <Button>Salvar Preferências</Button>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Suas Buscas Salvas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {buscasSalvas.map((busca) => (
+                  <div
+                    key={busca.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <h3 className="font-bold">{busca.nome}</h3>
+                        <Badge
+                          variant={
+                            busca.alertasAtivos ? "default" : "secondary"
+                          }
+                        >
+                          {busca.alertasAtivos ? "ALERTAS ATIVOS" : "PAUSADO"}
+                        </Badge>
+                      </div>
 
-            {/* Notificações */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Configurações de Notificação</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Novos Imóveis</p>
-                    <p className="text-sm text-muted-foreground">
-                      Receber notificação quando houver novos imóveis que
-                      correspondam às suas buscas
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {busca.filtros.tipo && (
+                          <Badge variant="outline">{busca.filtros.tipo}</Badge>
+                        )}
+                        {busca.filtros.finalidade && (
+                          <Badge variant="outline">
+                            {busca.filtros.finalidade}
+                          </Badge>
+                        )}
+                        {busca.filtros.bairro && (
+                          <Badge variant="outline">
+                            {busca.filtros.bairro}
+                          </Badge>
+                        )}
+                        {busca.filtros.quartos && (
+                          <Badge variant="outline">
+                            {busca.filtros.quartos} quartos
+                          </Badge>
+                        )}
+                        {busca.filtros.precoMin && busca.filtros.precoMax && (
+                          <Badge variant="outline">
+                            {formatarPreco(busca.filtros.precoMin)} -{" "}
+                            {formatarPreco(busca.filtros.precoMax)}
+                          </Badge>
+                        )}
+                      </div>
+
+                      <p className="text-sm text-muted-foreground">
+                        Criada em {busca.criadaEm.toLocaleDateString("pt-BR")}
+                        {busca.ultimaNotificacao && (
+                          <>
+                            {" "}
+                            • Última notificação:{" "}
+                            {busca.ultimaNotificacao.toLocaleDateString(
+                              "pt-BR",
+                            )}
+                          </>
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="outline">
+                        <Search className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Recentemente Vistos */}
+        <TabsContent value="vistos" className="space-y-6">
+          <h2 className="text-2xl font-bold">Recentemente Visualizados</h2>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {recentementeVistos.map((imovel) => (
+              <Card
+                key={imovel.id}
+                className="border-0 shadow-lg overflow-hidden"
+              >
+                <div className="relative">
+                  <img
+                    src={imovel.fotos[0]}
+                    alt={imovel.titulo}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute bottom-4 left-4">
+                    <Badge variant="default">{imovel.finalidade}</Badge>
+                  </div>
+                  <div className="absolute bottom-4 right-4">
+                    <p className="text-white text-xs bg-black/60 rounded px-2 py-1">
+                      Visto há 2 dias
                     </p>
                   </div>
-                  <Switch defaultChecked />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Mudanças de Preço</p>
-                    <p className="text-sm text-muted-foreground">
-                      Ser notificado quando imóveis favoritos tiverem mudança de
-                      preço
-                    </p>
+                <CardContent className="p-6">
+                  <h3 className="font-bold text-lg mb-2">{imovel.titulo}</h3>
+                  <p className="text-muted-foreground mb-4">
+                    <MapPin className="h-4 w-4 inline mr-1" />
+                    {imovel.endereco}, {imovel.bairro}
+                  </p>
+
+                  <div className="flex items-center space-x-4 mb-4 text-sm">
+                    <div className="flex items-center">
+                      <Bed className="h-4 w-4 mr-1" />
+                      {imovel.quartos} quartos
+                    </div>
+                    <div className="flex items-center">
+                      <Bath className="h-4 w-4 mr-1" />
+                      {imovel.banheiros} banheiros
+                    </div>
+                    {imovel.vagas && (
+                      <div className="flex items-center">
+                        <Car className="h-4 w-4 mr-1" />
+                        {imovel.vagas} vagas
+                      </div>
+                    )}
                   </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Lembretes de Visita</p>
-                    <p className="text-sm text-muted-foreground">
-                      Receber lembretes sobre visitas agendadas
+
+                  <div className="flex items-center justify-between">
+                    <p className="text-2xl font-bold text-primary">
+                      {formatarPreco(imovel.preco)}
                     </p>
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="outline">
+                        <Heart className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Calendar className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <Switch defaultChecked />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* Perfil */}
+        <TabsContent value="perfil" className="space-y-6">
+          <h2 className="text-2xl font-bold">Meu Perfil</h2>
+
+          {/* Configurações de Perfil */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Informações Pessoais</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Nome Completo</Label>
+                  <Input defaultValue="João da Silva" />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Newsletter</p>
-                    <p className="text-sm text-muted-foreground">
-                      Receber newsletter semanal com dicas e novidades do
-                      mercado
-                    </p>
-                  </div>
-                  <Switch />
+                <div>
+                  <Label>Email</Label>
+                  <Input defaultValue="joao@email.com" />
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+                <div>
+                  <Label>Telefone</Label>
+                  <Input defaultValue="(62) 9 9999-8888" />
+                </div>
+                <div>
+                  <Label>CPF</Label>
+                  <Input defaultValue="000.000.000-00" />
+                </div>
+              </div>
+              <Button>Salvar Alterações</Button>
+            </CardContent>
+          </Card>
+
+          {/* Preferências */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Preferências de Busca</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Tipo Preferido</Label>
+                  <Select defaultValue="APARTAMENTO">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CASA">Casa</SelectItem>
+                      <SelectItem value="APARTAMENTO">Apartamento</SelectItem>
+                      <SelectItem value="TERRENO">Terreno</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Finalidade</Label>
+                  <Select defaultValue="VENDA">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="VENDA">Venda</SelectItem>
+                      <SelectItem value="ALUGUEL">Aluguel</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Faixa de Preço Mínima</Label>
+                  <Input placeholder="R$ 200.000" />
+                </div>
+                <div>
+                  <Label>Faixa de Preço Máxima</Label>
+                  <Input placeholder="R$ 800.000" />
+                </div>
+                <div>
+                  <Label>Bairros de Interesse</Label>
+                  <Textarea
+                    placeholder="Setor Bueno, Jardim Goiás, Centro..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+              <Button>Salvar Preferências</Button>
+            </CardContent>
+          </Card>
+
+          {/* Notificações */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Configurações de Notificação</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Novos Imóveis</p>
+                  <p className="text-sm text-muted-foreground">
+                    Receber notificação quando houver novos imóveis que
+                    correspondam às suas buscas
+                  </p>
+                </div>
+                <Switch defaultChecked />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Mudanças de Preço</p>
+                  <p className="text-sm text-muted-foreground">
+                    Ser notificado quando imóveis favoritos tiverem mudança de
+                    preço
+                  </p>
+                </div>
+                <Switch defaultChecked />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Lembretes de Visita</p>
+                  <p className="text-sm text-muted-foreground">
+                    Receber lembretes sobre visitas agendadas
+                  </p>
+                </div>
+                <Switch defaultChecked />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Newsletter</p>
+                  <p className="text-sm text-muted-foreground">
+                    Receber newsletter semanal com dicas e novidades do mercado
+                  </p>
+                </div>
+                <Switch />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Modal Comparador */}
       <ComparadorModal
@@ -1438,6 +1444,6 @@ export default function ClienteDashboard() {
         onClose={() => setShowComparador(false)}
         imoveis={[...favoritos, ...recentementeVistos]}
       />
-    </div>
+    </DashboardLayout>
   );
 }
