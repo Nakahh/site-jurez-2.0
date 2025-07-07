@@ -436,9 +436,58 @@ export default function DesenvolvedorDashboard() {
         localStorage.setItem("n8nAutomationActive", newStatus.toString());
       }
 
+      // Atualizar clientes automaticamente quando serviços são desativados
+      if (!newStatus) {
+        setClientSubscriptions((prevClients) =>
+          prevClients.map((client) => {
+            const updatedClient = { ...client };
+            if (serviceId === "whatsapp-business") {
+              updatedClient.whatsappEnabled = false;
+            } else if (serviceId === "n8n-automation") {
+              updatedClient.n8nEnabled = false;
+            } else if (serviceId === "google-calendar") {
+              updatedClient.googleCalendarEnabled = false;
+            }
+            return updatedClient;
+          }),
+        );
+      }
+
+      // Atualizar sistema de monitoramento
+      if (systemStats) {
+        const activeServices = premiumServices.filter((s) =>
+          s.id === serviceId ? newStatus : s.active,
+        ).length;
+        setSystemStats((prev) =>
+          prev
+            ? {
+                ...prev,
+                servicosAtivos: activeServices,
+              }
+            : null,
+        );
+      }
+
+      // Notificar mudanças para outros componentes via custom event
+      window.dispatchEvent(
+        new CustomEvent("premiumServiceToggled", {
+          detail: { serviceId, newStatus, serviceName: service?.name },
+        }),
+      );
+
+      // Disparar evento storage para sincronizar outros dashboards
+      window.dispatchEvent(
+        new StorageEvent("storage", {
+          key: `${serviceId}Active`,
+          newValue: newStatus.toString(),
+          oldValue: (!newStatus).toString(),
+        }),
+      );
+
       alert(
         `Serviço ${service?.name} ${newStatus ? "ativado" : "desativado"} com sucesso!\n` +
-          `${newStatus ? "Cobrança mensal: R$ " + (service?.price || 0).toFixed(2) : "Cobrança cancelada."}`,
+          `${newStatus ? "Cobrança mensal: R$ " + (service?.price || 0).toFixed(2) : "Cobrança cancelada."}` +
+          `${!newStatus ? "\nTodos os clientes foram automaticamente desabilitados deste serviço." : ""}`,
       );
     } catch (error) {
       console.error("Erro ao alterar serviço:", error);
@@ -448,6 +497,37 @@ export default function DesenvolvedorDashboard() {
 
   const toggleClientService = async (clientId: string, serviceType: string) => {
     try {
+      // Verificar se o serviço premium correspondente está ativo
+      let serviceActive = false;
+      let serviceId = "";
+      let serviceName = "";
+
+      if (serviceType === "whatsappEnabled") {
+        serviceId = "whatsapp-business";
+        serviceName = "WhatsApp Business";
+      } else if (serviceType === "n8nEnabled") {
+        serviceId = "n8n-automation";
+        serviceName = "N8N Automation";
+      } else if (serviceType === "googleCalendarEnabled") {
+        serviceId = "google-calendar";
+        serviceName = "Google Calendar";
+      }
+
+      serviceActive =
+        premiumServices.find((s) => s.id === serviceId)?.active || false;
+
+      const client = clientSubscriptions.find((c) => c.id === clientId);
+      const currentStatus = client
+        ? client[serviceType as keyof ClientSubscription]
+        : false;
+
+      if (!serviceActive && !currentStatus) {
+        alert(
+          `O serviço ${serviceName} não está ativo no sistema. Ative primeiro o serviço premium correspondente na aba "Serviços Premium".`,
+        );
+        return;
+      }
+
       setClientSubscriptions((prev) =>
         prev.map((client) =>
           client.id === clientId
@@ -458,8 +538,13 @@ export default function DesenvolvedorDashboard() {
             : client,
         ),
       );
+
+      alert(
+        `Serviço ${serviceName} ${!currentStatus ? "ativado" : "desativado"} para ${client?.clientName}`,
+      );
     } catch (error) {
       console.error("Erro ao alterar serviço do cliente:", error);
+      alert("Erro ao alterar serviço do cliente. Tente novamente.");
     }
   };
 
