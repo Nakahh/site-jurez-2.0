@@ -72,6 +72,9 @@ export default function AdminDashboard() {
   const [showNewTransactionModal, setShowNewTransactionModal] = useState(false);
   const [showNewPropertyModal, setShowNewPropertyModal] = useState(false);
   const [showNewUserModal, setShowNewUserModal] = useState(false);
+  const [selectedPropertyImages, setSelectedPropertyImages] = useState<
+    string[]
+  >([]);
 
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState("");
@@ -1314,7 +1317,7 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
 
-        {/* Relat��rios Avançados */}
+        {/* Relatórios Avançados */}
         <TabsContent value="relatorios" className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Relatórios Avançados</h2>
