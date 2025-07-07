@@ -1366,14 +1366,37 @@ export default function CorretorDashboard() {
                           </div>
                         </div>
                         <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewProperty(imovel.id)}
+                            title="Ver imóvel"
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditProperty(imovel.id)}
+                            title="Editar imóvel"
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteProperty(imovel.id)}
+                            title="Excluir imóvel"
+                          >
                             <Trash2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleScheduleVisit(imovel.id)}
+                            title="Agendar visita"
+                          >
+                            <Calendar className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
