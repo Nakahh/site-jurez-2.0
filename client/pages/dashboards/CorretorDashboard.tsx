@@ -736,6 +736,9 @@ export default function CorretorDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [showCriarImovel, setShowCriarImovel] = useState(false);
   const [showCadastrarLead, setShowCadastrarLead] = useState(false);
+  const [selectedPropertyImages, setSelectedPropertyImages] = useState<
+    string[]
+  >([]);
 
   useEffect(() => {
     carregarDados();
