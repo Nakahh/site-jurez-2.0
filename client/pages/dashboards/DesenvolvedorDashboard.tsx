@@ -355,6 +355,8 @@ export default function DesenvolvedorDashboard() {
       setSecurityEvents(securityEventsSimulados);
       setBackups(backupsSimulados);
       setApiEndpoints(apiEndpointsSimulados);
+      setPremiumServices(premiumServicesSimulados);
+      setClientSubscriptions(clientSubscriptionsSimulados);
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
     } finally {
@@ -509,7 +511,7 @@ export default function DesenvolvedorDashboard() {
           </TabsTrigger>
           <TabsTrigger value="backups" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Backups</span>
-            <span className="sm:hidden">��</span>
+            <span className="sm:hidden">💾</span>
           </TabsTrigger>
           <TabsTrigger value="api" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">APIs</span>
@@ -1356,7 +1358,7 @@ export default function DesenvolvedorDashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Tempo Sess��o (minutos)</Label>
+                  <Label>Tempo Sessão (minutos)</Label>
                   <Input type="number" defaultValue="60" />
                 </div>
                 <div className="space-y-2">
