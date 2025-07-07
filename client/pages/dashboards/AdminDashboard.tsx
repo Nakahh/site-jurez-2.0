@@ -1155,7 +1155,9 @@ export default function AdminDashboard() {
                     <p className="text-sm font-medium text-muted-foreground">
                       Total de Imóveis
                     </p>
-                    <p className="text-3xl font-bold">{stats?.totalImoveis}</p>
+                    <p className="text-3xl font-bold">
+                      {realData.totalImoveis}
+                    </p>
                   </div>
                   <Home className="h-12 w-12 text-primary" />
                 </div>
