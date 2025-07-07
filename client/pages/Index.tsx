@@ -246,18 +246,7 @@ export default function Index() {
               📊
             </Button>
             <ThemeToggle />
-            <Button
-              variant="outline"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? (
-                <X className="h-4 w-4" />
-              ) : (
-                <Menu className="h-4 w-4" />
-              )}
-            </Button>
+
             <div className="hidden md:flex items-center space-x-2">
               <Button variant="outline" asChild>
                 <Link to="/login">Entrar</Link>
