@@ -317,6 +317,35 @@ export function NotificationProvider({
     return () => clearInterval(interval);
   }, []);
 
+  const playNotificationSound = () => {
+    try {
+      // Create a simple notification sound using Web Audio API
+      const audioContext = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioContext.currentTime + 0.2,
+      );
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    } catch (error) {
+      // Fallback: try to create a simple beep with Audio API
+      console.warn("Web Audio API not supported, using fallback");
+    }
+  };
+
   const addNotification = (
     notification: Omit<Notification, "id" | "timestamp" | "read">,
   ) => {
@@ -328,6 +357,9 @@ export function NotificationProvider({
     };
 
     setNotifications((prev) => [newNotification, ...prev]);
+
+    // Play notification sound
+    playNotificationSound();
 
     // Mostrar notificação nativa do browser
     if (Notification.permission === "granted") {
