@@ -69,6 +69,10 @@ import {
 import { SystemMonitoring } from "@/components/SystemMonitoring";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useNavigate, useLocation } from "react-router-dom";
+import {
+  usePremiumServices,
+  PREMIUM_SERVICES,
+} from "@/utils/premiumServicesManager";
 
 interface SystemStats {
   uptime: string;
