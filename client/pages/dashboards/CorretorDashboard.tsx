@@ -46,6 +46,7 @@ import {
   CheckSquare,
   Star,
   Award,
+  X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AdvancedCalendar } from "@/components/AdvancedCalendar";
