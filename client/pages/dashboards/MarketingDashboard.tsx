@@ -21,6 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   BarChart3,
   TrendingUp,
@@ -59,6 +60,7 @@ import {
 } from "lucide-react";
 import { BlogManagement } from "@/components/BlogManagement";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { MetaIntegration } from "@/components/MetaIntegration";
 
 interface MarketingStats {
   visitasSite: number;
@@ -112,6 +114,8 @@ interface ConteudoSocial {
 }
 
 export default function MarketingDashboard() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [stats, setStats] = useState<MarketingStats | null>(null);
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
   const [conteudos, setConteudos] = useState<ConteudoSocial[]>([]);
@@ -122,6 +126,34 @@ export default function MarketingDashboard() {
 
   useEffect(() => {
     carregarDados();
+
+    // Escutar mudanças nos serviços premium
+    const handleServiceToggle = (e: CustomEvent) => {
+      console.log("Marketing Dashboard: Serviço premium alterado", e.detail);
+      // Recarregar dados quando serviços premium mudam
+      carregarDados();
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key?.includes("Active")) {
+        // Recarregar dados quando há mudanças nos serviços
+        carregarDados();
+      }
+    };
+
+    window.addEventListener(
+      "premiumServiceToggled",
+      handleServiceToggle as EventListener,
+    );
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener(
+        "premiumServiceToggled",
+        handleServiceToggle as EventListener,
+      );
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   const handleExportReport = async () => {
@@ -441,7 +473,7 @@ export default function MarketingDashboard() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1">
           <TabsTrigger value="overview" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Visão Geral</span>
             <span className="sm:hidden">📊</span>
@@ -453,6 +485,10 @@ export default function MarketingDashboard() {
           <TabsTrigger value="conteudo" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Conteúdo</span>
             <span className="sm:hidden">📝</span>
+          </TabsTrigger>
+          <TabsTrigger value="meta" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Meta</span>
+            <span className="sm:hidden">📘</span>
           </TabsTrigger>
           <TabsTrigger value="blog" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Blog</span>
@@ -1126,6 +1162,131 @@ export default function MarketingDashboard() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* Meta Integration */}
+        <TabsContent value="meta" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Integração Meta Business</h2>
+            <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
+              Premium - R$ 197,00/mês
+            </Badge>
+          </div>
+
+          {/* Configurações Instagram e Facebook */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <Card className="border-pink-200">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Instagram className="w-5 h-5 mr-2 text-pink-600" />
+                  Configuração Instagram
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="instagram-token">
+                    Instagram Access Token
+                  </Label>
+                  <Input
+                    id="instagram-token"
+                    type="password"
+                    placeholder="IGQVJ..."
+                    value={localStorage.getItem("instagramAccessToken") || ""}
+                    onChange={(e) =>
+                      localStorage.setItem(
+                        "instagramAccessToken",
+                        e.target.value,
+                      )
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="instagram-account">
+                    Instagram Account ID
+                  </Label>
+                  <Input
+                    id="instagram-account"
+                    placeholder="1234567890123456"
+                    value={localStorage.getItem("instagramAccountId") || ""}
+                    onChange={(e) =>
+                      localStorage.setItem("instagramAccountId", e.target.value)
+                    }
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="instagram-enabled"
+                    checked={
+                      localStorage.getItem("instagramEnabled") === "true"
+                    }
+                    onCheckedChange={(checked) =>
+                      localStorage.setItem(
+                        "instagramEnabled",
+                        checked.toString(),
+                      )
+                    }
+                  />
+                  <Label htmlFor="instagram-enabled">
+                    Ativar publicação automática
+                  </Label>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-blue-200">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Facebook className="w-5 h-5 mr-2 text-blue-600" />
+                  Configuração Facebook
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="facebook-token">Facebook Access Token</Label>
+                  <Input
+                    id="facebook-token"
+                    type="password"
+                    placeholder="EAAx..."
+                    value={localStorage.getItem("facebookAccessToken") || ""}
+                    onChange={(e) =>
+                      localStorage.setItem(
+                        "facebookAccessToken",
+                        e.target.value,
+                      )
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="facebook-page">Facebook Page ID</Label>
+                  <Input
+                    id="facebook-page"
+                    placeholder="1234567890123456"
+                    value={localStorage.getItem("facebookPageId") || ""}
+                    onChange={(e) =>
+                      localStorage.setItem("facebookPageId", e.target.value)
+                    }
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="facebook-enabled"
+                    checked={localStorage.getItem("facebookEnabled") === "true"}
+                    onCheckedChange={(checked) =>
+                      localStorage.setItem(
+                        "facebookEnabled",
+                        checked.toString(),
+                      )
+                    }
+                  />
+                  <Label htmlFor="facebook-enabled">
+                    Ativar publicação automática
+                  </Label>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <MetaIntegration userRole="MARKETING" />
         </TabsContent>
 
         {/* Blog */}

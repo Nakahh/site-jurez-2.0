@@ -55,11 +55,12 @@ import {
   Trash2,
   DollarSign,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { WhatsAppIntegration } from "@/components/WhatsAppIntegration";
 import { CalendarIntegration } from "@/components/CalendarIntegration";
 import { useToast } from "@/hooks/use-toast";
+import { PremiumServiceAlert } from "@/components/PremiumServiceAlert";
 
 interface AssistenteStats {
   leadsAtribuidos: number;
@@ -119,6 +120,8 @@ interface Tarefa {
 
 export default function AssistenteDashboard() {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [stats, setStats] = useState<AssistenteStats | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
@@ -137,6 +140,34 @@ export default function AssistenteDashboard() {
 
   useEffect(() => {
     carregarDados();
+
+    // Escutar mudanças nos serviços premium
+    const handleServiceToggle = (e: CustomEvent) => {
+      console.log("Assistente Dashboard: Serviço premium alterado", e.detail);
+      // Recarregar dados quando serviços premium mudam
+      carregarDados();
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key?.includes("Active")) {
+        // Recarregar dados quando há mudanças nos serviços
+        carregarDados();
+      }
+    };
+
+    window.addEventListener(
+      "premiumServiceToggled",
+      handleServiceToggle as EventListener,
+    );
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener(
+        "premiumServiceToggled",
+        handleServiceToggle as EventListener,
+      );
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   // Funções para gerenciar visitas
@@ -520,6 +551,8 @@ export default function AssistenteDashboard() {
         </div>
       }
     >
+      <PremiumServiceAlert userRole="ASSISTENTE" />
+
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
@@ -1319,7 +1352,7 @@ export default function AssistenteDashboard() {
             </Badge>
           </div>
 
-          {/* Integrações WhatsApp e Google Calendar */}
+          {/* Integra��ões WhatsApp e Google Calendar */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <WhatsAppIntegration userRole="ASSISTENTE" />
             <CalendarIntegration userRole="ASSISTENTE" />
@@ -2398,7 +2431,7 @@ Sua visita foi agendada com sucesso! 🏠
 Em caso de dúvidas, estou à disposição!
 
 Siqueira Campos Imóveis
-📱 (62) 9 8556-3505`;
+���� (62) 9 8556-3505`;
 
                     const phoneNumber = selectedLead.telefone.replace(
                       /\D/g,

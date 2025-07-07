@@ -68,6 +68,11 @@ import {
 } from "lucide-react";
 import { SystemMonitoring } from "@/components/SystemMonitoring";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  usePremiumServices,
+  PREMIUM_SERVICES,
+} from "@/utils/premiumServicesManager";
 
 interface SystemStats {
   uptime: string;
@@ -140,6 +145,9 @@ interface ClientSubscription {
 }
 
 export default function DesenvolvedorDashboard() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const premiumManager = usePremiumServices();
   const [systemStats, setSystemStats] = useState<SystemStats | null>(null);
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
   const [backups, setBackups] = useState<BackupInfo[]>([]);
@@ -160,17 +168,17 @@ export default function DesenvolvedorDashboard() {
 
   const carregarDados = async () => {
     try {
-      // Simular dados do sistema
+      // Dados do sistema com informações reais/simuladas mais realistas
       const statsSimuladas: SystemStats = {
-        uptime: "15d 8h 42m",
-        cpuUsage: Math.floor(Math.random() * 30) + 10,
-        memoryUsage: Math.floor(Math.random() * 40) + 30,
-        diskUsage: 67,
-        activeUsers: Math.floor(Math.random() * 50) + 20,
-        apiRequests: Math.floor(Math.random() * 1000) + 5000,
-        errorRate: Math.random() * 2,
-        responseTime: Math.floor(Math.random() * 100) + 50,
-        databaseConnections: Math.floor(Math.random() * 10) + 5,
+        uptime: "45d 12h 33m", // Mais realista para produção
+        cpuUsage: Math.floor(Math.random() * 20) + 15, // 15-35%
+        memoryUsage: Math.floor(Math.random() * 25) + 45, // 45-70%
+        diskUsage: 73, // Valor fixo mais realista
+        activeUsers: Math.floor(Math.random() * 30) + 25, // 25-55 usuários
+        apiRequests: Math.floor(Math.random() * 2000) + 8000, // 8k-10k requests
+        errorRate: Math.random() * 1.5, // 0-1.5% error rate
+        responseTime: Math.floor(Math.random() * 50) + 120, // 120-170ms
+        databaseConnections: Math.floor(Math.random() * 5) + 8, // 8-13 connections
         serverStatus: "ONLINE",
       };
 
@@ -275,55 +283,81 @@ export default function DesenvolvedorDashboard() {
         },
       ];
 
+      // Carregar serviços premium com status do localStorage
+      const getServiceStatus = (serviceId: string) => {
+        const savedStatus = localStorage.getItem(`${serviceId}Active`);
+        return savedStatus === "true";
+      };
+
       const premiumServicesSimulados: PremiumService[] = [
         {
-          id: "1",
+          id: "whatsapp-business",
           name: "WhatsApp Business Integration",
           description:
             "Integração completa com Evolution API para automação de leads",
-          active: true,
-          price: 97.0,
+          active: getServiceStatus("whatsapp-business"),
+          price: 197.0,
           features: [
             "Resposta automática de leads",
             "Distribuição inteligente para corretores",
             "Fallback após 15 minutos",
             "Histórico completo de conversas",
             "Notificações em tempo real",
+            "N8N Integration Premium",
           ],
-          status: "ACTIVE",
+          status: getServiceStatus("whatsapp-business") ? "ACTIVE" : "INACTIVE",
           lastUpdated: new Date(),
         },
         {
-          id: "2",
-          name: "N8N Automation Suite",
-          description: "Automação completa de processos com N8N e IA",
-          active: true,
-          price: 147.0,
+          id: "meta-integration",
+          name: "Meta Business Integration",
+          description:
+            "Integração com Facebook e Instagram para publicação automática",
+          active: getServiceStatus("meta-integration"),
+          price: 197.0,
           features: [
-            "Integração com OpenAI GPT-3.5",
-            "Processamento automático de leads",
-            "Agendamento Google Calendar",
-            "Email marketing automatizado",
-            "Relatórios avançados",
-            "Backup automático",
+            "Publicação automática Instagram/Facebook",
+            "Estatísticas em tempo real",
+            "Gestão de campanhas",
+            "Auto-posting de imóveis",
+            "Analytics avançadas",
+            "N8N Integration Premium",
           ],
-          status: "ACTIVE",
+          status: getServiceStatus("meta-integration") ? "ACTIVE" : "INACTIVE",
           lastUpdated: new Date(),
         },
         {
-          id: "3",
+          id: "google-calendar",
           name: "Google Calendar Integration",
           description: "Agendamento automático de visitas com sincronização",
-          active: false,
-          price: 47.0,
+          active: getServiceStatus("google-calendar"),
+          price: 97.0,
           features: [
             "Sincronização com Google Calendar",
             "Agendamento automático de visitas",
             "Lembretes por email e WhatsApp",
             "Gestão de disponibilidade",
             "Relatórios de agendamentos",
+            "N8N Integration",
           ],
-          status: "INACTIVE",
+          status: getServiceStatus("google-calendar") ? "ACTIVE" : "INACTIVE",
+          lastUpdated: new Date(),
+        },
+        {
+          id: "n8n-automation",
+          name: "N8N Automation Integration",
+          description: "Automação completa de processos e integrações com APIs",
+          active: getServiceStatus("n8n-automation"),
+          price: 147.0,
+          features: [
+            "Workflows automáticos",
+            "Integração com múltiplas APIs",
+            "Processamento de dados",
+            "Notificações automáticas",
+            "Backup de workflows",
+            "Suporte técnico especializado",
+          ],
+          status: getServiceStatus("n8n-automation") ? "ACTIVE" : "INACTIVE",
           lastUpdated: new Date(),
         },
       ];
@@ -331,18 +365,28 @@ export default function DesenvolvedorDashboard() {
       const clientSubscriptionsSimulados: ClientSubscription[] = [
         {
           id: "1",
-          clientName: "Siqueira Campos Imóveis",
+          clientName: "Siqueira Campos Im��veis",
           email: "admin@siqueicamposimoveis.com.br",
-          whatsappEnabled: true,
-          n8nEnabled: true,
-          googleCalendarEnabled: false,
+          whatsappEnabled: getServiceStatus("whatsapp-business"),
+          n8nEnabled: getServiceStatus("n8n-automation"),
+          googleCalendarEnabled: getServiceStatus("google-calendar"),
           expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           status: "ACTIVE",
         },
         {
           id: "2",
-          clientName: "Imobiliária Exemplo",
-          email: "contato@exemplo.com.br",
+          clientName: "Imobiliária Demo",
+          email: "demo@exemplo.com.br",
+          whatsappEnabled: false,
+          n8nEnabled: false,
+          googleCalendarEnabled: false,
+          expiryDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+          status: "ACTIVE",
+        },
+        {
+          id: "3",
+          clientName: "Imobiliária Teste",
+          email: "teste@exemplo.com.br",
           whatsappEnabled: false,
           n8nEnabled: false,
           googleCalendarEnabled: false,
@@ -366,26 +410,129 @@ export default function DesenvolvedorDashboard() {
 
   const togglePremiumService = async (serviceId: string) => {
     try {
-      // Simular toggle do serviço premium
+      const service = premiumServices.find((s) => s.id === serviceId);
+      const newStatus = !service?.active;
+
+      // Atualizar estado local
       setPremiumServices((prev) =>
         prev.map((service) =>
           service.id === serviceId
             ? {
                 ...service,
-                active: !service.active,
-                status: !service.active ? "ACTIVE" : "INACTIVE",
+                active: newStatus,
+                status: newStatus ? "ACTIVE" : "INACTIVE",
                 lastUpdated: new Date(),
               }
             : service,
         ),
       );
+
+      // Salvar no localStorage para persistir entre sessões
+      localStorage.setItem(`${serviceId}Active`, newStatus.toString());
+
+      // Ações específicas por serviço
+      if (serviceId === "meta-integration") {
+        localStorage.setItem("metaIntegrationActive", newStatus.toString());
+      } else if (serviceId === "whatsapp-business") {
+        localStorage.setItem("whatsappBusinessActive", newStatus.toString());
+      } else if (serviceId === "google-calendar") {
+        localStorage.setItem("googleCalendarActive", newStatus.toString());
+      } else if (serviceId === "n8n-automation") {
+        localStorage.setItem("n8nAutomationActive", newStatus.toString());
+      }
+
+      // Atualizar clientes automaticamente quando serviços são desativados
+      if (!newStatus) {
+        setClientSubscriptions((prevClients) =>
+          prevClients.map((client) => {
+            const updatedClient = { ...client };
+            if (serviceId === "whatsapp-business") {
+              updatedClient.whatsappEnabled = false;
+            } else if (serviceId === "n8n-automation") {
+              updatedClient.n8nEnabled = false;
+            } else if (serviceId === "google-calendar") {
+              updatedClient.googleCalendarEnabled = false;
+            }
+            return updatedClient;
+          }),
+        );
+      }
+
+      // Atualizar sistema de monitoramento
+      if (systemStats) {
+        const activeServices = premiumServices.filter((s) =>
+          s.id === serviceId ? newStatus : s.active,
+        ).length;
+        setSystemStats((prev) =>
+          prev
+            ? {
+                ...prev,
+                servicosAtivos: activeServices,
+              }
+            : null,
+        );
+      }
+
+      // Notificar mudanças para outros componentes via custom event
+      window.dispatchEvent(
+        new CustomEvent("premiumServiceToggled", {
+          detail: { serviceId, newStatus, serviceName: service?.name },
+        }),
+      );
+
+      // Disparar evento storage para sincronizar outros dashboards
+      window.dispatchEvent(
+        new StorageEvent("storage", {
+          key: `${serviceId}Active`,
+          newValue: newStatus.toString(),
+          oldValue: (!newStatus).toString(),
+        }),
+      );
+
+      alert(
+        `Serviço ${service?.name} ${newStatus ? "ativado" : "desativado"} com sucesso!\n` +
+          `${newStatus ? "Cobrança mensal: R$ " + (service?.price || 0).toFixed(2) : "Cobrança cancelada."}` +
+          `${!newStatus ? "\nTodos os clientes foram automaticamente desabilitados deste serviço." : ""}`,
+      );
     } catch (error) {
       console.error("Erro ao alterar serviço:", error);
+      alert("Erro ao alterar serviço. Tente novamente.");
     }
   };
 
   const toggleClientService = async (clientId: string, serviceType: string) => {
     try {
+      // Verificar se o serviço premium correspondente está ativo
+      let serviceActive = false;
+      let serviceId = "";
+      let serviceName = "";
+
+      if (serviceType === "whatsappEnabled") {
+        serviceId = "whatsapp-business";
+        serviceName = "WhatsApp Business";
+      } else if (serviceType === "n8nEnabled") {
+        serviceId = "n8n-automation";
+        serviceName = "N8N Automation";
+      } else if (serviceType === "googleCalendarEnabled") {
+        serviceId = "google-calendar";
+        serviceName = "Google Calendar";
+      }
+
+      serviceActive =
+        premiumServices.find((s) => s.id === serviceId)?.active || false;
+
+      const client = clientSubscriptions.find((c) => c.id === clientId);
+      const currentStatus = client
+        ? client[serviceType as keyof ClientSubscription]
+        : false;
+
+      if (!serviceActive && !currentStatus) {
+        alert(
+          `O serviço ${serviceName} não está ativo no sistema. Ative primeiro o serviço premium correspondente na aba "Serviços Premium".`,
+        );
+        return;
+      }
+
       setClientSubscriptions((prev) =>
         prev.map((client) =>
           client.id === clientId
@@ -396,8 +543,13 @@ export default function DesenvolvedorDashboard() {
             : client,
         ),
       );
+
+      alert(
+        `Serviço ${serviceName} ${!currentStatus ? "ativado" : "desativado"} para ${client?.clientName}`,
+      );
     } catch (error) {
       console.error("Erro ao alterar serviço do cliente:", error);
+      alert("Erro ao alterar serviço do cliente. Tente novamente.");
     }
   };
 
@@ -974,7 +1126,22 @@ export default function DesenvolvedorDashboard() {
           {/* Configuração N8N */}
           <Card>
             <CardHeader>
-              <CardTitle>Configuração N8N Server</CardTitle>
+              <CardTitle className="flex items-center justify-between">
+                Configuração N8N Server
+                <Badge
+                  variant={
+                    premiumServices.find((s) => s.id === "n8n-automation")
+                      ?.active
+                      ? "default"
+                      : "secondary"
+                  }
+                >
+                  {premiumServices.find((s) => s.id === "n8n-automation")
+                    ?.active
+                    ? "ATIVO"
+                    : "INATIVO"}
+                </Badge>
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <Alert>
@@ -983,33 +1150,180 @@ export default function DesenvolvedorDashboard() {
                 <AlertDescription>
                   O N8N roda em VPS separada para garantir isolamento e controle
                   de pagamento. Configure as credenciais abaixo para integração.
+                  <strong>
+                    Os tokens Meta são necessários apenas se usar a integração
+                    Meta via N8N.
+                  </strong>
                 </AlertDescription>
               </Alert>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>URL do N8N Server</Label>
-                  <Input defaultValue="https://n8n.siqueicamposimoveis.com.br" />
-                </div>
-                <div className="space-y-2">
-                  <Label>API Key</Label>
-                  <Input
-                    type="password"
-                    defaultValue="****************************"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Evolution API URL</Label>
-                  <Input defaultValue="https://evolution.siqueicamposimoveis.com.br" />
-                </div>
-                <div className="space-y-2">
-                  <Label>OpenAI API Key</Label>
-                  <Input
-                    type="password"
-                    defaultValue="sk-****************************"
-                  />
-                </div>
-              </div>
+              <Tabs defaultValue="server" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="server">Servidor</TabsTrigger>
+                  <TabsTrigger value="apis">APIs</TabsTrigger>
+                  <TabsTrigger value="meta">Meta/WhatsApp</TabsTrigger>
+                  <TabsTrigger value="workflows">Workflows</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="server" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>URL do N8N Server</Label>
+                      <Input defaultValue="https://n8n.siqueicamposimoveis.com.br" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>API Key N8N</Label>
+                      <Input
+                        type="password"
+                        defaultValue="n8n_api_key_**********************"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Webhook Base URL</Label>
+                      <Input defaultValue="https://n8n.siqueicamposimoveis.com.br/webhook" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Timeout (segundos)</Label>
+                      <Input defaultValue="30" type="number" />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="apis" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Evolution API URL</Label>
+                      <Input defaultValue="https://evolution.siqueicamposimoveis.com.br" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Evolution API Key</Label>
+                      <Input
+                        type="password"
+                        defaultValue="evolution_api_******************"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>OpenAI API Key</Label>
+                      <Input
+                        type="password"
+                        defaultValue="sk-****************************"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Google Calendar API Key</Label>
+                      <Input
+                        type="password"
+                        defaultValue="google_calendar_**************"
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="meta" className="space-y-4">
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Configuração Meta via N8N</AlertTitle>
+                    <AlertDescription>
+                      Estes tokens Meta são necessários APENAS se você
+                      configurar a integração Meta através do N8N. Se usar a
+                      integração Meta direta do sistema, estes campos não são
+                      obrigatórios.
+                    </AlertDescription>
+                  </Alert>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Meta App ID</Label>
+                      <Input placeholder="ID do App Meta Business" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Meta App Secret</Label>
+                      <Input type="password" placeholder="Secret do App Meta" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Instagram Business Account ID</Label>
+                      <Input placeholder="ID da conta Instagram Business" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Facebook Page ID</Label>
+                      <Input placeholder="ID da página do Facebook" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Access Token (Meta)</Label>
+                      <Input
+                        type="password"
+                        placeholder="Token de acesso do Meta"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>WhatsApp Business Account ID</Label>
+                      <Input placeholder="ID da conta WhatsApp Business" />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="workflows" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">
+                          Workflows Ativos
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span>WhatsApp Auto-resposta</span>
+                            <Badge variant="default">Ativo</Badge>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Meta Auto-posting</span>
+                            <Badge variant="secondary">Inativo</Badge>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Calendar Integration</span>
+                            <Badge variant="default">Ativo</Badge>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Lead Distribution</span>
+                            <Badge variant="default">Ativo</Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">
+                          Estatísticas N8N
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span>Execuções hoje:</span>
+                            <span className="font-bold">247</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Execuções com sucesso:</span>
+                            <span className="font-bold text-green-600">
+                              234 (94.7%)
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Execuções com erro:</span>
+                            <span className="font-bold text-red-600">
+                              13 (5.3%)
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Tempo médio:</span>
+                            <span className="font-bold">1.2s</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+              </Tabs>
 
               <div className="flex space-x-2">
                 <Button variant="outline">
@@ -1019,6 +1333,10 @@ export default function DesenvolvedorDashboard() {
                 <Button>
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Salvar Configuração
+                </Button>
+                <Button variant="outline">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Sincronizar Workflows
                 </Button>
               </div>
             </CardContent>
@@ -1201,7 +1519,7 @@ export default function DesenvolvedorDashboard() {
                   <div>
                     <Label>Autenticação de Dois Fatores</Label>
                     <p className="text-sm text-muted-foreground">
-                      Requer c��digo adicional no login
+                      Requer código adicional no login
                     </p>
                   </div>
                   <Switch defaultChecked />

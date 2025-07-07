@@ -48,11 +48,14 @@ import {
   Award,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AdvancedCalendar } from "@/components/AdvancedCalendar";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { WhatsAppIntegration } from "@/components/WhatsAppIntegration";
 import { CalendarIntegration } from "@/components/CalendarIntegration";
+import { createDashboardActions } from "@/utils/dashboardActions";
+import { createAutoPost } from "@/components/MetaIntegration";
+import { PremiumServiceAlert } from "@/components/PremiumServiceAlert";
 
 // Types
 interface CorretorStats {
@@ -121,6 +124,34 @@ function WhatsAppIntegrationCard({ onUpdate }: { onUpdate: () => void }) {
 
   useEffect(() => {
     carregarDados();
+
+    // Escutar mudanças nos serviços premium
+    const handleServiceToggle = (e: CustomEvent) => {
+      console.log("Corretor Dashboard: Serviço premium alterado", e.detail);
+      // Recarregar dados quando serviços premium mudam
+      carregarDados();
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key?.includes("Active")) {
+        // Recarregar dados quando há mudanças nos serviços
+        carregarDados();
+      }
+    };
+
+    window.addEventListener(
+      "premiumServiceToggled",
+      handleServiceToggle as EventListener,
+    );
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener(
+        "premiumServiceToggled",
+        handleServiceToggle as EventListener,
+      );
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   const carregarDados = async () => {
@@ -375,11 +406,45 @@ function CriarImovelModal({
       });
 
       if (response.ok) {
+        const imovelCriado = await response.json();
+
+        // Verificar se integração Meta está ativa
+        const metaActive =
+          localStorage.getItem("metaIntegrationActive") === "true";
+
+        if (metaActive) {
+          try {
+            // Criar posts automáticos nas redes sociais
+            const autoPostResult = await createAutoPost({
+              ...imovelCriado,
+              fotos: selectedImages,
+            });
+
+            if (autoPostResult.success) {
+              alert(
+                "🎉 Imóvel criado com sucesso!\n\n✅ Todas as informações foram salvas\n📱 Publicado automaticamente nas redes sociais\n\n" +
+                  autoPostResult.message,
+              );
+            } else {
+              alert(
+                "🎉 Imóvel criado com sucesso!\n\n✅ Todas as informações foram salvas\n⚠️ Erro na publicação automática: " +
+                  autoPostResult.message,
+              );
+            }
+          } catch (error) {
+            console.error("Erro no auto-post:", error);
+            alert(
+              "🎉 Imóvel criado com sucesso!\n\n✅ Todas as informa��ões foram salvas\n⚠️ Erro na publicação automática",
+            );
+          }
+        } else {
+          alert(
+            "🎉 Imóvel criado com sucesso!\n\n✅ Todas as informações foram salvas\n\n💡 Dica: Ative a integração Meta no Dashboard de Marketing para publicação automática nas redes sociais!",
+          );
+        }
+
         onSuccess();
         handleCloseModal();
-        alert(
-          "🎉 Imóvel criado com sucesso! Todas as informações foram salvas.",
-        );
       }
     } catch (error) {
       console.error("Erro ao criar imóvel:", error);
@@ -748,7 +813,7 @@ function CriarImovelModal({
                     placeholder="Ex: Reformado recentemente&#10;Móveis planejados&#10;Varanda gourmet"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Digite uma caracter��stica por linha
+                    Digite uma característica por linha
                   </p>
                 </div>
               </div>
@@ -1113,6 +1178,9 @@ function CadastrarLeadModal({
 }
 
 export default function CorretorDashboard() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dashboardActions = createDashboardActions(navigate);
   const [stats, setStats] = useState<CorretorStats | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [imoveis, setImoveis] = useState<Imovel[]>([]);
@@ -1136,7 +1204,52 @@ export default function CorretorDashboard() {
 
   useEffect(() => {
     carregarDados();
-  }, []);
+    // Handle navigation state
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+    if (location.state?.showNew) {
+      switch (location.state.activeTab) {
+        case "leads":
+          setShowCadastrarLead(true);
+          break;
+        case "imoveis":
+          setShowCriarImovel(true);
+          break;
+        case "agendamentos":
+          setShowAgendarVisita(true);
+          break;
+      }
+    }
+
+    // Escutar mudanças nos serviços premium
+    const handleServiceToggle = (e: CustomEvent) => {
+      console.log("Corretor Dashboard: Serviço premium alterado", e.detail);
+      // Recarregar dados quando serviços premium mudam
+      carregarDados();
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key?.includes("Active")) {
+        // Recarregar dados quando há mudanças nos serviços
+        carregarDados();
+      }
+    };
+
+    window.addEventListener(
+      "premiumServiceToggled",
+      handleServiceToggle as EventListener,
+    );
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener(
+        "premiumServiceToggled",
+        handleServiceToggle as EventListener,
+      );
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [location.state]);
 
   // Funções para gerenciar leads
   const handleViewLead = (leadId: string) => {
@@ -1158,17 +1271,14 @@ export default function CorretorDashboard() {
   const handleCallLead = (leadId: string) => {
     const lead = leads.find((l) => l.id === leadId);
     if (lead) {
-      const phoneNumber = lead.telefone.replace(/\D/g, "");
-      window.open(`tel:${phoneNumber}`, "_self");
+      dashboardActions.contactLead(lead.telefone, "call");
     }
   };
 
   const handleWhatsAppLead = (leadId: string) => {
     const lead = leads.find((l) => l.id === leadId);
     if (lead) {
-      const message = `Olá ${lead.nome}! Sou da Siqueira Campos Imóveis. Vi seu interesse e gostaria de conversar sobre opções de imóveis.`;
-      const whatsappUrl = `https://wa.me/55${lead.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, "_blank");
+      dashboardActions.contactLead(lead.telefone, "whatsapp");
     }
   };
 
@@ -1176,8 +1286,7 @@ export default function CorretorDashboard() {
   const handleViewProperty = (propertyId: string) => {
     const property = imoveis.find((p) => p.id === propertyId);
     if (property) {
-      // Abrir página de detalhes do imóvel
-      window.open(`/imovel/${propertyId}`, "_blank");
+      dashboardActions.viewProperty(propertyId);
     }
   };
 
@@ -1203,8 +1312,7 @@ export default function CorretorDashboard() {
   const handleScheduleVisit = (propertyId: string) => {
     const property = imoveis.find((p) => p.id === propertyId);
     if (property) {
-      setActiveTab("agenda");
-      alert(`Redirecionando para agenda para ${property.titulo}`);
+      dashboardActions.scheduleVisit(propertyId, "CORRETOR");
     }
   };
 
@@ -1280,7 +1388,7 @@ export default function CorretorDashboard() {
           id: "2",
           nome: "Carlos Santos",
           telefone: "(62) 9 9876-5432",
-          mensagem: "Procuro casa com piscina no Jardim Goi��s",
+          mensagem: "Procuro casa com piscina no Jardim Goiás",
           origem: "WHATSAPP",
           status: "ASSUMIDO",
           criadoEm: new Date(),
@@ -1366,6 +1474,8 @@ export default function CorretorDashboard() {
         </div>
       }
     >
+      <PremiumServiceAlert userRole="CORRETOR" />
+
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
@@ -1386,7 +1496,7 @@ export default function CorretorDashboard() {
           </TabsTrigger>
           <TabsTrigger value="agenda" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Agenda</span>
-            <span className="sm:hidden">��</span>
+            <span className="sm:hidden">📅</span>
           </TabsTrigger>
           <TabsTrigger value="vendas" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Vendas</span>
@@ -1394,7 +1504,7 @@ export default function CorretorDashboard() {
           </TabsTrigger>
           <TabsTrigger value="configuracoes" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Config</span>
-            <span className="sm:hidden">⚙���</span>
+            <span className="sm:hidden">⚙️</span>
           </TabsTrigger>
         </TabsList>
 
@@ -2354,7 +2464,7 @@ Siqueira Campos Imóveis
                     <h5 className="font-medium mb-3">Templates de Mensagens</h5>
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                       {[
-                        "🏠 Ol��! Tenho um imóvel perfeito para seu perfil. Gostaria de agendar uma visita?",
+                        "🏠 Olá! Tenho um imóvel perfeito para seu perfil. Gostaria de agendar uma visita?",
                         "📍 Ótima localização no Setor Bueno! Este apartamento pode ser o que você procura.",
                         "💰 Condições especiais de financiamento! Vamos conversar sobre as possibilidades?",
                         "🔑 Apartamento pronto para morar! Quando podemos agendar uma visita?",

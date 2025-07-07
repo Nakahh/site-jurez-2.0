@@ -24,6 +24,9 @@ import {
   Bell,
   FileText,
   X,
+  MessageSquare,
+  Instagram,
+  Zap,
 } from "lucide-react";
 import {
   generateSalesReport,
@@ -32,21 +35,12 @@ import {
 } from "@/utils/pdfGenerator";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useToast } from "@/hooks/use-toast";
-
-interface DashboardStats {
-  totalImoveis: number;
-  imoveisDisponiveis: number;
-  imoveisVendidos: number;
-  imoveisAlugados: number;
-  totalUsuarios: number;
-  corretoresAtivos: number;
-  leadsAtivos: number;
-  visitasAgendadas: number;
-  comissoesTotais: number;
-  comissoesPendentes: number;
-  faturamentoMes: number;
-  metaMensal: number;
-}
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  PremiumServiceAlert,
+  PremiumServiceBanner,
+} from "@/components/PremiumServiceAlert";
+import { useAdminDashboardData } from "@/services/dashboardDataService";
 
 interface Transacao {
   id: string;
@@ -60,7 +54,9 @@ interface Transacao {
 
 export default function AdminDashboard() {
   const { toast } = useToast();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const realData = useAdminDashboardData(); // Dados reais do serviço
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
@@ -84,6 +80,36 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     carregarDados();
+
+    // Escutar mudanças nos serviços premium e recarregar dados
+    const handleServiceToggle = (e: CustomEvent) => {
+      console.log("Admin Dashboard: Serviço premium alterado", e.detail);
+      // Forçar re-render para atualizar status dos serviços
+      setLoading(true);
+      setTimeout(() => setLoading(false), 500);
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key?.includes("Active")) {
+        // Forçar re-render quando serviços premium mudam
+        setLoading(true);
+        setTimeout(() => setLoading(false), 500);
+      }
+    };
+
+    window.addEventListener(
+      "premiumServiceToggled",
+      handleServiceToggle as EventListener,
+    );
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener(
+        "premiumServiceToggled",
+        handleServiceToggle as EventListener,
+      );
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   // Button functionality handlers
@@ -303,22 +329,7 @@ export default function AdminDashboard() {
 
   const carregarDados = async () => {
     try {
-      // Simular dados do dashboard admin
-      const statsSimuladas: DashboardStats = {
-        totalImoveis: 156,
-        imoveisDisponiveis: 89,
-        imoveisVendidos: 45,
-        imoveisAlugados: 22,
-        totalUsuarios: 234,
-        corretoresAtivos: 8,
-        leadsAtivos: 23,
-        visitasAgendadas: 12,
-        comissoesTotais: 125000,
-        comissoesPendentes: 45000,
-        faturamentoMes: 380000,
-        metaMensal: 500000,
-      };
-
+      // Simular dados de transações
       const transacoesSimuladas: Transacao[] = [
         {
           id: "1",
@@ -358,7 +369,7 @@ export default function AdminDashboard() {
         },
       ];
 
-      setStats(statsSimuladas);
+      // Usar realData do hook useAdminDashboardData() em vez de stats local
       setTransacoes(transacoesSimuladas);
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
@@ -462,15 +473,21 @@ export default function AdminDashboard() {
         </div>
       }
     >
+      <PremiumServiceAlert userRole="ADMIN" />
+
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1">
           <TabsTrigger value="overview" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Visão Geral</span>
-            <span className="sm:hidden">Visão</span>
+            <span className="sm:hidden">📊</span>
+          </TabsTrigger>
+          <TabsTrigger value="servicos" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Serviços</span>
+            <span className="sm:hidden">💎</span>
           </TabsTrigger>
           <TabsTrigger value="financeiro" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Financeiro</span>
@@ -490,39 +507,39 @@ export default function AdminDashboard() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Visão Geral */}
+        {/* Vis��o Geral */}
         <TabsContent value="overview" className="space-y-6">
-          {stats && (
+          {realData && (
             <>
-              {/* Cards de Estatísticas */}
+              {/* Cards de Estatísticas - Dados Reais */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 <StatsCard
                   title="Faturamento Mensal"
-                  value={formatCurrency(stats.faturamentoMes)}
+                  value={formatCurrency(realData.faturamentoMes)}
                   icon={DollarSign}
-                  description={`Meta: ${formatCurrency(stats.metaMensal)}`}
-                  trend={`${((stats.faturamentoMes / stats.metaMensal) * 100).toFixed(0)}% da meta`}
+                  description={`Meta: ${formatCurrency(realData.metaMensal)}`}
+                  trend={`${((realData.faturamentoMes / realData.metaMensal) * 100).toFixed(0)}% da meta`}
                   color="green"
                 />
                 <StatsCard
                   title="Total de Imóveis"
-                  value={stats.totalImoveis}
+                  value={realData.totalImoveis}
                   icon={Home}
-                  description={`${stats.imoveisDisponiveis} disponíveis`}
-                  trend="+12 este mês"
+                  description={`${realData.imoveisDisponiveis} disponíveis`}
+                  trend={`+${realData.imoveisVendidos + realData.imoveisAlugados} vendidos/alugados`}
                 />
                 <StatsCard
                   title="Usuários Ativos"
-                  value={stats.totalUsuarios}
+                  value={realData.totalUsuarios}
                   icon={Users}
-                  description={`${stats.corretoresAtivos} corretores ativos`}
+                  description={`${realData.corretoresAtivos} corretores ativos`}
                   trend="+5 novos esta semana"
                 />
                 <StatsCard
                   title="Leads Ativos"
-                  value={stats.leadsAtivos}
+                  value={realData.leadsAtivos}
                   icon={Activity}
-                  description={`${stats.visitasAgendadas} visitas agendadas`}
+                  description={`${realData.visitasAgendadas} visitas agendadas`}
                   trend="+8 hoje"
                 />
               </div>
@@ -542,28 +559,28 @@ export default function AdminDashboard() {
                       <div className="flex justify-between items-center">
                         <span>Vendas</span>
                         <span className="font-bold">
-                          {stats.imoveisVendidos}
+                          {realData.imoveisVendidos}
                         </span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
                         <div
                           className="bg-green-600 h-2 rounded-full"
                           style={{
-                            width: `${(stats.imoveisVendidos / 60) * 100}%`,
+                            width: `${(realData.imoveisVendidos / 60) * 100}%`,
                           }}
                         ></div>
                       </div>
                       <div className="flex justify-between items-center">
                         <span>Locações</span>
                         <span className="font-bold">
-                          {stats.imoveisAlugados}
+                          {realData.imoveisAlugados}
                         </span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
                         <div
                           className="bg-blue-600 h-2 rounded-full"
                           style={{
-                            width: `${(stats.imoveisAlugados / 30) * 100}%`,
+                            width: `${(realData.imoveisAlugados / 30) * 100}%`,
                           }}
                         ></div>
                       </div>
@@ -584,20 +601,21 @@ export default function AdminDashboard() {
                       <div className="flex justify-between items-center">
                         <span>Total Acumulado</span>
                         <span className="font-bold text-green-600">
-                          {formatCurrency(stats.comissoesTotais)}
+                          {formatCurrency(realData.comissoesTotais)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span>Pendentes</span>
                         <span className="font-bold text-orange-600">
-                          {formatCurrency(stats.comissoesPendentes)}
+                          {formatCurrency(realData.comissoesPendentes)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span>Pagas</span>
                         <span className="font-bold text-blue-600">
                           {formatCurrency(
-                            stats.comissoesTotais - stats.comissoesPendentes,
+                            realData.comissoesTotais -
+                              realData.comissoesPendentes,
                           )}
                         </span>
                       </div>
@@ -663,6 +681,240 @@ export default function AdminDashboard() {
           )}
         </TabsContent>
 
+        {/* Serviços Premium */}
+        <TabsContent value="servicos" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Gestão de Serviços Premium</h2>
+            <Button
+              onClick={() =>
+                navigate("/dashboard/desenvolvedor", {
+                  state: { activeTab: "premium" },
+                })
+              }
+              className="bg-gradient-to-r from-purple-600 to-blue-600"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Configurar Serviços
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* WhatsApp Business */}
+            <Card className="border-green-200">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <MessageSquare className="h-5 w-5 text-green-600" />
+                    <span>WhatsApp Business</span>
+                  </div>
+                  <Badge
+                    variant={
+                      localStorage.getItem("whatsapp-businessActive") === "true"
+                        ? "default"
+                        : "secondary"
+                    }
+                  >
+                    {localStorage.getItem("whatsapp-businessActive") === "true"
+                      ? "ATIVO"
+                      : "INATIVO"}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Automação completa de leads via WhatsApp com Evolution API
+                </p>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Preço mensal:</span>
+                    <span className="font-bold text-green-600">R$ 197,00</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    • Resposta automática • N8N Integration • Fallback 15min
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Meta Business */}
+            <Card className="border-blue-200">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Instagram className="h-5 w-5 text-pink-600" />
+                    <span>Meta Business</span>
+                  </div>
+                  <Badge
+                    variant={
+                      localStorage.getItem("meta-integrationActive") === "true"
+                        ? "default"
+                        : "secondary"
+                    }
+                  >
+                    {localStorage.getItem("meta-integrationActive") === "true"
+                      ? "ATIVO"
+                      : "INATIVO"}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Publicação automática no Instagram e Facebook
+                </p>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Preço mensal:</span>
+                    <span className="font-bold text-blue-600">R$ 197,00</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    • Auto-posting • Analytics • Campanhas automáticas
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Google Calendar */}
+            <Card className="border-orange-200">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-5 w-5 text-orange-600" />
+                    <span>Google Calendar</span>
+                  </div>
+                  <Badge
+                    variant={
+                      localStorage.getItem("google-calendarActive") === "true"
+                        ? "default"
+                        : "secondary"
+                    }
+                  >
+                    {localStorage.getItem("google-calendarActive") === "true"
+                      ? "ATIVO"
+                      : "INATIVO"}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Agendamento automático de visitas e sincronização
+                </p>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Preço mensal:</span>
+                    <span className="font-bold text-orange-600">R$ 97,00</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    • Sync automático • Lembretes • Convites
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* N8N Automation */}
+            <Card className="border-purple-200">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Zap className="h-5 w-5 text-purple-600" />
+                    <span>N8N Automation</span>
+                  </div>
+                  <Badge
+                    variant={
+                      localStorage.getItem("n8n-automationActive") === "true"
+                        ? "default"
+                        : "secondary"
+                    }
+                  >
+                    {localStorage.getItem("n8n-automationActive") === "true"
+                      ? "ATIVO"
+                      : "INATIVO"}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Automação completa de processos e integrações
+                </p>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Preço mensal:</span>
+                    <span className="font-bold text-purple-600">R$ 147,00</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    • Workflows ilimitados • APIs • Backup automático
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Resumo Financeiro */}
+          <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950 dark:to-blue-950">
+            <CardHeader>
+              <CardTitle>Resumo de Custos dos Serviços Premium</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">
+                    {localStorage.getItem("whatsapp-businessActive") === "true"
+                      ? "R$ 197"
+                      : "R$ 0"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">WhatsApp</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-blue-600">
+                    {localStorage.getItem("meta-integrationActive") === "true"
+                      ? "R$ 197"
+                      : "R$ 0"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Meta</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-orange-600">
+                    {localStorage.getItem("google-calendarActive") === "true"
+                      ? "R$ 97"
+                      : "R$ 0"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Calendar</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-purple-600">
+                    {localStorage.getItem("n8n-automationActive") === "true"
+                      ? "R$ 147"
+                      : "R$ 0"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">N8N</p>
+                </div>
+              </div>
+              <div className="border-t pt-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-semibold">Total Mensal:</span>
+                  <span className="text-2xl font-bold text-primary">
+                    R${" "}
+                    {(
+                      (localStorage.getItem("whatsapp-businessActive") ===
+                      "true"
+                        ? 197
+                        : 0) +
+                      (localStorage.getItem("meta-integrationActive") === "true"
+                        ? 197
+                        : 0) +
+                      (localStorage.getItem("google-calendarActive") === "true"
+                        ? 97
+                        : 0) +
+                      (localStorage.getItem("n8n-automationActive") === "true"
+                        ? 147
+                        : 0)
+                    ).toFixed(0)}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Financeiro */}
         <TabsContent value="financeiro" className="space-y-6">
           <div className="flex justify-between items-center">
@@ -692,7 +944,7 @@ export default function AdminDashboard() {
                 className="w-full sm:w-auto"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Nova Transação
+                Nova Transa��ão
               </Button>
             </div>
           </div>
@@ -888,7 +1140,9 @@ export default function AdminDashboard() {
                     <p className="text-sm font-medium text-muted-foreground">
                       Total de Imóveis
                     </p>
-                    <p className="text-3xl font-bold">{stats?.totalImoveis}</p>
+                    <p className="text-3xl font-bold">
+                      {realData.totalImoveis}
+                    </p>
                   </div>
                   <Home className="h-12 w-12 text-primary" />
                 </div>
@@ -903,7 +1157,7 @@ export default function AdminDashboard() {
                       Disponíveis
                     </p>
                     <p className="text-3xl font-bold text-green-600">
-                      {stats?.imoveisDisponiveis}
+                      {realData.imoveisDisponiveis}
                     </p>
                   </div>
                   <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -921,7 +1175,7 @@ export default function AdminDashboard() {
                       Vendidos
                     </p>
                     <p className="text-3xl font-bold text-blue-600">
-                      {stats?.imoveisVendidos}
+                      {realData.imoveisVendidos}
                     </p>
                   </div>
                   <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -939,7 +1193,7 @@ export default function AdminDashboard() {
                       Alugados
                     </p>
                     <p className="text-3xl font-bold text-orange-600">
-                      {stats?.imoveisAlugados}
+                      {realData.imoveisAlugados}
                     </p>
                   </div>
                   <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center">
@@ -1134,7 +1388,9 @@ export default function AdminDashboard() {
                     <p className="text-sm font-medium text-muted-foreground">
                       Total Usuários
                     </p>
-                    <p className="text-3xl font-bold">{stats?.totalUsuarios}</p>
+                    <p className="text-3xl font-bold">
+                      {realData.totalUsuarios}
+                    </p>
                   </div>
                   <Users className="h-12 w-12 text-primary" />
                 </div>
@@ -1149,7 +1405,7 @@ export default function AdminDashboard() {
                       Corretores Ativos
                     </p>
                     <p className="text-3xl font-bold text-green-600">
-                      {stats?.corretoresAtivos}
+                      {realData.corretoresAtivos}
                     </p>
                   </div>
                   <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -1167,9 +1423,7 @@ export default function AdminDashboard() {
                       Clientes
                     </p>
                     <p className="text-3xl font-bold text-blue-600">
-                      {stats
-                        ? stats?.totalUsuarios - stats?.corretoresAtivos - 2
-                        : 0}
+                      {realData.totalUsuarios - realData.corretoresAtivos - 2}
                     </p>
                   </div>
                   <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -1735,7 +1989,7 @@ export default function AdminDashboard() {
               </Button>
               <Button variant="outline" onClick={() => setShowNewModal(false)}>
                 <FileText className="h-4 w-4 mr-2" />
-                Relatório
+                Relat��rio
               </Button>
             </div>
             <Button
@@ -2322,8 +2576,8 @@ export default function AdminDashboard() {
                   {selectedPropertyImages.length > 0 && (
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground">
-                        {selectedPropertyImages.length} foto(s) selecionada(s) •
-                        A primeira foto será usada como capa
+                        {selectedPropertyImages.length} foto(s) selecionada(s)
+                        ��� A primeira foto será usada como capa
                       </p>
                       <Button
                         variant="outline"

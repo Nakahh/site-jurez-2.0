@@ -253,7 +253,7 @@ export function SharedNavigation({
                   navigate("/dashboard/marketing");
                 }}
               >
-                ���� Marketing
+                📊 Marketing
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
