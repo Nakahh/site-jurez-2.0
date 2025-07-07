@@ -495,12 +495,6 @@ export default function AssistenteDashboard() {
         </div>
       }
     >
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="p-6">
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
