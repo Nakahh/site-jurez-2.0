@@ -2207,8 +2207,17 @@ export default function AdminDashboard() {
                       onChange={(e) => {
                         const files = Array.from(e.target.files || []);
                         if (files.length > 0) {
+                          // Simular URLs das imagens para preview
+                          const newImages = files.map(
+                            (file, index) =>
+                              `https://images.unsplash.com/photo-${1560518883 + index}?w=200&h=150&fit=crop`,
+                          );
+                          setSelectedPropertyImages((prev) => [
+                            ...prev,
+                            ...newImages,
+                          ]);
                           alert(
-                            `${files.length} foto(s) selecionada(s): ${files.map((f) => f.name).join(", ")}`,
+                            `${files.length} foto(s) adicionada(s) com sucesso!`,
                           );
                         }
                       }}
