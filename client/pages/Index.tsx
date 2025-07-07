@@ -61,14 +61,16 @@ export default function Index() {
     // Add event listeners for custom events
     const handleScheduleVisit = (e: CustomEvent) => {
       const { propertyId, propertyTitle } = e.detail;
-      // You could trigger a modal or other action here
-      console.log("Schedule visit for:", propertyTitle);
+      const property = imoveisParaExibir.find((im) => im.id === propertyId);
+      setSelectedProperty(property);
+      setShowVisitModal(true);
     };
 
     const handleOpenChat = (e: CustomEvent) => {
       const { propertyId, propertyTitle } = e.detail;
-      // You could trigger a modal or other action here
-      console.log("Open chat for:", propertyTitle);
+      const property = imoveisParaExibir.find((im) => im.id === propertyId);
+      setSelectedProperty(property);
+      setShowChatModal(true);
     };
 
     window.addEventListener(
