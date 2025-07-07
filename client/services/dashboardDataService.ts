@@ -145,6 +145,15 @@ class DashboardDataService {
         this.notifySubscribers();
       }
     });
+
+    // Escuta eventos customizados de mudanças nos serviços premium
+    window.addEventListener("premiumServiceToggled", ((e: CustomEvent) => {
+      this.data.sistema.servicosAtivos = this.getActiveServicesCount();
+      console.log(
+        `Serviço ${e.detail.serviceName} ${e.detail.newStatus ? "ativado" : "desativado"}`,
+      );
+      this.notifySubscribers();
+    }) as EventListener);
   }
 
   private updateRealTimeData(): void {
