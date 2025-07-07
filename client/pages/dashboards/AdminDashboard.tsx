@@ -917,15 +917,46 @@ export default function AdminDashboard() {
                           </Badge>
                         </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4" />
+                      <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            console.log("Viewing property:", imovel.id)
+                          }
+                          className="w-full sm:w-auto"
+                        >
+                          <Eye className="h-4 w-4 mr-1 sm:mr-0" />
+                          <span className="sm:hidden">Ver</span>
                         </Button>
-                        <Button size="sm" variant="outline">
-                          <Edit className="h-4 w-4" />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            console.log("Editing property:", imovel.id)
+                          }
+                          className="w-full sm:w-auto"
+                        >
+                          <Edit className="h-4 w-4 mr-1 sm:mr-0" />
+                          <span className="sm:hidden">Editar</span>
                         </Button>
-                        <Button size="sm" variant="outline">
-                          <Trash2 className="h-4 w-4" />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (
+                              confirm(
+                                "Tem certeza que deseja excluir este imóvel?",
+                              )
+                            ) {
+                              console.log("Deleting property:", imovel.id);
+                              alert("Imóvel excluído com sucesso!");
+                            }
+                          }}
+                          className="w-full sm:w-auto text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1 sm:mr-0" />
+                          <span className="sm:hidden">Excluir</span>
                         </Button>
                       </div>
                     </div>
