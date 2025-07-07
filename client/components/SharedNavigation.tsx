@@ -48,17 +48,32 @@ export function SharedNavigation({
     variant === "dashboard" || location.pathname.startsWith("/dashboard");
 
   const handleDashboardNavigation = () => {
-    const userRole = localStorage.getItem("currentUserRole") || "ADMIN";
-    const dashboardRoutes: Record<string, string> = {
-      ADMIN: "/dashboard/admin",
-      CORRETOR: "/dashboard/corretor",
-      ASSISTENTE: "/dashboard/assistente",
-      MARKETING: "/dashboard/marketing",
-      DESENVOLVEDOR: "/dashboard/desenvolvedor",
-      CLIENTE: "/dashboard/cliente",
-    };
-    const targetRoute = dashboardRoutes[userRole] || "/dashboard/admin";
-    navigate(targetRoute);
+    try {
+      const userRole = localStorage.getItem("currentUserRole") || "ADMIN";
+      const dashboardRoutes: Record<string, string> = {
+        ADMIN: "/dashboard/admin",
+        CORRETOR: "/dashboard/corretor",
+        ASSISTENTE: "/dashboard/assistente",
+        MARKETING: "/dashboard/marketing",
+        DESENVOLVEDOR: "/dashboard/desenvolvedor",
+        CLIENTE: "/dashboard/cliente",
+      };
+      const targetRoute = dashboardRoutes[userRole] || "/dashboard/admin";
+
+      // Add debug logging
+      console.log(
+        "Navigating to dashboard:",
+        targetRoute,
+        "for role:",
+        userRole,
+      );
+
+      navigate(targetRoute);
+    } catch (error) {
+      console.error("Error navigating to dashboard:", error);
+      // Fallback navigation
+      navigate("/dashboard/admin");
+    }
   };
 
   const navigationItems = [
