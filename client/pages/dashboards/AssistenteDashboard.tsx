@@ -731,7 +731,7 @@ export default function AssistenteDashboard() {
                         <Label>Origem</Label>
                         <Select>
                           <SelectTrigger>
-                            <SelectValue placeholder="Como chegou até nós" />
+                            <SelectValue placeholder="Como chegou até n��s" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="site">Site</SelectItem>
@@ -1254,19 +1254,41 @@ export default function AssistenteDashboard() {
                   <CardTitle>Documentação e Guias</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() =>
+                      window.open("/manual-assistente.pdf", "_blank")
+                    }
+                  >
                     <BookOpen className="h-4 w-4 mr-2" />
                     Manual do Assistente
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() =>
+                      window.open("/processos-atendimento.pdf", "_blank")
+                    }
+                  >
                     <FileText className="h-4 w-4 mr-2" />
                     Processos de Atendimento
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => window.open("/guia-leads.pdf", "_blank")}
+                  >
                     <Users className="h-4 w-4 mr-2" />
                     Como Gerenciar Leads
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() =>
+                      window.open("/guia-agendamentos.pdf", "_blank")
+                    }
+                  >
                     <Calendar className="h-4 w-4 mr-2" />
                     Agendamento de Visitas
                   </Button>
