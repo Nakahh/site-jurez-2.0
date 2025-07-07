@@ -981,13 +981,31 @@ export default function CorretorDashboard() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="leads">Leads</TabsTrigger>
-          <TabsTrigger value="imoveis">Imóveis</TabsTrigger>
-          <TabsTrigger value="agenda">Agenda</TabsTrigger>
-          <TabsTrigger value="vendas">Vendas</TabsTrigger>
-          <TabsTrigger value="configuracoes">Config</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Visão Geral</span>
+            <span className="sm:hidden">📊</span>
+          </TabsTrigger>
+          <TabsTrigger value="leads" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Leads</span>
+            <span className="sm:hidden">👥</span>
+          </TabsTrigger>
+          <TabsTrigger value="imoveis" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Imóveis</span>
+            <span className="sm:hidden">🏠</span>
+          </TabsTrigger>
+          <TabsTrigger value="agenda" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Agenda</span>
+            <span className="sm:hidden">��</span>
+          </TabsTrigger>
+          <TabsTrigger value="vendas" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Vendas</span>
+            <span className="sm:hidden">💰</span>
+          </TabsTrigger>
+          <TabsTrigger value="configuracoes" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Config</span>
+            <span className="sm:hidden">⚙️</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* Visão Geral */}
