@@ -126,6 +126,9 @@ export default function AssistenteDashboard() {
   const [selectedPropertyImages, setSelectedPropertyImages] = useState<
     string[]
   >([]);
+  const [showAgendarVisita, setShowAgendarVisita] = useState(false);
+  const [showWhatsAppBusiness, setShowWhatsAppBusiness] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   useEffect(() => {
     carregarDados();
