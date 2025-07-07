@@ -1910,7 +1910,10 @@ export default function AdminDashboard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowNewPropertyModal(false)}
+                  onClick={() => {
+                    setShowNewPropertyModal(false);
+                    setSelectedPropertyImages([]);
+                  }}
                 >
                   <X className="h-4 w-4" />
                 </Button>
