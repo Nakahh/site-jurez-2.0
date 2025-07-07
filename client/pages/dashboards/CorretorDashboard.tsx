@@ -1138,22 +1138,16 @@ export default function CorretorDashboard() {
   const handleViewLead = (leadId: string) => {
     const lead = leads.find((l) => l.id === leadId);
     if (lead) {
-      alert(
-        `Visualizando lead: ${lead.nome}\nTelefone: ${lead.telefone}\nEmail: ${lead.email}\nMensagem: ${lead.mensagem}`,
-      );
+      setSelectedLeadCorretor(lead);
+      setShowViewLeadModal(true);
     }
   };
 
   const handleEditLead = (leadId: string) => {
     const lead = leads.find((l) => l.id === leadId);
     if (lead) {
-      const newName = prompt("Novo nome:", lead.nome);
-      if (newName) {
-        setLeads((prev) =>
-          prev.map((l) => (l.id === leadId ? { ...l, nome: newName } : l)),
-        );
-        alert("Lead atualizado com sucesso!");
-      }
+      setSelectedLeadCorretor(lead);
+      setShowEditLeadModal(true);
     }
   };
 
