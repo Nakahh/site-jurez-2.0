@@ -2098,6 +2098,411 @@ export default function CorretorDashboard() {
         onClose={() => setShowCadastrarLead(false)}
         onSuccess={carregarDados}
       />
+
+      {/* Modal de Agendamento de Visitas */}
+      {showAgendarVisita && selectedLeadCorretor && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-lg w-full">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold">Agendar Visita</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowAgendarVisita(false);
+                    setSelectedLeadCorretor(null);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="space-y-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  <h4 className="font-semibold">Cliente</h4>
+                  <p className="text-sm">{selectedLeadCorretor.nome}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedLeadCorretor.telefone}
+                  </p>
+                  {selectedLeadCorretor.email && (
+                    <p className="text-sm text-muted-foreground">
+                      {selectedLeadCorretor.email}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Data da Visita</Label>
+                  <Input
+                    type="date"
+                    min={new Date().toISOString().split("T")[0]}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Horário</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o horário" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="08:00">08:00</SelectItem>
+                      <SelectItem value="09:00">09:00</SelectItem>
+                      <SelectItem value="10:00">10:00</SelectItem>
+                      <SelectItem value="11:00">11:00</SelectItem>
+                      <SelectItem value="14:00">14:00</SelectItem>
+                      <SelectItem value="15:00">15:00</SelectItem>
+                      <SelectItem value="16:00">16:00</SelectItem>
+                      <SelectItem value="17:00">17:00</SelectItem>
+                      <SelectItem value="18:00">18:00</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Imóvel de Interesse</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o imóvel" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {imoveis.slice(0, 5).map((imovel) => (
+                        <SelectItem key={imovel.id} value={imovel.id}>
+                          {imovel.titulo} - {formatarPreco(imovel.preco)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Observações</Label>
+                  <Textarea
+                    placeholder="Observações sobre a visita..."
+                    className="h-20"
+                  />
+                </div>
+
+                <div className="space-y-3 border-t pt-4">
+                  <h5 className="font-medium">Confirmação Automática</h5>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="whatsapp-confirm-corretor"
+                        className="rounded"
+                        defaultChecked
+                      />
+                      <label
+                        htmlFor="whatsapp-confirm-corretor"
+                        className="text-sm"
+                      >
+                        Enviar confirmação via WhatsApp
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="email-confirm-corretor"
+                        className="rounded"
+                      />
+                      <label
+                        htmlFor="email-confirm-corretor"
+                        className="text-sm"
+                      >
+                        Enviar confirmação por email
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="calendar-reminder"
+                        className="rounded"
+                        defaultChecked
+                      />
+                      <label htmlFor="calendar-reminder" className="text-sm">
+                        Adicionar à minha agenda
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-2 mt-6">
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    // Simular agendamento
+                    const whatsappMessage = `Olá ${selectedLeadCorretor.nome}!
+
+Sua visita foi agendada com sucesso! 🏠
+
+📅 Data: [Data selecionada]
+🕐 Horário: [Horário selecionado]
+📍 Imóvel: [Imóvel selecionado]
+👨‍💼 Corretor: Juarez Siqueira Campos
+
+Qualquer dúvida, estou à disposição!
+
+Siqueira Campos Imóveis
+📱 (62) 9 8556-3505`;
+
+                    const phoneNumber = selectedLeadCorretor.telefone.replace(
+                      /\D/g,
+                      "",
+                    );
+                    window.open(
+                      `https://wa.me/55${phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`,
+                      "_blank",
+                    );
+
+                    alert(
+                      "✅ Visita agendada com sucesso!\n\nConfirmação enviada via WhatsApp.",
+                    );
+                    setShowAgendarVisita(false);
+                    setSelectedLeadCorretor(null);
+                  }}
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Agendar e Confirmar
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowAgendarVisita(false);
+                    setSelectedLeadCorretor(null);
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal WhatsApp Business */}
+      {showWhatsAppBusiness && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-5xl w-full max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold flex items-center">
+                  <MessageSquare className="h-6 w-6 mr-2 text-green-600" />
+                  WhatsApp Business - Central do Corretor
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowWhatsAppBusiness(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="overflow-y-auto max-h-[calc(90vh-140px)] p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Ações Rápidas do Corretor */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Ferramentas de Vendas
+                  </h4>
+
+                  <div className="space-y-3">
+                    <Button
+                      className="w-full justify-start bg-green-600 hover:bg-green-700"
+                      onClick={() => {
+                        window.open("https://web.whatsapp.com/", "_blank");
+                      }}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Abrir WhatsApp Web
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        const message =
+                          "🏠 Novos imóveis disponíveis na Siqueira Campos!\n\nOlá! Tenho ótimas oportunidades que podem interessar você. Gostaria de conhecer?";
+                        navigator.clipboard.writeText(message);
+                        alert("Mensagem de prospecção copiada!");
+                      }}
+                    >
+                      <Target className="h-4 w-4 mr-2" />
+                      Copiar Mensagem de Prospecção
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        const message =
+                          "Olá! Sou corretor da Siqueira Campos Imóveis. Vi que você tem interesse em imóveis. Como posso ajudá-lo a encontrar a casa dos seus sonhos?";
+                        navigator.clipboard.writeText(message);
+                        alert("Mensagem de apresentação copiada!");
+                      }}
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Mensagem de Apresentação
+                    </Button>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h5 className="font-medium mb-3">Templates de Mensagens</h5>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {[
+                        "🏠 Olá! Tenho um imóvel perfeito para seu perfil. Gostaria de agendar uma visita?",
+                        "📍 Ótima localização no Setor Bueno! Este apartamento pode ser o que você procura.",
+                        "💰 Condições especiais de financiamento! Vamos conversar sobre as possibilidades?",
+                        "🔑 Apartamento pronto para morar! Quando podemos agendar uma visita?",
+                        "📋 Documentação aprovada! Podemos dar início ao processo de compra.",
+                        "🎯 Investimento garantido! Este imóvel tem grande potencial de valorização.",
+                        "🏆 Oportunidade única! Imóvel com desconto especial para este mês.",
+                      ].map((msg, index) => (
+                        <div
+                          key={index}
+                          className="p-3 border rounded-lg hover:bg-muted cursor-pointer"
+                        >
+                          <p className="text-sm mb-2">{msg}</p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              navigator.clipboard.writeText(msg);
+                              alert("Mensagem copiada!");
+                            }}
+                          >
+                            Copiar Template
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Leads para Contato */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg border-b pb-2">
+                    Seus Leads - Contato Direto
+                  </h4>
+
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {leads.slice(0, 6).map((lead) => (
+                      <div key={lead.id} className="p-4 border rounded-lg">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h5 className="font-semibold">{lead.nome}</h5>
+                            <p className="text-sm text-muted-foreground">
+                              {lead.telefone}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {lead.origem} •{" "}
+                              {new Date(lead.criadoEm).toLocaleDateString(
+                                "pt-BR",
+                              )}
+                            </p>
+                          </div>
+                          <Badge
+                            className={
+                              lead.status === "NOVO"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-green-100 text-green-800"
+                            }
+                          >
+                            {lead.status}
+                          </Badge>
+                        </div>
+
+                        <p className="text-sm mb-3 line-clamp-2">
+                          {lead.mensagem}
+                        </p>
+
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
+                            onClick={() => {
+                              const message = `Olá ${lead.nome}! Sou Juarez da Siqueira Campos Imóveis. ${lead.mensagem ? `Vi sua mensagem: "${lead.mensagem}".` : ""} Como posso ajudá-lo a encontrar o imóvel ideal?`;
+                              const phoneNumber = lead.telefone.replace(
+                                /\D/g,
+                                "",
+                              );
+                              window.open(
+                                `https://wa.me/55${phoneNumber}?text=${encodeURIComponent(message)}`,
+                                "_blank",
+                              );
+                            }}
+                          >
+                            <MessageSquare className="h-3 w-3 mr-1" />
+                            WhatsApp
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedLeadCorretor(lead);
+                              setShowAgendarVisita(true);
+                              setShowWhatsAppBusiness(false);
+                            }}
+                          >
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Agendar
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Estatísticas do Corretor */}
+              <div className="border-t mt-6 pt-6">
+                <h4 className="font-semibold text-lg mb-4">
+                  Suas Estatísticas WhatsApp
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">
+                      {leads.length}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Leads Ativos
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">94%</div>
+                    <div className="text-sm text-muted-foreground">
+                      Taxa de Resposta
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">
+                      1.8h
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Tempo Médio Resposta
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {stats?.imoveisVendidos || 0}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Vendas via WhatsApp
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
