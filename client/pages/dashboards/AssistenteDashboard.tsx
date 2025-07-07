@@ -59,6 +59,7 @@ import { Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { WhatsAppIntegration } from "@/components/WhatsAppIntegration";
 import { CalendarIntegration } from "@/components/CalendarIntegration";
+import { useToast } from "@/hooks/use-toast";
 
 interface AssistenteStats {
   leadsAtribuidos: number;
