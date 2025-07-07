@@ -156,11 +156,7 @@ export default function AdminDashboard() {
       console.log("Downloading report:", reportId, tipo);
 
       // For demo purposes, generate a new report
-      const {
-        generateSalesReport,
-        generatePerformanceReport,
-        generateCustomReport,
-      } = await import("@/utils/pdfGenerator");
+      const { generateSalesReport, generatePerformanceReport, generateCustomReport } = await import("@/utils/pdfGenerator");
 
       switch (tipo.toLowerCase()) {
         case "vendas":
@@ -1498,6 +1494,78 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Modals */}
+      {showNotifications && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold mb-4">Notificações</h3>
+            <div className="space-y-3 mb-4">
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="font-medium">Novo lead recebido</p>
+                <p className="text-sm text-muted-foreground">João Silva interessado em apartamento</p>
+              </div>
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="font-medium">Visita agendada</p>
+                <p className="text-sm text-muted-foreground">Maria Santos - Casa Jardim Goiás</p>
+              </div>
+            </div>
+            <Button onClick={() => setShowNotifications(false)} className="w-full">
+              Fechar
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {showNewModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold mb-4">Criar Novo</h3>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <Button variant="outline" onClick={() => {setShowNewModal(false); handleNewProperty();}}>
+                <Home className="h-4 w-4 mr-2" />
+                Imóvel
+              </Button>
+              <Button variant="outline" onClick={() => {setShowNewModal(false); handleNewUser();}}>
+                <Users className="h-4 w-4 mr-2" />
+                Usuário
+              </Button>
+              <Button variant="outline" onClick={() => {setShowNewModal(false); handleNewTransaction();}}>
+                <DollarSign className="h-4 w-4 mr-2" />
+                Transação
+              </Button>
+              <Button variant="outline" onClick={() => setShowNewModal(false)}>
+                <FileText className="h-4 w-4 mr-2" />
+                Relatório
+              </Button>
+            </div>
+            <Button onClick={() => setShowNewModal(false)} variant="outline" className="w-full">
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {showHelpModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg max-w-lg w-full mx-4">
+            <h3 className="text-lg font-bold mb-4">Central de Ajuda</h3>
+            <div className="space-y-3 mb-4">
+              <div className="p-3 border rounded-lg">
+                <h4 className="font-medium">Como adicionar um imóvel?</h4>
+                <p className="text-sm text-muted-foreground">Vá em Imóveis > Novo Imóvel e preencha os dados</p>
+              </div>
+              <div className="p-3 border rounded-lg">
+                <h4 className="font-medium">Como gerar relatórios?</h4>
+                <p className="text-sm text-muted-foreground">Acesse a aba Relatórios e clique em baixar</p>
+              </div>
+            </div>
+            <Button onClick={() => setShowHelpModal(false)} className="w-full">
+              Fechar
+            </Button>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
