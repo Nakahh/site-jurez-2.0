@@ -54,6 +54,7 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { WhatsAppIntegration } from "@/components/WhatsAppIntegration";
 import { CalendarIntegration } from "@/components/CalendarIntegration";
 import { createDashboardActions } from "@/utils/dashboardActions";
+import { createAutoPost } from "@/components/MetaIntegration";
 
 // Types
 interface CorretorStats {
