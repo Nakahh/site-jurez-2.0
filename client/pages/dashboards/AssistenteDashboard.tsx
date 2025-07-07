@@ -50,6 +50,9 @@ import {
   Bell,
   UserCheck,
   CalendarCheck,
+  X,
+  Trash2,
+  DollarSign,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
@@ -747,7 +750,7 @@ export default function AssistenteDashboard() {
                           <SelectItem value="whatsapp">WhatsApp</SelectItem>
                           <SelectItem value="instagram">Instagram</SelectItem>
                           <SelectItem value="facebook">Facebook</SelectItem>
-                          <SelectItem value="indicacao">Indicação</SelectItem>
+                          <SelectItem value="indicacao">Indicaç��o</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
