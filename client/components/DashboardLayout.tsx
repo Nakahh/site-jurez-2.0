@@ -12,6 +12,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { createDashboardActions } from "@/utils/dashboardActions";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -81,6 +82,7 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const dashboardActions = createDashboardActions(navigate);
   const stats = getDashboardStats(userRole);
 
   // Get dashboard-specific quick actions
@@ -351,13 +353,7 @@ export function DashboardLayout({
               variant="outline"
               size="sm"
               className="w-full sm:w-auto"
-              onClick={() => {
-                const settingsTab =
-                  userRole === "ADMIN" ? "configuracoes" : "configuracoes";
-                navigate(`/dashboard/${userRole.toLowerCase()}`, {
-                  state: { activeTab: settingsTab },
-                });
-              }}
+              onClick={() => dashboardActions.openSettings(userRole)}
             >
               <Settings className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Configurações</span>
@@ -367,10 +363,7 @@ export function DashboardLayout({
               variant="outline"
               size="sm"
               className="w-full sm:w-auto"
-              onClick={() => {
-                // Open help documentation or support
-                window.open("/docs/help", "_blank");
-              }}
+              onClick={() => dashboardActions.openHelp()}
             >
               <HelpCircle className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Ajuda</span>
