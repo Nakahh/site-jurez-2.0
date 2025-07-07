@@ -11,7 +11,7 @@ import {
   Clock,
   CheckCircle,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -80,6 +80,7 @@ export function DashboardLayout({
   userRole = "ADMIN",
 }: DashboardLayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const stats = getDashboardStats(userRole);
 
   // Get dashboard-specific quick actions
@@ -87,31 +88,224 @@ export function DashboardLayout({
     switch (userRole) {
       case "CORRETOR":
         return [
-          { label: "Novo Lead", href: "#", icon: "👤" },
-          { label: "Agendar Visita", href: "#", icon: "📅" },
-          { label: "Cadastrar Imóvel", href: "/corretor/imoveis", icon: "🏠" },
-          { label: "Relatório de Vendas", href: "#", icon: "📊" },
+          {
+            label: "Novo Lead",
+            href: "/dashboard/corretor#leads",
+            icon: "👤",
+            action: () =>
+              navigate("/dashboard/corretor", {
+                state: { activeTab: "leads", showNew: true },
+              }),
+          },
+          {
+            label: "Agendar Visita",
+            href: "/dashboard/corretor#agendamentos",
+            icon: "📅",
+            action: () =>
+              navigate("/dashboard/corretor", {
+                state: { activeTab: "agendamentos", showNew: true },
+              }),
+          },
+          {
+            label: "Cadastrar Imóvel",
+            href: "/corretor/imoveis",
+            icon: "🏠",
+            action: () => navigate("/corretor/imoveis"),
+          },
+          {
+            label: "Relatório de Vendas",
+            href: "/dashboard/corretor#relatorios",
+            icon: "📊",
+            action: () =>
+              navigate("/dashboard/corretor", {
+                state: { activeTab: "relatorios" },
+              }),
+          },
         ];
       case "MARKETING":
         return [
-          { label: "Nova Campanha", href: "#", icon: "📱" },
-          { label: "Análise de Público", href: "#", icon: "👥" },
-          { label: "Post Social", href: "#", icon: "📸" },
-          { label: "Relatório ROI", href: "#", icon: "💰" },
+          {
+            label: "Nova Campanha",
+            href: "/dashboard/marketing#campanhas",
+            icon: "📱",
+            action: () =>
+              navigate("/dashboard/marketing", {
+                state: { activeTab: "campanhas", showNew: true },
+              }),
+          },
+          {
+            label: "Análise de Público",
+            href: "/dashboard/marketing#analytics",
+            icon: "👥",
+            action: () =>
+              navigate("/dashboard/marketing", {
+                state: { activeTab: "analytics" },
+              }),
+          },
+          {
+            label: "Post Social",
+            href: "/dashboard/marketing#conteudo",
+            icon: "📸",
+            action: () =>
+              navigate("/dashboard/marketing", {
+                state: { activeTab: "conteudo", showNew: true },
+              }),
+          },
+          {
+            label: "Relatório ROI",
+            href: "/dashboard/marketing#analytics",
+            icon: "💰",
+            action: () =>
+              navigate("/dashboard/marketing", {
+                state: { activeTab: "analytics" },
+              }),
+          },
         ];
       case "CLIENTE":
         return [
-          { label: "Buscar Imóveis", href: "/imoveis", icon: "🔍" },
-          { label: "Meus Favoritos", href: "#", icon: "❤️" },
-          { label: "Agendar Visita", href: "#", icon: "📅" },
-          { label: "Simulador", href: "/simulador", icon: "🧮" },
+          {
+            label: "Buscar Imóveis",
+            href: "/imoveis",
+            icon: "🔍",
+            action: () => navigate("/imoveis"),
+          },
+          {
+            label: "Meus Favoritos",
+            href: "/dashboard/cliente#favoritos",
+            icon: "❤️",
+            action: () =>
+              navigate("/dashboard/cliente", {
+                state: { activeTab: "favoritos" },
+              }),
+          },
+          {
+            label: "Agendar Visita",
+            href: "/dashboard/cliente#agendamentos",
+            icon: "📅",
+            action: () =>
+              navigate("/dashboard/cliente", {
+                state: { activeTab: "agendamentos", showNew: true },
+              }),
+          },
+          {
+            label: "Simulador",
+            href: "/simulador",
+            icon: "🧮",
+            action: () => navigate("/simulador"),
+          },
+        ];
+      case "ASSISTENTE":
+        return [
+          {
+            label: "Novo Lead",
+            href: "/dashboard/assistente#leads",
+            icon: "👤",
+            action: () =>
+              navigate("/dashboard/assistente", {
+                state: { activeTab: "leads", showNew: true },
+              }),
+          },
+          {
+            label: "Agendar Visita",
+            href: "/dashboard/assistente#agendamentos",
+            icon: "📅",
+            action: () =>
+              navigate("/dashboard/assistente", {
+                state: { activeTab: "agendamentos", showNew: true },
+              }),
+          },
+          {
+            label: "Tarefas",
+            href: "/dashboard/assistente#tarefas",
+            icon: "✅",
+            action: () =>
+              navigate("/dashboard/assistente", {
+                state: { activeTab: "tarefas" },
+              }),
+          },
+          {
+            label: "Relatórios",
+            href: "/dashboard/assistente#relatorios",
+            icon: "📊",
+            action: () =>
+              navigate("/dashboard/assistente", {
+                state: { activeTab: "relatorios" },
+              }),
+          },
+        ];
+      case "DESENVOLVEDOR":
+        return [
+          {
+            label: "Monitoramento",
+            href: "/dashboard/desenvolvedor#monitoramento",
+            icon: "📊",
+            action: () =>
+              navigate("/dashboard/desenvolvedor", {
+                state: { activeTab: "monitoramento" },
+              }),
+          },
+          {
+            label: "Backup",
+            href: "/dashboard/desenvolvedor#backup",
+            icon: "💾",
+            action: () =>
+              navigate("/dashboard/desenvolvedor", {
+                state: { activeTab: "backup" },
+              }),
+          },
+          {
+            label: "Logs",
+            href: "/dashboard/desenvolvedor#logs",
+            icon: "📝",
+            action: () =>
+              navigate("/dashboard/desenvolvedor", {
+                state: { activeTab: "logs" },
+              }),
+          },
+          {
+            label: "Configurações",
+            href: "/dashboard/desenvolvedor#configuracoes",
+            icon: "⚙️",
+            action: () =>
+              navigate("/dashboard/desenvolvedor", {
+                state: { activeTab: "configuracoes" },
+              }),
+          },
         ];
       default:
         return [
-          { label: "Relatórios", href: "#", icon: "📊" },
-          { label: "Configurações", href: "#", icon: "⚙️" },
-          { label: "Backup", href: "#", icon: "💾" },
-          { label: "Logs do Sistema", href: "#", icon: "📝" },
+          {
+            label: "Relatórios",
+            href: "/dashboard/admin#relatorios",
+            icon: "📊",
+            action: () =>
+              navigate("/dashboard/admin", {
+                state: { activeTab: "relatorios" },
+              }),
+          },
+          {
+            label: "Configurações",
+            href: "/dashboard/admin#configuracoes",
+            icon: "⚙️",
+            action: () =>
+              navigate("/dashboard/admin", {
+                state: { activeTab: "configuracoes" },
+              }),
+          },
+          {
+            label: "Backup",
+            href: "/dashboard/admin#backup",
+            icon: "💾",
+            action: () =>
+              navigate("/dashboard/admin", { state: { activeTab: "backup" } }),
+          },
+          {
+            label: "Logs do Sistema",
+            href: "/dashboard/admin#logs",
+            icon: "📝",
+            action: () =>
+              navigate("/dashboard/admin", { state: { activeTab: "logs" } }),
+          },
         ];
     }
   };
@@ -153,12 +347,31 @@ export function DashboardLayout({
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 lg:flex-shrink-0">
             {actions}
-            <Button variant="outline" size="sm" className="w-full sm:w-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full sm:w-auto"
+              onClick={() => {
+                const settingsTab =
+                  userRole === "ADMIN" ? "configuracoes" : "configuracoes";
+                navigate(`/dashboard/${userRole.toLowerCase()}`, {
+                  state: { activeTab: settingsTab },
+                });
+              }}
+            >
               <Settings className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Configurações</span>
               <span className="sm:hidden">Config</span>
             </Button>
-            <Button variant="outline" size="sm" className="w-full sm:w-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full sm:w-auto"
+              onClick={() => {
+                // Open help documentation or support
+                window.open("/docs/help", "_blank");
+              }}
+            >
               <HelpCircle className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Ajuda</span>
               <span className="sm:hidden">?</span>
@@ -214,14 +427,12 @@ export function DashboardLayout({
                 key={index}
                 variant="outline"
                 className="h-auto p-3 lg:p-4 flex flex-col items-center space-y-2 hover:bg-primary/5 min-h-[80px]"
-                asChild
+                onClick={action.action || (() => navigate(action.href))}
               >
-                <Link to={action.href}>
-                  <span className="text-xl lg:text-2xl">{action.icon}</span>
-                  <span className="text-xs text-center leading-tight line-clamp-2">
-                    {action.label}
-                  </span>
-                </Link>
+                <span className="text-xl lg:text-2xl">{action.icon}</span>
+                <span className="text-xs text-center leading-tight line-clamp-2">
+                  {action.label}
+                </span>
               </Button>
             ))}
           </div>
