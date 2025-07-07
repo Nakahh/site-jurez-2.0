@@ -785,7 +785,7 @@ function CriarImovelModal({
                     placeholder="Ex: Reformado recentemente&#10;Móveis planejados&#10;Varanda gourmet"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Digite uma caracter��stica por linha
+                    Digite uma característica por linha
                   </p>
                 </div>
               </div>
@@ -1332,7 +1332,7 @@ export default function CorretorDashboard() {
           id: "2",
           nome: "Carlos Santos",
           telefone: "(62) 9 9876-5432",
-          mensagem: "Procuro casa com piscina no Jardim Goi��s",
+          mensagem: "Procuro casa com piscina no Jardim Goiás",
           origem: "WHATSAPP",
           status: "ASSUMIDO",
           criadoEm: new Date(),
@@ -1440,7 +1440,7 @@ export default function CorretorDashboard() {
           </TabsTrigger>
           <TabsTrigger value="agenda" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Agenda</span>
-            <span className="sm:hidden">��</span>
+            <span className="sm:hidden">📅</span>
           </TabsTrigger>
           <TabsTrigger value="vendas" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Vendas</span>
@@ -1448,7 +1448,7 @@ export default function CorretorDashboard() {
           </TabsTrigger>
           <TabsTrigger value="configuracoes" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Config</span>
-            <span className="sm:hidden">⚙���</span>
+            <span className="sm:hidden">⚙️</span>
           </TabsTrigger>
         </TabsList>
 
@@ -2408,7 +2408,7 @@ Siqueira Campos Imóveis
                     <h5 className="font-medium mb-3">Templates de Mensagens</h5>
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                       {[
-                        "🏠 Ol��! Tenho um imóvel perfeito para seu perfil. Gostaria de agendar uma visita?",
+                        "🏠 Olá! Tenho um imóvel perfeito para seu perfil. Gostaria de agendar uma visita?",
                         "📍 Ótima localização no Setor Bueno! Este apartamento pode ser o que você procura.",
                         "💰 Condições especiais de financiamento! Vamos conversar sobre as possibilidades?",
                         "🔑 Apartamento pronto para morar! Quando podemos agendar uma visita?",
@@ -2556,7 +2556,7 @@ Siqueira Campos Imóveis
         </div>
       )}
 
-      {/* Modal de Visualiza��ão de Lead */}
+      {/* Modal de Visualização de Lead */}
       {showViewLeadModal && selectedLeadCorretor && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-background rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
