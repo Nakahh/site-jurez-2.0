@@ -22,6 +22,8 @@ import {
   Settings,
   Shield,
   Bell,
+  FileText,
+  X,
 } from "lucide-react";
 import {
   generateSalesReport,
