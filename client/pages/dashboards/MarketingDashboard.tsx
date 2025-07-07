@@ -60,6 +60,7 @@ import {
 } from "lucide-react";
 import { BlogManagement } from "@/components/BlogManagement";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { MetaIntegration } from "@/components/MetaIntegration";
 
 interface MarketingStats {
   visitasSite: number;
@@ -444,7 +445,7 @@ export default function MarketingDashboard() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1">
           <TabsTrigger value="overview" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Visão Geral</span>
             <span className="sm:hidden">📊</span>
@@ -456,6 +457,10 @@ export default function MarketingDashboard() {
           <TabsTrigger value="conteudo" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Conteúdo</span>
             <span className="sm:hidden">📝</span>
+          </TabsTrigger>
+          <TabsTrigger value="meta" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Meta</span>
+            <span className="sm:hidden">📘</span>
           </TabsTrigger>
           <TabsTrigger value="blog" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Blog</span>
@@ -1129,6 +1134,17 @@ export default function MarketingDashboard() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* Meta Integration */}
+        <TabsContent value="meta" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Integração Meta Business</h2>
+            <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
+              Premium - R$ 197,00/mês
+            </Badge>
+          </div>
+          <MetaIntegration userRole="MARKETING" />
         </TabsContent>
 
         {/* Blog */}
