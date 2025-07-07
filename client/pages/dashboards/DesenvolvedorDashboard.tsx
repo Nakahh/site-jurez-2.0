@@ -157,41 +157,23 @@ export default function DesenvolvedorDashboard() {
 
   useEffect(() => {
     carregarDados();
-    initializePremiumServices();
     const interval = setInterval(carregarDados, 30000); // Atualizar a cada 30s
     return () => clearInterval(interval);
   }, []);
 
-  const initializePremiumServices = () => {
-    // Inicializar status dos serviços premium do localStorage
-    setPremiumServices((prev) =>
-      prev.map((service) => {
-        const savedStatus = localStorage.getItem(`${service.id}Active`);
-        if (savedStatus !== null) {
-          return {
-            ...service,
-            active: savedStatus === "true",
-            status: savedStatus === "true" ? "ACTIVE" : "INACTIVE",
-          };
-        }
-        return service;
-      }),
-    );
-  };
-
   const carregarDados = async () => {
     try {
-      // Simular dados do sistema
+      // Dados do sistema com informações reais/simuladas mais realistas
       const statsSimuladas: SystemStats = {
-        uptime: "15d 8h 42m",
-        cpuUsage: Math.floor(Math.random() * 30) + 10,
-        memoryUsage: Math.floor(Math.random() * 40) + 30,
-        diskUsage: 67,
-        activeUsers: Math.floor(Math.random() * 50) + 20,
-        apiRequests: Math.floor(Math.random() * 1000) + 5000,
-        errorRate: Math.random() * 2,
-        responseTime: Math.floor(Math.random() * 100) + 50,
-        databaseConnections: Math.floor(Math.random() * 10) + 5,
+        uptime: "45d 12h 33m", // Mais realista para produção
+        cpuUsage: Math.floor(Math.random() * 20) + 15, // 15-35%
+        memoryUsage: Math.floor(Math.random() * 25) + 45, // 45-70%
+        diskUsage: 73, // Valor fixo mais realista
+        activeUsers: Math.floor(Math.random() * 30) + 25, // 25-55 usuários
+        apiRequests: Math.floor(Math.random() * 2000) + 8000, // 8k-10k requests
+        errorRate: Math.random() * 1.5, // 0-1.5% error rate
+        responseTime: Math.floor(Math.random() * 50) + 120, // 120-170ms
+        databaseConnections: Math.floor(Math.random() * 5) + 8, // 8-13 connections
         serverStatus: "ONLINE",
       };
 
@@ -296,13 +278,19 @@ export default function DesenvolvedorDashboard() {
         },
       ];
 
+      // Carregar serviços premium com status do localStorage
+      const getServiceStatus = (serviceId: string) => {
+        const savedStatus = localStorage.getItem(`${serviceId}Active`);
+        return savedStatus === "true";
+      };
+
       const premiumServicesSimulados: PremiumService[] = [
         {
           id: "whatsapp-business",
           name: "WhatsApp Business Integration",
           description:
             "Integração completa com Evolution API para automação de leads",
-          active: true,
+          active: getServiceStatus("whatsapp-business"),
           price: 197.0,
           features: [
             "Resposta automática de leads",
@@ -312,7 +300,7 @@ export default function DesenvolvedorDashboard() {
             "Notificações em tempo real",
             "N8N Integration Premium",
           ],
-          status: "ACTIVE",
+          status: getServiceStatus("whatsapp-business") ? "ACTIVE" : "INACTIVE",
           lastUpdated: new Date(),
         },
         {
@@ -320,7 +308,7 @@ export default function DesenvolvedorDashboard() {
           name: "Meta Business Integration",
           description:
             "Integração com Facebook e Instagram para publicação automática",
-          active: false,
+          active: getServiceStatus("meta-integration"),
           price: 197.0,
           features: [
             "Publicação automática Instagram/Facebook",
@@ -330,14 +318,14 @@ export default function DesenvolvedorDashboard() {
             "Analytics avançadas",
             "N8N Integration Premium",
           ],
-          status: "INACTIVE",
+          status: getServiceStatus("meta-integration") ? "ACTIVE" : "INACTIVE",
           lastUpdated: new Date(),
         },
         {
           id: "google-calendar",
           name: "Google Calendar Integration",
           description: "Agendamento automático de visitas com sincronização",
-          active: false,
+          active: getServiceStatus("google-calendar"),
           price: 97.0,
           features: [
             "Sincronização com Google Calendar",
@@ -347,14 +335,14 @@ export default function DesenvolvedorDashboard() {
             "Relatórios de agendamentos",
             "N8N Integration",
           ],
-          status: "INACTIVE",
+          status: getServiceStatus("google-calendar") ? "ACTIVE" : "INACTIVE",
           lastUpdated: new Date(),
         },
         {
           id: "n8n-automation",
           name: "N8N Automation Integration",
           description: "Automação completa de processos e integrações com APIs",
-          active: false,
+          active: getServiceStatus("n8n-automation"),
           price: 147.0,
           features: [
             "Workflows automáticos",
@@ -364,7 +352,7 @@ export default function DesenvolvedorDashboard() {
             "Backup de workflows",
             "Suporte técnico especializado",
           ],
-          status: "INACTIVE",
+          status: getServiceStatus("n8n-automation") ? "ACTIVE" : "INACTIVE",
           lastUpdated: new Date(),
         },
       ];
