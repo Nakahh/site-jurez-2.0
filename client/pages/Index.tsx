@@ -58,6 +58,33 @@ export default function Index() {
 
   useEffect(() => {
     carregarImoveisDestaque();
+
+    // Add event listeners for custom events
+    const handleScheduleVisit = (e: CustomEvent) => {
+      const { propertyId, propertyTitle } = e.detail;
+      // You could trigger a modal or other action here
+      console.log("Schedule visit for:", propertyTitle);
+    };
+
+    const handleOpenChat = (e: CustomEvent) => {
+      const { propertyId, propertyTitle } = e.detail;
+      // You could trigger a modal or other action here
+      console.log("Open chat for:", propertyTitle);
+    };
+
+    window.addEventListener(
+      "scheduleVisit",
+      handleScheduleVisit as EventListener,
+    );
+    window.addEventListener("openChat", handleOpenChat as EventListener);
+
+    return () => {
+      window.removeEventListener(
+        "scheduleVisit",
+        handleScheduleVisit as EventListener,
+      );
+      window.removeEventListener("openChat", handleOpenChat as EventListener);
+    };
   }, []);
 
   const carregarImoveisDestaque = async () => {
@@ -718,7 +745,7 @@ export default function Index() {
               Blog Imobiliário
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Fique por dentro das últimas tendências e dicas do mercado
+              Fique por dentro das últimas tend��ncias e dicas do mercado
               imobiliário
             </p>
           </div>
