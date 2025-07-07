@@ -516,7 +516,7 @@ export default function AssistenteDashboard() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1">
           <TabsTrigger value="overview" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Visão Geral</span>
             <span className="sm:hidden">📊</span>
@@ -532,6 +532,10 @@ export default function AssistenteDashboard() {
           <TabsTrigger value="tarefas" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Tarefas</span>
             <span className="sm:hidden">✓</span>
+          </TabsTrigger>
+          <TabsTrigger value="integracoes" className="text-xs sm:text-sm">
+            <span className="hidden sm:inline">Integrações</span>
+            <span className="sm:hidden">🔗</span>
           </TabsTrigger>
           <TabsTrigger value="suporte" className="text-xs sm:text-sm">
             <span className="hidden sm:inline">Suporte</span>
