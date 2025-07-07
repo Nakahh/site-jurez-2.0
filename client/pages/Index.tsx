@@ -36,11 +36,7 @@ import { PropertyCardSkeleton } from "@/components/LoadingSkeleton";
 import { NotificationSystem } from "@/components/NotificationSystem";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ShareButton } from "@/components/ShareButton";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import {
-  NotificationBell,
-  UserSwitcher,
-} from "@/components/NotificationSystem";
+import { SharedNavigation } from "@/components/SharedNavigation";
 import { FAQ } from "@/components/FAQ";
 import { ChatSystem, ScheduleVisitSystem } from "@/components/ChatSystem";
 
