@@ -68,6 +68,7 @@ import {
 } from "lucide-react";
 import { SystemMonitoring } from "@/components/SystemMonitoring";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface SystemStats {
   uptime: string;
@@ -140,6 +141,8 @@ interface ClientSubscription {
 }
 
 export default function DesenvolvedorDashboard() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [systemStats, setSystemStats] = useState<SystemStats | null>(null);
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
   const [backups, setBackups] = useState<BackupInfo[]>([]);
