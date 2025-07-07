@@ -298,7 +298,7 @@ export default function Index() {
               onClick={() => {
                 const userRole =
                   localStorage.getItem("currentUserRole") || "ADMIN";
-                const dashboardMap: Record<string, string> = {
+                const dashboardRoutes: Record<string, string> = {
                   ADMIN: "/dashboard/admin",
                   CORRETOR: "/dashboard/corretor",
                   ASSISTENTE: "/dashboard/assistente",
@@ -306,8 +306,9 @@ export default function Index() {
                   DESENVOLVEDOR: "/dashboard/desenvolvedor",
                   CLIENTE: "/dashboard/cliente",
                 };
-                window.location.href =
-                  dashboardMap[userRole] || "/dashboard/admin";
+                const targetRoute =
+                  dashboardRoutes[userRole] || "/dashboard/admin";
+                window.location.assign(targetRoute);
               }}
               className="text-xs h-8 w-8 p-0"
             >
@@ -885,7 +886,7 @@ export default function Index() {
             <Card className="overflow-hidden hover:shadow-lg transition-shadow border-0 bg-card/80">
               <img
                 src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=250&fit=crop"
-                alt="Tendências"
+                alt="Tend��ncias"
                 className="w-full h-48 object-cover"
               />
               <CardContent className="p-6">
