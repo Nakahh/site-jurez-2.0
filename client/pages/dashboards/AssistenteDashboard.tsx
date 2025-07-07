@@ -56,6 +56,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { WhatsAppIntegration } from "@/components/WhatsAppIntegration";
+import { CalendarIntegration } from "@/components/CalendarIntegration";
 
 interface AssistenteStats {
   leadsAtribuidos: number;
@@ -2360,7 +2362,7 @@ Siqueira Campos Imóveis
                       2.5h
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      Tempo Médio Resposta
+                      Tempo M��dio Resposta
                     </div>
                   </div>
                   <div className="text-center p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
