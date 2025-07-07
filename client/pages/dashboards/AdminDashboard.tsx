@@ -24,6 +24,9 @@ import {
   Bell,
   FileText,
   X,
+  MessageSquare,
+  Instagram,
+  Zap,
 } from "lucide-react";
 import {
   generateSalesReport,
