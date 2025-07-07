@@ -1438,9 +1438,7 @@ export default function AdminDashboard() {
                       Clientes
                     </p>
                     <p className="text-3xl font-bold text-blue-600">
-                      {stats
-                        ? stats?.totalUsuarios - stats?.corretoresAtivos - 2
-                        : 0}
+                      {realData.totalUsuarios - realData.corretoresAtivos - 2}
                     </p>
                   </div>
                   <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
