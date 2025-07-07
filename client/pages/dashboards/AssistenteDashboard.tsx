@@ -55,7 +55,7 @@ import {
   Trash2,
   DollarSign,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { WhatsAppIntegration } from "@/components/WhatsAppIntegration";
 import { CalendarIntegration } from "@/components/CalendarIntegration";
@@ -119,6 +119,8 @@ interface Tarefa {
 
 export default function AssistenteDashboard() {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [stats, setStats] = useState<AssistenteStats | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
@@ -2393,7 +2395,7 @@ Sua visita foi agendada com sucesso! 🏠
 📅 Data: [Data selecionada]
 🕐 Horário: [Horário selecionado]
 📍 Imóvel: [Imóvel selecionado]
-👨‍💼 Corretor: [Corretor responsável]
+���‍💼 Corretor: [Corretor responsável]
 
 Em caso de dúvidas, estou à disposição!
 
