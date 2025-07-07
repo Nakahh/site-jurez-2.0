@@ -64,6 +64,30 @@ export default function AdminDashboard() {
     carregarDados();
   }, []);
 
+  const handleViewReport = (reportId: string) => {
+    // Open report in new tab for viewing
+    const reportUrl = `/api/reports/${reportId}/view`;
+    window.open(reportUrl, "_blank");
+  };
+
+  const handleDownloadReport = async (reportId: string, tipo: string) => {
+    try {
+      // Simulate downloading existing report
+      const link = document.createElement("a");
+      link.href = `/api/reports/${reportId}/download`;
+      link.download = `relatorio-${tipo.toLowerCase()}-${reportId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // For demo purposes, generate a new report
+      await handleGenerateReport(tipo);
+    } catch (error) {
+      console.error("Erro ao baixar relatório:", error);
+      alert("Erro ao baixar relatório. Tente novamente.");
+    }
+  };
+
   const handleGenerateReport = async (tipo: string) => {
     try {
       switch (tipo) {
