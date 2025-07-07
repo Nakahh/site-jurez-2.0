@@ -1215,12 +1215,21 @@ export default function AssistenteDashboard() {
                       </div>
                       <div className="flex flex-col space-y-2">
                         {tarefa.status !== "CONCLUIDA" && (
-                          <Button size="sm">
+                          <Button
+                            size="sm"
+                            onClick={() => handleConcluirTarefa(tarefa.id)}
+                            title="Concluir tarefa"
+                          >
                             <CheckCircle className="h-4 w-4 mr-1" />
                             Concluir
                           </Button>
                         )}
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditarTarefa(tarefa.id)}
+                          title="Editar tarefa"
+                        >
                           <Edit className="h-4 w-4 mr-1" />
                           Editar
                         </Button>
