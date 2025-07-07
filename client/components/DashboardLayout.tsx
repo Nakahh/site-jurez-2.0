@@ -124,18 +124,22 @@ export function DashboardLayout({
 
       <div className="container mx-auto px-4 py-6">
         {/* Dashboard Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-          <div className="mb-4 lg:mb-0">
-            <div className="flex items-center space-x-3 mb-2">
-              <h1 className="text-3xl font-bold text-foreground">{title}</h1>
-              <Badge variant="secondary" className="h-6">
+        <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 mb-6 lg:mb-8">
+          <div className="flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+                {title}
+              </h1>
+              <Badge variant="secondary" className="h-6 w-fit">
                 {userRole}
               </Badge>
             </div>
             {subtitle && (
-              <p className="text-muted-foreground text-lg">{subtitle}</p>
+              <p className="text-muted-foreground text-base lg:text-lg">
+                {subtitle}
+              </p>
             )}
-            <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mt-2 text-sm text-muted-foreground">
               <div className="flex items-center space-x-1">
                 <Clock className="w-4 h-4" />
                 <span>Atualizado agora</span>
@@ -147,15 +151,17 @@ export function DashboardLayout({
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 lg:flex-shrink-0">
             {actions}
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto">
               <Settings className="w-4 h-4 mr-2" />
-              Configurações
+              <span className="hidden sm:inline">Configurações</span>
+              <span className="sm:hidden">Config</span>
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto">
               <HelpCircle className="w-4 h-4 mr-2" />
-              Ajuda
+              <span className="hidden sm:inline">Ajuda</span>
+              <span className="sm:hidden">?</span>
             </Button>
           </div>
         </div>
