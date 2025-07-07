@@ -67,6 +67,7 @@ import {
   Target,
 } from "lucide-react";
 import { SystemMonitoring } from "@/components/SystemMonitoring";
+import { DashboardLayout } from "@/components/DashboardLayout";
 
 interface SystemStats {
   uptime: string;
@@ -820,7 +821,7 @@ export default function DesenvolvedorDashboard() {
                     <div>
                       <Label>Autenticação de Dois Fatores</Label>
                       <p className="text-sm text-muted-foreground">
-                        Requer código adicional no login
+                        Requer c��digo adicional no login
                       </p>
                     </div>
                     <Switch defaultChecked />
