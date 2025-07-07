@@ -113,7 +113,7 @@ export class DashboardActions {
   }
 
   openHelp() {
-    window.open("/docs/help", "_blank");
+    this.navigate("/help");
   }
 
   // Marketing actions
