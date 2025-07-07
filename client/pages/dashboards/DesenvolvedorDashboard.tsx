@@ -360,18 +360,28 @@ export default function DesenvolvedorDashboard() {
       const clientSubscriptionsSimulados: ClientSubscription[] = [
         {
           id: "1",
-          clientName: "Siqueira Campos Imóveis",
+          clientName: "Siqueira Campos Im��veis",
           email: "admin@siqueicamposimoveis.com.br",
-          whatsappEnabled: true,
-          n8nEnabled: true,
-          googleCalendarEnabled: false,
+          whatsappEnabled: getServiceStatus("whatsapp-business"),
+          n8nEnabled: getServiceStatus("n8n-automation"),
+          googleCalendarEnabled: getServiceStatus("google-calendar"),
           expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           status: "ACTIVE",
         },
         {
           id: "2",
-          clientName: "Imobiliária Exemplo",
-          email: "contato@exemplo.com.br",
+          clientName: "Imobiliária Demo",
+          email: "demo@exemplo.com.br",
+          whatsappEnabled: false,
+          n8nEnabled: false,
+          googleCalendarEnabled: false,
+          expiryDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+          status: "ACTIVE",
+        },
+        {
+          id: "3",
+          clientName: "Imobiliária Teste",
+          email: "teste@exemplo.com.br",
           whatsappEnabled: false,
           n8nEnabled: false,
           googleCalendarEnabled: false,
@@ -1026,7 +1036,22 @@ export default function DesenvolvedorDashboard() {
           {/* Configuração N8N */}
           <Card>
             <CardHeader>
-              <CardTitle>Configuração N8N Server</CardTitle>
+              <CardTitle className="flex items-center justify-between">
+                Configuração N8N Server
+                <Badge
+                  variant={
+                    premiumServices.find((s) => s.id === "n8n-automation")
+                      ?.active
+                      ? "default"
+                      : "secondary"
+                  }
+                >
+                  {premiumServices.find((s) => s.id === "n8n-automation")
+                    ?.active
+                    ? "ATIVO"
+                    : "INATIVO"}
+                </Badge>
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <Alert>
@@ -1035,33 +1060,180 @@ export default function DesenvolvedorDashboard() {
                 <AlertDescription>
                   O N8N roda em VPS separada para garantir isolamento e controle
                   de pagamento. Configure as credenciais abaixo para integração.
+                  <strong>
+                    Os tokens Meta são necessários apenas se usar a integração
+                    Meta via N8N.
+                  </strong>
                 </AlertDescription>
               </Alert>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>URL do N8N Server</Label>
-                  <Input defaultValue="https://n8n.siqueicamposimoveis.com.br" />
-                </div>
-                <div className="space-y-2">
-                  <Label>API Key</Label>
-                  <Input
-                    type="password"
-                    defaultValue="****************************"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Evolution API URL</Label>
-                  <Input defaultValue="https://evolution.siqueicamposimoveis.com.br" />
-                </div>
-                <div className="space-y-2">
-                  <Label>OpenAI API Key</Label>
-                  <Input
-                    type="password"
-                    defaultValue="sk-****************************"
-                  />
-                </div>
-              </div>
+              <Tabs defaultValue="server" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="server">Servidor</TabsTrigger>
+                  <TabsTrigger value="apis">APIs</TabsTrigger>
+                  <TabsTrigger value="meta">Meta/WhatsApp</TabsTrigger>
+                  <TabsTrigger value="workflows">Workflows</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="server" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>URL do N8N Server</Label>
+                      <Input defaultValue="https://n8n.siqueicamposimoveis.com.br" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>API Key N8N</Label>
+                      <Input
+                        type="password"
+                        defaultValue="n8n_api_key_**********************"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Webhook Base URL</Label>
+                      <Input defaultValue="https://n8n.siqueicamposimoveis.com.br/webhook" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Timeout (segundos)</Label>
+                      <Input defaultValue="30" type="number" />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="apis" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Evolution API URL</Label>
+                      <Input defaultValue="https://evolution.siqueicamposimoveis.com.br" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Evolution API Key</Label>
+                      <Input
+                        type="password"
+                        defaultValue="evolution_api_******************"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>OpenAI API Key</Label>
+                      <Input
+                        type="password"
+                        defaultValue="sk-****************************"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Google Calendar API Key</Label>
+                      <Input
+                        type="password"
+                        defaultValue="google_calendar_**************"
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="meta" className="space-y-4">
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Configuração Meta via N8N</AlertTitle>
+                    <AlertDescription>
+                      Estes tokens Meta são necessários APENAS se você
+                      configurar a integração Meta através do N8N. Se usar a
+                      integração Meta direta do sistema, estes campos não são
+                      obrigatórios.
+                    </AlertDescription>
+                  </Alert>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Meta App ID</Label>
+                      <Input placeholder="ID do App Meta Business" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Meta App Secret</Label>
+                      <Input type="password" placeholder="Secret do App Meta" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Instagram Business Account ID</Label>
+                      <Input placeholder="ID da conta Instagram Business" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Facebook Page ID</Label>
+                      <Input placeholder="ID da página do Facebook" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Access Token (Meta)</Label>
+                      <Input
+                        type="password"
+                        placeholder="Token de acesso do Meta"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>WhatsApp Business Account ID</Label>
+                      <Input placeholder="ID da conta WhatsApp Business" />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="workflows" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">
+                          Workflows Ativos
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span>WhatsApp Auto-resposta</span>
+                            <Badge variant="default">Ativo</Badge>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Meta Auto-posting</span>
+                            <Badge variant="secondary">Inativo</Badge>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Calendar Integration</span>
+                            <Badge variant="default">Ativo</Badge>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Lead Distribution</span>
+                            <Badge variant="default">Ativo</Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">
+                          Estatísticas N8N
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span>Execuções hoje:</span>
+                            <span className="font-bold">247</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Execuções com sucesso:</span>
+                            <span className="font-bold text-green-600">
+                              234 (94.7%)
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Execuções com erro:</span>
+                            <span className="font-bold text-red-600">
+                              13 (5.3%)
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Tempo médio:</span>
+                            <span className="font-bold">1.2s</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+              </Tabs>
 
               <div className="flex space-x-2">
                 <Button variant="outline">
@@ -1071,6 +1243,10 @@ export default function DesenvolvedorDashboard() {
                 <Button>
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Salvar Configuração
+                </Button>
+                <Button variant="outline">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Sincronizar Workflows
                 </Button>
               </div>
             </CardContent>
