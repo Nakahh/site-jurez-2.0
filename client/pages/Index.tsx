@@ -51,6 +51,9 @@ export default function Index() {
   });
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [showVisitModal, setShowVisitModal] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
 
   useEffect(() => {
     carregarImoveisDestaque();
