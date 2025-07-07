@@ -698,6 +698,50 @@ export default function AssistenteDashboard() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Ações Rápidas */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card
+                  className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900"
+                  onClick={() => setShowCriarImovel(true)}
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Home className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-bold mb-2">Cadastrar Imóvel</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      Adicione um novo imóvel com todas as informações e fotos
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900">
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <MessageSquare className="h-8 w-8 text-green-600" />
+                    </div>
+                    <h3 className="text-lg font-bold mb-2">
+                      WhatsApp Business
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      Central de mensagens e atendimento via WhatsApp
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-950 dark:to-violet-900">
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CalendarCheck className="h-8 w-8 text-purple-600" />
+                    </div>
+                    <h3 className="text-lg font-bold mb-2">Agendar Visitas</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      Gerencie e organize todas as visitas dos clientes
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
             </>
           )}
         </TabsContent>
