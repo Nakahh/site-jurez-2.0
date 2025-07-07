@@ -200,25 +200,27 @@ export function DashboardLayout({
         )}
 
         {/* Quick Actions */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="mb-6 lg:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 mb-4">
             <h2 className="text-lg font-semibold">Ações Rápidas</h2>
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs w-fit">
               <Zap className="w-3 h-3 mr-1" />
               Atalhos
             </Badge>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {quickActions.map((action, index) => (
               <Button
                 key={index}
                 variant="outline"
-                className="h-auto p-4 flex flex-col items-center space-y-2 hover:bg-primary/5"
+                className="h-auto p-3 lg:p-4 flex flex-col items-center space-y-2 hover:bg-primary/5 min-h-[80px]"
                 asChild
               >
                 <Link to={action.href}>
-                  <span className="text-2xl">{action.icon}</span>
-                  <span className="text-xs text-center">{action.label}</span>
+                  <span className="text-xl lg:text-2xl">{action.icon}</span>
+                  <span className="text-xs text-center leading-tight line-clamp-2">
+                    {action.label}
+                  </span>
                 </Link>
               </Button>
             ))}
