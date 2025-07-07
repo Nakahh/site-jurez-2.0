@@ -64,6 +64,82 @@ export default function AdminDashboard() {
     carregarDados();
   }, []);
 
+  const handleGenerateReport = async (tipo: string) => {
+    try {
+      switch (tipo) {
+        case "Vendas":
+          const dadosVendas = [
+            {
+              imovel: "Apartamento Centro",
+              corretor: "Ana Silva",
+              valor: 350000,
+              data: "15/12/2024",
+            },
+            {
+              imovel: "Casa Jardim Goiás",
+              corretor: "João Santos",
+              valor: 450000,
+              data: "20/12/2024",
+            },
+            {
+              imovel: "Apartamento Setor Bueno",
+              corretor: "Maria Costa",
+              valor: 280000,
+              data: "22/12/2024",
+            },
+            {
+              imovel: "Casa Aldeia do Vale",
+              corretor: "Carlos Lima",
+              valor: 520000,
+              data: "28/12/2024",
+            },
+            {
+              imovel: "Apartamento Vila Nova",
+              corretor: "Ana Silva",
+              valor: 310000,
+              data: "30/12/2024",
+            },
+          ];
+          await generateSalesReport(dadosVendas);
+          break;
+        case "Performance":
+          const dadosPerformance = [
+            { nome: "Ana Silva", vendas: 8, volume: 2400000, comissao: 72000 },
+            {
+              nome: "João Santos",
+              vendas: 6,
+              volume: 1800000,
+              comissao: 54000,
+            },
+            {
+              nome: "Maria Costa",
+              vendas: 5,
+              volume: 1500000,
+              comissao: 45000,
+            },
+            {
+              nome: "Carlos Lima",
+              vendas: 4,
+              volume: 1200000,
+              comissao: 36000,
+            },
+          ];
+          await generatePerformanceReport(dadosPerformance);
+          break;
+        case "Financeiro":
+          // Generate financial report with custom layout
+          await generateCustomReport("financial-chart", "Relatório Financeiro");
+          break;
+        default:
+          alert("Tipo de relatório não reconhecido");
+      }
+      alert("Relatório gerado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao gerar relatório:", error);
+      alert("Erro ao gerar relatório. Tente novamente.");
+    }
+  };
+
   const carregarDados = async () => {
     try {
       // Simular dados do dashboard admin
@@ -847,7 +923,7 @@ export default function AdminDashboard() {
                       email: "assistente@siqueicamposimoveis.com.br",
                       papel: "ASSISTENTE",
                       ativo: true,
-                      ultimoLogin: "Hoje às 11:15",
+                      ultimoLogin: "Hoje ��s 11:15",
                       avatar: "M",
                     },
                     {
