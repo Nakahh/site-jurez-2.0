@@ -60,6 +60,7 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { WhatsAppIntegration } from "@/components/WhatsAppIntegration";
 import { CalendarIntegration } from "@/components/CalendarIntegration";
 import { useToast } from "@/hooks/use-toast";
+import { PremiumServiceAlert } from "@/components/PremiumServiceAlert";
 
 interface AssistenteStats {
   leadsAtribuidos: number;
@@ -522,6 +523,8 @@ export default function AssistenteDashboard() {
         </div>
       }
     >
+      <PremiumServiceAlert userRole="ASSISTENTE" />
+
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
@@ -1321,7 +1324,7 @@ export default function AssistenteDashboard() {
             </Badge>
           </div>
 
-          {/* Integrações WhatsApp e Google Calendar */}
+          {/* Integra��ões WhatsApp e Google Calendar */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <WhatsAppIntegration userRole="ASSISTENTE" />
             <CalendarIntegration userRole="ASSISTENTE" />
@@ -2395,7 +2398,7 @@ Sua visita foi agendada com sucesso! 🏠
 📅 Data: [Data selecionada]
 🕐 Horário: [Horário selecionado]
 📍 Imóvel: [Imóvel selecionado]
-���‍💼 Corretor: [Corretor responsável]
+👨‍💼 Corretor: [Corretor responsável]
 
 Em caso de dúvidas, estou à disposição!
 

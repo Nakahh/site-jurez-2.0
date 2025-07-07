@@ -55,6 +55,7 @@ import { WhatsAppIntegration } from "@/components/WhatsAppIntegration";
 import { CalendarIntegration } from "@/components/CalendarIntegration";
 import { createDashboardActions } from "@/utils/dashboardActions";
 import { createAutoPost } from "@/components/MetaIntegration";
+import { PremiumServiceAlert } from "@/components/PremiumServiceAlert";
 
 // Types
 interface CorretorStats {
@@ -2553,7 +2554,7 @@ Siqueira Campos Imóveis
         </div>
       )}
 
-      {/* Modal de Visualização de Lead */}
+      {/* Modal de Visualiza��ão de Lead */}
       {showViewLeadModal && selectedLeadCorretor && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-background rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
