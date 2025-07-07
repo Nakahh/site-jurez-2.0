@@ -320,13 +320,14 @@ export default function DesenvolvedorDashboard() {
           name: "Google Calendar Integration",
           description: "Agendamento automático de visitas com sincronização",
           active: false,
-          price: 47.0,
+          price: 97.0,
           features: [
             "Sincronização com Google Calendar",
             "Agendamento automático de visitas",
             "Lembretes por email e WhatsApp",
             "Gestão de disponibilidade",
             "Relatórios de agendamentos",
+            "N8N Integration",
           ],
           status: "INACTIVE",
           lastUpdated: new Date(),
@@ -371,21 +372,42 @@ export default function DesenvolvedorDashboard() {
 
   const togglePremiumService = async (serviceId: string) => {
     try {
-      // Simular toggle do serviço premium
+      const service = premiumServices.find((s) => s.id === serviceId);
+      const newStatus = !service?.active;
+
+      // Atualizar estado local
       setPremiumServices((prev) =>
         prev.map((service) =>
           service.id === serviceId
             ? {
                 ...service,
-                active: !service.active,
-                status: !service.active ? "ACTIVE" : "INACTIVE",
+                active: newStatus,
+                status: newStatus ? "ACTIVE" : "INACTIVE",
                 lastUpdated: new Date(),
               }
             : service,
         ),
       );
+
+      // Salvar no localStorage para persistir entre sessões
+      localStorage.setItem(`${serviceId}Active`, newStatus.toString());
+
+      // Ações específicas por serviço
+      if (serviceId === "meta-integration") {
+        localStorage.setItem("metaIntegrationActive", newStatus.toString());
+      } else if (serviceId === "whatsapp-business") {
+        localStorage.setItem("whatsappBusinessActive", newStatus.toString());
+      } else if (serviceId === "google-calendar") {
+        localStorage.setItem("googleCalendarActive", newStatus.toString());
+      }
+
+      alert(
+        `Serviço ${service?.name} ${newStatus ? "ativado" : "desativado"} com sucesso!\n` +
+          `${newStatus ? "Cobrança mensal: R$ " + (service?.price || 0).toFixed(2) : "Cobrança cancelada."}`,
+      );
     } catch (error) {
       console.error("Erro ao alterar serviço:", error);
+      alert("Erro ao alterar serviço. Tente novamente.");
     }
   };
 
