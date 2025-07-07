@@ -157,10 +157,22 @@ export default function Simulador() {
               Imóveis
             </Link>
             <Link
-              to="/sobre"
+              to="/blog"
               className="text-foreground hover:text-primary transition-colors"
             >
-              Sobre
+              Blog
+            </Link>
+            <Link
+              to="/comparador"
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Comparador
+            </Link>
+            <Link
+              to="/simulador"
+              className="text-foreground hover:text-primary transition-colors font-medium"
+            >
+              Simulador
             </Link>
             <Link
               to="/contato"
@@ -169,10 +181,10 @@ export default function Simulador() {
               Contato
             </Link>
             <Link
-              to="/simulador"
-              className="text-foreground hover:text-primary transition-colors font-medium"
+              to="/sobre"
+              className="text-foreground hover:text-primary transition-colors"
             >
-              Simulador
+              Sobre
             </Link>
           </nav>
 
@@ -600,10 +612,22 @@ export default function Simulador() {
                   Imóveis
                 </Link>
                 <Link
-                  to="/sobre"
+                  to="/blog"
                   className="block text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Sobre nós
+                  Blog
+                </Link>
+                <Link
+                  to="/comparador"
+                  className="block text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Comparador
+                </Link>
+                <Link
+                  to="/simulador"
+                  className="block text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Simulador
                 </Link>
                 <Link
                   to="/contato"
@@ -612,10 +636,10 @@ export default function Simulador() {
                   Contato
                 </Link>
                 <Link
-                  to="/simulador"
+                  to="/sobre"
                   className="block text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Simulador
+                  Sobre nós
                 </Link>
               </div>
             </div>

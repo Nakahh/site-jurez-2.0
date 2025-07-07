@@ -4,6 +4,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/ui/theme-provider";
+import { NotificationProvider } from "@/components/NotificationSystem";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
@@ -33,6 +35,10 @@ import {
 import { lazy, Suspense } from "react";
 const LazyCorretorLeads = lazy(() => import("./pages/CorretorLeads"));
 const LazyCorretorImoveis = lazy(() => import("./pages/CorretorImoveis"));
+const LazyAssistenteDashboard = lazy(
+  () => import("./pages/dashboards/AssistenteDashboard"),
+);
+const LazyBlogPost = lazy(() => import("./pages/BlogPost"));
 
 // Optimized QueryClient configuration
 const queryClient = new QueryClient({
@@ -132,60 +138,83 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LazyIndex />} />
-            <Route path="/login" element={<LazyLogin />} />
-            <Route path="/register" element={<LazyLogin />} />
-            <Route path="/sobre" element={<LazySobre />} />
-            <Route path="/contato" element={<LazyContato />} />
-            <Route path="/simulador" element={<LazySimulador />} />
-            <Route path="/desenvolvedor" element={<LazyDesenvolvedor />} />
-            <Route path="/blog" element={<LazyBlog />} />
-            <Route path="/imoveis" element={<LazyImoveis />} />
-            <Route path="/imovel/:id" element={<LazyImovel />} />
-            <Route path="/comparador" element={<LazyComparador />} />
-            <Route
-              path="/dashboard/corretor"
-              element={<LazyCorretorDashboard />}
-            />
-            <Route
-              path="/corretor/leads"
-              element={
-                <Suspense fallback={<div>Carregando...</div>}>
-                  <LazyCorretorLeads />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/corretor/imoveis"
-              element={
-                <Suspense fallback={<div>Carregando...</div>}>
-                  <LazyCorretorImoveis />
-                </Suspense>
-              }
-            />
-            <Route path="/dashboard/admin" element={<LazyAdminDashboard />} />
-            <Route
-              path="/dashboard/cliente"
-              element={<LazyClienteDashboard />}
-            />
-            <Route
-              path="/dashboard/marketing"
-              element={<LazyMarketingDashboard />}
-            />
-            <Route
-              path="/dashboard/desenvolvedor"
-              element={<LazyDesenvolvedorDashboard />}
-            />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<LazyNotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <ThemeProvider defaultTheme="system" storageKey="ui-theme">
+        <NotificationProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<LazyIndex />} />
+                <Route path="/login" element={<LazyLogin />} />
+                <Route path="/register" element={<LazyLogin />} />
+                <Route path="/sobre" element={<LazySobre />} />
+                <Route path="/contato" element={<LazyContato />} />
+                <Route path="/simulador" element={<LazySimulador />} />
+                <Route path="/desenvolvedor" element={<LazyDesenvolvedor />} />
+                <Route path="/blog" element={<LazyBlog />} />
+                <Route
+                  path="/blog/post/:id"
+                  element={
+                    <Suspense fallback={<div>Carregando...</div>}>
+                      <LazyBlogPost />
+                    </Suspense>
+                  }
+                />
+                <Route path="/imoveis" element={<LazyImoveis />} />
+                <Route path="/imovel/:id" element={<LazyImovel />} />
+                <Route path="/comparador" element={<LazyComparador />} />
+                <Route
+                  path="/dashboard/corretor"
+                  element={<LazyCorretorDashboard />}
+                />
+                <Route
+                  path="/corretor/leads"
+                  element={
+                    <Suspense fallback={<div>Carregando...</div>}>
+                      <LazyCorretorLeads />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/corretor/imoveis"
+                  element={
+                    <Suspense fallback={<div>Carregando...</div>}>
+                      <LazyCorretorImoveis />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/dashboard/admin"
+                  element={<LazyAdminDashboard />}
+                />
+                <Route
+                  path="/dashboard/cliente"
+                  element={<LazyClienteDashboard />}
+                />
+                <Route
+                  path="/dashboard/marketing"
+                  element={<LazyMarketingDashboard />}
+                />
+                <Route
+                  path="/dashboard/desenvolvedor"
+                  element={<LazyDesenvolvedorDashboard />}
+                />
+                <Route
+                  path="/dashboard/assistente"
+                  element={
+                    <Suspense fallback={<div>Carregando...</div>}>
+                      <LazyAssistenteDashboard />
+                    </Suspense>
+                  }
+                />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<LazyNotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </NotificationProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };

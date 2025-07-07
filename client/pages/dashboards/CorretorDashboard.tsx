@@ -46,8 +46,10 @@ import {
   CheckSquare,
   Star,
   Award,
+  MessageSquare,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { AdvancedCalendar } from "@/components/AdvancedCalendar";
 
 // Types
 interface CorretorStats {
@@ -733,6 +735,123 @@ export default function CorretorDashboard() {
     carregarDados();
   }, []);
 
+  // Funções para gerenciar leads
+  const handleViewLead = (leadId: string) => {
+    const lead = leads.find((l) => l.id === leadId);
+    if (lead) {
+      alert(
+        `Visualizando lead: ${lead.nome}\nTelefone: ${lead.telefone}\nEmail: ${lead.email}\nMensagem: ${lead.mensagem}`,
+      );
+    }
+  };
+
+  const handleEditLead = (leadId: string) => {
+    const lead = leads.find((l) => l.id === leadId);
+    if (lead) {
+      const newName = prompt("Novo nome:", lead.nome);
+      if (newName) {
+        setLeads((prev) =>
+          prev.map((l) => (l.id === leadId ? { ...l, nome: newName } : l)),
+        );
+        alert("Lead atualizado com sucesso!");
+      }
+    }
+  };
+
+  const handleCallLead = (leadId: string) => {
+    const lead = leads.find((l) => l.id === leadId);
+    if (lead) {
+      const phoneNumber = lead.telefone.replace(/\D/g, "");
+      window.open(`tel:${phoneNumber}`, "_self");
+    }
+  };
+
+  const handleWhatsAppLead = (leadId: string) => {
+    const lead = leads.find((l) => l.id === leadId);
+    if (lead) {
+      const message = `Olá ${lead.nome}! Sou da Siqueira Campos Imóveis. Vi seu interesse e gostaria de conversar sobre opções de imóveis.`;
+      const whatsappUrl = `https://wa.me/55${lead.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, "_blank");
+    }
+  };
+
+  // Funções para gerenciar imóveis
+  const handleViewProperty = (propertyId: string) => {
+    const property = imoveis.find((p) => p.id === propertyId);
+    if (property) {
+      window.open(`/imovel/${propertyId}`, "_blank");
+    }
+  };
+
+  const handleEditProperty = (propertyId: string) => {
+    const property = imoveis.find((p) => p.id === propertyId);
+    if (property) {
+      const newTitle = prompt("Novo título:", property.titulo);
+      if (newTitle) {
+        setImoveis((prev) =>
+          prev.map((p) =>
+            p.id === propertyId ? { ...p, titulo: newTitle } : p,
+          ),
+        );
+        alert("Imóvel atualizado com sucesso!");
+      }
+    }
+  };
+
+  const handleDeleteProperty = (propertyId: string) => {
+    if (
+      confirm(
+        "Tem certeza que deseja excluir este imóvel? Esta ação não pode ser desfeita.",
+      )
+    ) {
+      setImoveis((prev) => prev.filter((p) => p.id !== propertyId));
+      alert("Imóvel excluído com sucesso!");
+    }
+  };
+
+  const handleScheduleVisit = (propertyId: string) => {
+    const property = imoveis.find((p) => p.id === propertyId);
+    if (property) {
+      setActiveTab("agenda");
+      alert(`Redirecionando para agenda para ${property.titulo}`);
+    }
+  };
+
+  const handleGeneratePerformanceReport = async () => {
+    try {
+      const performanceData = [
+        {
+          nome: "Vendas Dezembro",
+          vendas: stats?.imoveisVendidos || 0,
+          volume: 850000,
+          comissao: 25500,
+        },
+        {
+          nome: "Performance Mensal",
+          vendas: stats?.leadsConvertidos || 0,
+          volume: 650000,
+          comissao: 19500,
+        },
+        {
+          nome: "Meta vs Realizado",
+          vendas: 5,
+          volume: stats?.vendaMes || 0,
+          comissao: stats?.minhasComissoes || 0,
+        },
+      ];
+
+      const { generatePerformanceReport } = await import(
+        "@/utils/pdfGenerator"
+      );
+      await generatePerformanceReport(performanceData);
+
+      alert("Relatório de performance gerado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao gerar relatório:", error);
+      alert("Erro ao gerar relatório. Tente novamente.");
+    }
+  };
+
   const carregarDados = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -770,7 +889,7 @@ export default function CorretorDashboard() {
           id: "2",
           nome: "Carlos Santos",
           telefone: "(62) 9 9876-5432",
-          mensagem: "Procuro casa com piscina no Jardim Goiás",
+          mensagem: "Procuro casa com piscina no Jardim Goi��s",
           origem: "WHATSAPP",
           status: "ASSUMIDO",
           criadoEm: new Date(),
@@ -1111,14 +1230,37 @@ export default function CorretorDashboard() {
                           </p>
                         </div>
                         <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewLead(lead.id)}
+                            title="Ver detalhes"
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditLead(lead.id)}
+                            title="Editar lead"
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCallLead(lead.id)}
+                            title="Ligar"
+                          >
                             <Phone className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleWhatsAppLead(lead.id)}
+                            title="WhatsApp"
+                          >
+                            <MessageSquare className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
@@ -1225,14 +1367,37 @@ export default function CorretorDashboard() {
                           </div>
                         </div>
                         <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewProperty(imovel.id)}
+                            title="Ver imóvel"
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditProperty(imovel.id)}
+                            title="Editar imóvel"
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteProperty(imovel.id)}
+                            title="Excluir imóvel"
+                          >
                             <Trash2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleScheduleVisit(imovel.id)}
+                            title="Agendar visita"
+                          >
+                            <Calendar className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
@@ -1245,125 +1410,11 @@ export default function CorretorDashboard() {
 
           {/* Agenda */}
           <TabsContent value="agenda" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Agenda de Visitas</h2>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Hoje
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtrar
-                </Button>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Agendar Visita
-                </Button>
-              </div>
-            </div>
-
-            {/* Calendar Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <StatsCard
-                title="Hoje"
-                value="3"
-                icon={Calendar}
-                description="Visitas agendadas"
-                color="blue"
-              />
-              <StatsCard
-                title="Esta Semana"
-                value={stats?.visitasAgendadas || 0}
-                icon={CalendarDays}
-                description="Total agendadas"
-                color="green"
-              />
-              <StatsCard
-                title="Realizadas"
-                value={stats?.visitasRealizadas || 0}
-                icon={CheckSquare}
-                description="Este mês"
-                color="yellow"
-              />
-              <StatsCard
-                title="Taxa Sucesso"
-                value="85%"
-                icon={Target}
-                description="Conversão"
-                color="purple"
-              />
-            </div>
-
-            {/* Lista de Agendamentos */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Próximas Visitas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {agendamentos.map((agendamento) => (
-                    <div
-                      key={agendamento.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                          <Calendar className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-bold">{agendamento.clienteNome}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {agendamento.clienteTelefone}
-                          </p>
-                          <p className="text-sm font-medium">
-                            {agendamento.imovelTitulo}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            <MapPin className="h-3 w-3 inline mr-1" />
-                            {agendamento.imovelEndereco}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                          <p className="font-bold">
-                            {agendamento.dataHora.toLocaleDateString("pt-BR")}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            <Clock className="h-3 w-3 inline mr-1" />
-                            {agendamento.dataHora.toLocaleTimeString("pt-BR", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </p>
-                          <Badge
-                            variant={
-                              agendamento.status === "AGENDADA"
-                                ? "default"
-                                : "secondary"
-                            }
-                          >
-                            {agendamento.status}
-                          </Badge>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Phone className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <AdvancedCalendar
+              userRole="CORRETOR"
+              userId={localStorage.getItem("userId") || "corretor1"}
+              userName={localStorage.getItem("userName") || "Corretor"}
+            />
           </TabsContent>
 
           {/* Vendas */}
@@ -1371,7 +1422,11 @@ export default function CorretorDashboard() {
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Performance de Vendas</h2>
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGeneratePerformanceReport}
+                >
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Relatório
                 </Button>

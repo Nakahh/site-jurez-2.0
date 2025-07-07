@@ -187,9 +187,9 @@ export default function Desenvolvedor() {
           <div className="max-w-4xl mx-auto">
             <div className="mb-8">
               <img
-                src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/ceo-kryonix-1fa447?format=webp&width=200"
-                alt="Vitor Jayme - CEO Kryonix"
-                className="w-32 h-32 rounded-full mx-auto mb-6 border-4 border-white shadow-xl object-cover"
+                src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/logo-kryonix-8ad11b?format=webp&width=300"
+                alt="Kryonix"
+                className="w-48 h-48 mx-auto mb-6 object-contain"
               />
               <h1 className="text-5xl md:text-7xl font-bold mb-6">
                 <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
@@ -339,34 +339,82 @@ export default function Desenvolvedor() {
                 </div>
               </div>
 
-              <Card className="p-8 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
-                <h3 className="text-xl font-bold mb-4 text-center">
-                  Por que escolher a Kryonix?
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                    <h4 className="font-semibold">Qualidade Garantida</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Código limpo e documentado
-                    </p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <Card className="p-8 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
+                  <h3 className="text-xl font-bold mb-4 text-center">
+                    Por que escolher a Kryonix?
+                  </h3>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="text-center">
+                      <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                      <h4 className="font-semibold">Qualidade Garantida</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Código limpo e documentado
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <Rocket className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                      <h4 className="font-semibold">Entrega Rápida</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Projetos no prazo
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <Shield className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+                      <h4 className="font-semibold">Suporte Completo</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Acompanhamento pós-entrega
+                      </p>
+                    </div>
                   </div>
+                </Card>
+
+                <Card className="p-8 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-950/20">
+                  <h3 className="text-xl font-bold mb-6 text-center">
+                    Conheça nosso CEO
+                  </h3>
                   <div className="text-center">
-                    <Rocket className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                    <h4 className="font-semibold">Entrega Rápida</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Projetos no prazo
+                    <img
+                      src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/ceo-kryonix-1fa447?format=webp&width=200"
+                      alt="Vitor Jayme - CEO Kryonix"
+                      className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-lg object-cover"
+                    />
+                    <h4 className="text-lg font-bold mb-2">
+                      Vitor Jayme Fernandes Ferreira
+                    </h4>
+                    <p className="text-primary font-semibold mb-2">
+                      CEO & Founder
                     </p>
-                  </div>
-                  <div className="text-center">
-                    <Shield className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                    <h4 className="font-semibold">Suporte Completo</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Acompanhamento pós-entrega
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Desenvolvedor Full Stack especialista em React, Node.js e
+                      Inteligência Artificial. Apaixonado por criar soluções
+                      inovadoras que transformam negócios.
                     </p>
+                    <div className="flex justify-center space-x-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <a
+                          href="https://wa.me/5517981805327"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <MessageCircle className="h-4 w-4 mr-1" />
+                          WhatsApp
+                        </a>
+                      </Button>
+                      <Button variant="outline" size="sm" asChild>
+                        <a
+                          href="https://instagram.com/kryon.ix"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Instagram className="h-4 w-4 mr-1" />
+                          Instagram
+                        </a>
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              </div>
             </div>
           </div>
         </section>

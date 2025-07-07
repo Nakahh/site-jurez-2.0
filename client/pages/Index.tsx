@@ -21,12 +21,28 @@ import {
   Filter,
   Star,
   CheckCircle,
+  BookOpen,
+  BarChart3,
+  HelpCircle,
+  Scale,
+  Menu,
+  X,
+  Eye,
 } from "lucide-react";
 import { Imovel, TipoImovel, Finalidade } from "@shared/types";
 import { ChatBubble } from "@/components/ChatBubble";
 import { EnhancedSearch } from "@/components/EnhancedSearch";
 import { PropertyCardSkeleton } from "@/components/LoadingSkeleton";
 import { NotificationSystem } from "@/components/NotificationSystem";
+import { FavoriteButton } from "@/components/FavoriteButton";
+import { ShareButton } from "@/components/ShareButton";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import {
+  NotificationBell,
+  UserSwitcher,
+} from "@/components/NotificationSystem";
+import { FAQ } from "@/components/FAQ";
+import { ChatSystem, ScheduleVisitSystem } from "@/components/ChatSystem";
 
 export default function Index() {
   const [imoveisDestaque, setImoveisDestaque] = useState<Imovel[]>([]);
@@ -38,9 +54,37 @@ export default function Index() {
     bairro: "",
   });
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     carregarImoveisDestaque();
+
+    // Add event listeners for custom events
+    const handleScheduleVisit = (e: CustomEvent) => {
+      const { propertyId, propertyTitle } = e.detail;
+      // You could trigger a modal or other action here
+      console.log("Schedule visit for:", propertyTitle);
+    };
+
+    const handleOpenChat = (e: CustomEvent) => {
+      const { propertyId, propertyTitle } = e.detail;
+      // You could trigger a modal or other action here
+      console.log("Open chat for:", propertyTitle);
+    };
+
+    window.addEventListener(
+      "scheduleVisit",
+      handleScheduleVisit as EventListener,
+    );
+    window.addEventListener("openChat", handleOpenChat as EventListener);
+
+    return () => {
+      window.removeEventListener(
+        "scheduleVisit",
+        handleScheduleVisit as EventListener,
+      );
+      window.removeEventListener("openChat", handleOpenChat as EventListener);
+    };
   }, []);
 
   const carregarImoveisDestaque = async () => {
@@ -146,10 +190,22 @@ export default function Index() {
               Imóveis
             </Link>
             <Link
-              to="/sobre"
+              to="/blog"
               className="text-foreground hover:text-primary transition-colors"
             >
-              Sobre
+              Blog
+            </Link>
+            <Link
+              to="/comparador"
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Comparador
+            </Link>
+            <Link
+              to="/simulador"
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Simulador
             </Link>
             <Link
               to="/contato"
@@ -158,33 +214,190 @@ export default function Index() {
               Contato
             </Link>
             <Link
-              to="/simulador"
+              to="/sobre"
               className="text-foreground hover:text-primary transition-colors"
             >
-              Simulador
+              Sobre
             </Link>
           </nav>
 
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" asChild>
-              <Link to="/login">Entrar</Link>
+          <div className="flex items-center space-x-1">
+            <UserSwitcher />
+            <NotificationBell />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const userRole =
+                  localStorage.getItem("currentUserRole") || "ADMIN";
+                const dashboardRoutes: Record<string, string> = {
+                  ADMIN: "/dashboard/admin",
+                  CORRETOR: "/dashboard/corretor",
+                  ASSISTENTE: "/dashboard/assistente",
+                  MARKETING: "/dashboard/marketing",
+                  DESENVOLVEDOR: "/dashboard/desenvolvedor",
+                  CLIENTE: "/dashboard/cliente",
+                };
+                const targetRoute =
+                  dashboardRoutes[userRole] || "/dashboard/admin";
+                window.location.assign(targetRoute);
+              }}
+              className="text-xs h-8 px-2"
+            >
+              📊
             </Button>
-            <Button asChild>
-              <Link to="/register">Cadastrar</Link>
-            </Button>
+            <ThemeToggle />
+
+            <div className="hidden md:flex items-center space-x-2">
+              <Button variant="outline" asChild>
+                <Link to="/login">Entrar</Link>
+              </Button>
+              <Button asChild>
+                <Link to="/register">Cadastrar</Link>
+              </Button>
+            </div>
           </div>
         </div>
+
+        {/* Mobile Header Layout */}
+        <div className="md:hidden flex items-center justify-between w-full">
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="h-8 w-8"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <Menu className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+
+          <Link to="/" className="flex items-center">
+            <img
+              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=120"
+              alt="Siqueira Campos Imóveis"
+              className="h-8 w-auto dark:hidden"
+            />
+            <img
+              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-escuro-e97fe8?format=webp&width=120"
+              alt="Siqueira Campos Imóveis"
+              className="hidden h-8 w-auto dark:block"
+            />
+          </Link>
+
+          <div className="flex items-center space-x-1">
+            <UserSwitcher />
+            <NotificationBell />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const userRole =
+                  localStorage.getItem("currentUserRole") || "ADMIN";
+                const dashboardRoutes: Record<string, string> = {
+                  ADMIN: "/dashboard/admin",
+                  CORRETOR: "/dashboard/corretor",
+                  ASSISTENTE: "/dashboard/assistente",
+                  MARKETING: "/dashboard/marketing",
+                  DESENVOLVEDOR: "/dashboard/desenvolvedor",
+                  CLIENTE: "/dashboard/cliente",
+                };
+                const targetRoute =
+                  dashboardRoutes[userRole] || "/dashboard/admin";
+                window.location.assign(targetRoute);
+              }}
+              className="text-xs h-8 w-8 p-0"
+            >
+              📊
+            </Button>
+            <ThemeToggle />
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t bg-card/95 backdrop-blur-sm">
+            <nav className="container mx-auto px-4 py-4 space-y-2">
+              <Link
+                to="/"
+                className="block py-2 text-foreground hover:text-primary transition-colors font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Início
+              </Link>
+              <Link
+                to="/imoveis"
+                className="block py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Imóveis
+              </Link>
+              <Link
+                to="/blog"
+                className="block py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Blog
+              </Link>
+              <Link
+                to="/comparador"
+                className="block py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Comparador
+              </Link>
+              <Link
+                to="/simulador"
+                className="block py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Simulador
+              </Link>
+              <Link
+                to="/contato"
+                className="block py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contato
+              </Link>
+              <Link
+                to="/sobre"
+                className="block py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Sobre
+              </Link>
+              <div className="pt-4 border-t border-border/50 space-y-2">
+                <Button variant="outline" className="w-full" asChild>
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                    Entrar
+                  </Link>
+                </Button>
+                <Button className="w-full" asChild>
+                  <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
+                    Cadastrar
+                  </Link>
+                </Button>
+              </div>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
-      <section className="relative h-[70vh] bg-gradient-to-r from-primary/90 to-primary/70 flex items-center justify-center overflow-hidden">
+      <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage:
-              "url('https://cdn.builder.io/o/assets%2Ff2a517b8d4884b66a8a5c1be8bd00feb%2F024ab83026b24724b5d807b621fddb43?alt=media&token=bfa483e0-f3df-415e-bfda-10acbcac68e2&apiKey=f2a517b8d4884b66a8a5c1be8bd00feb')",
+              "url('https://images.pexels.com/photos/8134821/pexels-photo-8134821.jpeg')",
           }}
         />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-black/20"></div>
         <div className="relative text-center text-white space-y-8 max-w-5xl px-4 z-10">
           <h1 className="text-4xl md:text-7xl font-bold tracking-tight animate-fade-in">
             Encontre seu próximo lar
@@ -236,20 +449,8 @@ export default function Index() {
                       className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute top-4 right-4 flex space-x-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="h-10 w-10 p-0 bg-white/90 hover:bg-white"
-                      >
-                        <Heart className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="h-10 w-10 p-0 bg-white/90 hover:bg-white"
-                      >
-                        <Share2 className="h-4 w-4" />
-                      </Button>
+                      <FavoriteButton imovelId={imovel.id} />
+                      <ShareButton imovelId={imovel.id} title={imovel.titulo} />
                     </div>
                     <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground font-semibold">
                       {imovel.finalidade === Finalidade.VENDA
@@ -295,21 +496,83 @@ export default function Index() {
                           </span>
                         )}
                       </div>
-                      <div className="flex space-x-2">
+                      <div className="space-y-3">
+                        {/* Botão principal */}
+                        <Button
+                          size="sm"
+                          className="w-full bg-primary hover:bg-primary/90 font-medium"
+                          asChild
+                        >
+                          <Link to={`/imovel/${imovel.id}`}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver Detalhes
+                          </Link>
+                        </Button>
+
+                        {/* Botões de ação em linha */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-8 flex items-center justify-center"
+                            onClick={() => {
+                              // Trigger schedule visit dialog
+                              const event = new CustomEvent("scheduleVisit", {
+                                detail: {
+                                  propertyId: imovel.id,
+                                  propertyTitle: imovel.titulo,
+                                },
+                              });
+                              window.dispatchEvent(event);
+                            }}
+                          >
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Visita
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-8 flex items-center justify-center"
+                            onClick={() => {
+                              // Trigger chat dialog
+                              const event = new CustomEvent("openChat", {
+                                detail: {
+                                  propertyId: imovel.id,
+                                  propertyTitle: imovel.titulo,
+                                },
+                              });
+                              window.dispatchEvent(event);
+                            }}
+                          >
+                            <MessageCircle className="h-3 w-3 mr-1" />
+                            Chat
+                          </Button>
+                        </div>
+
+                        {/* Botão de compartilhar */}
                         <Button
                           size="sm"
                           variant="outline"
-                          className="hover:bg-primary hover:text-primary-foreground"
+                          className="w-full text-xs h-8 flex items-center justify-center"
+                          onClick={() => {
+                            if (navigator.share) {
+                              navigator.share({
+                                title: imovel.titulo,
+                                text: `Confira este imóvel: ${imovel.titulo}`,
+                                url: `${window.location.origin}/imovel/${imovel.id}`,
+                              });
+                            } else {
+                              navigator.clipboard.writeText(
+                                `${window.location.origin}/imovel/${imovel.id}`,
+                              );
+                              alert(
+                                "Link copiado para a área de transferência!",
+                              );
+                            }
+                          }}
                         >
-                          <Calendar className="h-4 w-4 mr-1" />
-                          Agendar
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          <MessageCircle className="h-4 w-4 mr-1" />
-                          Contato
+                          <Share2 className="h-3 w-3 mr-1" />
+                          Compartilhar
                         </Button>
                       </div>
                     </div>
@@ -388,16 +651,19 @@ export default function Index() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <Card className="p-8 text-center hover:shadow-lg transition-shadow border-0 bg-card/50">
               <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
                 <Home className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold mb-4">Compra e Venda</h3>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground mb-4">
                 Assessoria completa para compra e venda de imóveis com toda
                 segurança jurídica e transparência.
               </p>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/imoveis">Ver Imóveis</Link>
+              </Button>
             </Card>
 
             <Card className="p-8 text-center hover:shadow-lg transition-shadow border-0 bg-card/50">
@@ -405,10 +671,13 @@ export default function Index() {
                 <Building className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold mb-4">Locação</h3>
-              <p className="text-muted-foreground">
-                Gestão completa de locação com contratos seguros e
+              <p className="text-muted-foreground mb-4">
+                Gestão completa de loca��ão com contratos seguros e
                 acompanhamento personalizado.
               </p>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/imoveis">Ver Aluguéis</Link>
+              </Button>
             </Card>
 
             <Card className="p-8 text-center hover:shadow-lg transition-shadow border-0 bg-card/50">
@@ -416,10 +685,27 @@ export default function Index() {
                 <DollarSign className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold mb-4">Financiamento</h3>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground mb-4">
                 Parcerias com os principais bancos para as melhores condições de
                 financiamento.
               </p>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/simulador">Simular</Link>
+              </Button>
+            </Card>
+
+            <Card className="p-8 text-center hover:shadow-lg transition-shadow border-0 bg-card/50">
+              <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                <Scale className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">Comparador</h3>
+              <p className="text-muted-foreground mb-4">
+                Compare diferentes imóveis lado a lado para tomar a melhor
+                decisão de compra.
+              </p>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/comparador">Comparar</Link>
+              </Button>
             </Card>
           </div>
         </div>
@@ -521,6 +807,128 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Blog Preview */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              Blog Imobiliário
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              Fique por dentro das últimas tendências e dicas do mercado
+              imobiliário
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow border-0 bg-card/80">
+              <img
+                src="https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=400&h=250&fit=crop"
+                alt="Investimento Imobiliário"
+                className="w-full h-48 object-cover"
+              />
+              <CardContent className="p-6">
+                <Badge className="mb-4 bg-primary text-primary-foreground">
+                  Investimento
+                </Badge>
+                <h3 className="text-xl font-bold mb-3">
+                  Como Escolher o Imóvel Ideal para Investimento
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Descubra as melhores estratégias para investir no mercado
+                  imobiliário goiano e maximize seus retornos.
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    <span className="text-sm text-muted-foreground">
+                      8 min de leitura
+                    </span>
+                  </div>
+                  <Button variant="link" size="sm" asChild>
+                    <Link to="/blog">Ler mais</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow border-0 bg-card/80">
+              <img
+                src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=250&fit=crop"
+                alt="Documentação"
+                className="w-full h-48 object-cover"
+              />
+              <CardContent className="p-6">
+                <Badge className="mb-4 bg-primary text-primary-foreground">
+                  Documentação
+                </Badge>
+                <h3 className="text-xl font-bold mb-3">
+                  Documentos para Comprar seu Primeiro Imóvel
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Guia completo com todos os documentos necessários para
+                  realizar a compra do seu primeiro imóvel.
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    <span className="text-sm text-muted-foreground">
+                      5 min de leitura
+                    </span>
+                  </div>
+                  <Button variant="link" size="sm" asChild>
+                    <Link to="/blog">Ler mais</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow border-0 bg-card/80">
+              <img
+                src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=250&fit=crop"
+                alt="Tend��ncias"
+                className="w-full h-48 object-cover"
+              />
+              <CardContent className="p-6">
+                <Badge className="mb-4 bg-primary text-primary-foreground">
+                  Mercado
+                </Badge>
+                <h3 className="text-xl font-bold mb-3">
+                  Tendências do Mercado Imobiliário em 2024
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Análise das principais tendências que estão moldando o mercado
+                  imobiliário brasileiro neste ano.
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    <span className="text-sm text-muted-foreground">
+                      6 min de leitura
+                    </span>
+                  </div>
+                  <Button variant="link" size="sm" asChild>
+                    <Link to="/blog">Ler mais</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center mt-12">
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/blog">
+                <BookOpen className="mr-2 h-5 w-5" />
+                Ver todos os artigos
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <FAQ />
+
       {/* Footer */}
       <footer className="bg-card border-t py-16">
         <div className="container mx-auto px-4">
@@ -556,16 +964,16 @@ export default function Index() {
                   Imóveis
                 </Link>
                 <Link
-                  to="/sobre"
+                  to="/blog"
                   className="block text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Sobre nós
+                  Blog
                 </Link>
                 <Link
-                  to="/contato"
+                  to="/comparador"
                   className="block text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Contato
+                  Comparador
                 </Link>
                 <Link
                   to="/simulador"
@@ -574,10 +982,16 @@ export default function Index() {
                   Simulador
                 </Link>
                 <Link
-                  to="/blog"
+                  to="/contato"
                   className="block text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Blog
+                  Contato
+                </Link>
+                <Link
+                  to="/sobre"
+                  className="block text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Sobre nós
                 </Link>
               </div>
             </div>

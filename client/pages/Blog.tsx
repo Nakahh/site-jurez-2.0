@@ -246,10 +246,23 @@ export default function Blog() {
                 Início
               </Link>
               <Link
-                to="/sobre"
+                to="/imoveis"
                 className="text-amber-700 hover:text-amber-900 transition-colors"
               >
-                Sobre
+                Imóveis
+              </Link>
+              <span className="text-amber-900 font-medium">Blog</span>
+              <Link
+                to="/comparador"
+                className="text-amber-700 hover:text-amber-900 transition-colors"
+              >
+                Comparador
+              </Link>
+              <Link
+                to="/simulador"
+                className="text-amber-700 hover:text-amber-900 transition-colors"
+              >
+                Simulador
               </Link>
               <Link
                 to="/contato"
@@ -257,7 +270,12 @@ export default function Blog() {
               >
                 Contato
               </Link>
-              <span className="text-amber-900 font-medium">Blog</span>
+              <Link
+                to="/sobre"
+                className="text-amber-700 hover:text-amber-900 transition-colors"
+              >
+                Sobre
+              </Link>
             </nav>
             <Button className="bg-amber-600 hover:bg-amber-700 text-white">
               <Home className="w-4 h-4 mr-2" />
@@ -340,9 +358,12 @@ export default function Blog() {
                       <Button
                         variant="outline"
                         className="border-amber-300 text-amber-700 hover:bg-amber-50"
+                        asChild
                       >
-                        Ler mais
-                        <ArrowRight className="w-4 h-4 ml-2" />
+                        <Link to={`/blog/post/${article.id}`}>
+                          Ler mais
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Link>
                       </Button>
                     </div>
                   </CardContent>
@@ -450,9 +471,12 @@ export default function Blog() {
                       size="sm"
                       variant="outline"
                       className="w-full border-amber-300 text-amber-700 hover:bg-amber-50"
+                      asChild
                     >
-                      <FileText className="w-3 h-3 mr-2" />
-                      Ler artigo completo
+                      <Link to={`/blog/post/${article.id}`}>
+                        <FileText className="w-3 h-3 mr-2" />
+                        Ler artigo completo
+                      </Link>
                     </Button>
                   </CardContent>
                 </Card>

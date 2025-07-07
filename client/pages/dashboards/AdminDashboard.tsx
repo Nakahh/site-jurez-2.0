@@ -23,6 +23,11 @@ import {
   Shield,
   Bell,
 } from "lucide-react";
+import {
+  generateSalesReport,
+  generatePerformanceReport,
+  generateCustomReport,
+} from "@/utils/pdfGenerator";
 
 interface DashboardStats {
   totalImoveis: number;
@@ -58,6 +63,106 @@ export default function AdminDashboard() {
   useEffect(() => {
     carregarDados();
   }, []);
+
+  const handleViewReport = (reportId: string) => {
+    // Open report in new tab for viewing
+    const reportUrl = `/api/reports/${reportId}/view`;
+    window.open(reportUrl, "_blank");
+  };
+
+  const handleDownloadReport = async (reportId: string, tipo: string) => {
+    try {
+      // Simulate downloading existing report
+      const link = document.createElement("a");
+      link.href = `/api/reports/${reportId}/download`;
+      link.download = `relatorio-${tipo.toLowerCase()}-${reportId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // For demo purposes, generate a new report
+      await handleGenerateReport(tipo);
+    } catch (error) {
+      console.error("Erro ao baixar relatório:", error);
+      alert("Erro ao baixar relatório. Tente novamente.");
+    }
+  };
+
+  const handleGenerateReport = async (tipo: string) => {
+    try {
+      switch (tipo) {
+        case "Vendas":
+          const dadosVendas = [
+            {
+              imovel: "Apartamento Centro",
+              corretor: "Ana Silva",
+              valor: 350000,
+              data: "15/12/2024",
+            },
+            {
+              imovel: "Casa Jardim Goiás",
+              corretor: "João Santos",
+              valor: 450000,
+              data: "20/12/2024",
+            },
+            {
+              imovel: "Apartamento Setor Bueno",
+              corretor: "Maria Costa",
+              valor: 280000,
+              data: "22/12/2024",
+            },
+            {
+              imovel: "Casa Aldeia do Vale",
+              corretor: "Carlos Lima",
+              valor: 520000,
+              data: "28/12/2024",
+            },
+            {
+              imovel: "Apartamento Vila Nova",
+              corretor: "Ana Silva",
+              valor: 310000,
+              data: "30/12/2024",
+            },
+          ];
+          await generateSalesReport(dadosVendas);
+          break;
+        case "Performance":
+          const dadosPerformance = [
+            { nome: "Ana Silva", vendas: 8, volume: 2400000, comissao: 72000 },
+            {
+              nome: "João Santos",
+              vendas: 6,
+              volume: 1800000,
+              comissao: 54000,
+            },
+            {
+              nome: "Maria Costa",
+              vendas: 5,
+              volume: 1500000,
+              comissao: 45000,
+            },
+            {
+              nome: "Carlos Lima",
+              vendas: 4,
+              volume: 1200000,
+              comissao: 36000,
+            },
+          ];
+          await generatePerformanceReport(dadosPerformance);
+          break;
+        case "Financeiro":
+          // Generate financial report with custom layout
+          await generateCustomReport("financial-chart", "Relatório Financeiro");
+          break;
+        default:
+          alert("Tipo de relatório não reconhecido");
+      }
+      alert("Relatório gerado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao gerar relatório:", error);
+      alert("Erro ao gerar relatório. Tente novamente.");
+    }
+  };
 
   const carregarDados = async () => {
     try {
@@ -842,7 +947,7 @@ export default function AdminDashboard() {
                       email: "assistente@siqueicamposimoveis.com.br",
                       papel: "ASSISTENTE",
                       ativo: true,
-                      ultimoLogin: "Hoje às 11:15",
+                      ultimoLogin: "Hoje ��s 11:15",
                       avatar: "M",
                     },
                     {
@@ -1017,7 +1122,12 @@ export default function AdminDashboard() {
                         <p className="text-xs font-medium text-primary">
                           {relatorio.stats}
                         </p>
-                        <Button size="sm" className="mt-4 w-full">
+                        <Button
+                          size="sm"
+                          className="mt-4 w-full"
+                          onClick={() => handleGenerateReport(relatorio.tipo)}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
                           Gerar Relatório
                         </Button>
                       </div>
@@ -1095,10 +1205,22 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                       <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewReport(relatorio.id)}
+                          title="Visualizar relatório"
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            handleDownloadReport(relatorio.id, relatorio.tipo)
+                          }
+                          title="Baixar relatório"
+                        >
                           <Download className="h-4 w-4" />
                         </Button>
                       </div>

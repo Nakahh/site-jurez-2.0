@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -14,134 +15,374 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  BarChart3,
   TrendingUp,
   Users,
   Eye,
-  MousePointer,
-  Mail,
-  Share2,
-  BarChart3,
-  PieChart,
-  LineChart,
-  Target,
-  Megaphone,
   MessageSquare,
+  MousePointer,
+  Share2,
+  Heart,
+  Phone,
+  Calendar,
+  Target,
+  DollarSign,
+  PieChart,
+  Activity,
+  Globe,
   Instagram,
   Facebook,
-  Globe,
-  Search,
-  Calendar,
-  DollarSign,
-  Settings,
-  Bell,
+  Youtube,
+  Mail,
   Plus,
   Edit,
   Trash2,
+  Settings,
   Download,
-  Upload,
+  Filter,
+  Search,
   Camera,
   Video,
   FileText,
-  Activity,
+  Megaphone,
   Clock,
   CheckCircle,
   AlertCircle,
-  Star,
-  ThumbsUp,
-  Heart,
-  Filter,
+  X,
 } from "lucide-react";
+import { BlogManagement } from "@/components/BlogManagement";
 
-// Types
+interface MarketingStats {
+  visitasSite: number;
+  leadsGerados: number;
+  conversaoLeads: number;
+  engajamentoSocial: number;
+  alcanceTotal: number;
+  impressoes: number;
+  cliques: number;
+  gastoAnuncios: number;
+  retornoInvestimento: number;
+  seguidores: {
+    instagram: number;
+    facebook: number;
+    whatsapp: number;
+  };
+}
+
 interface Campanha {
   id: string;
   nome: string;
-  tipo: string;
-  status: string;
+  tipo: "SOCIAL_MEDIA" | "GOOGLE_ADS" | "EMAIL" | "BLOG";
+  status: "ATIVA" | "PAUSADA" | "FINALIZADA" | "RASCUNHO";
+  inicio: Date;
+  fim?: Date;
   orcamento: number;
   gastoAtual: number;
-  alcance: number;
+  impressoes: number;
   cliques: number;
   conversoes: number;
-  ctr: number;
-  cpc: number;
-  roas: number;
-  dataInicio: Date;
-  dataFim: Date;
-  plataforma: string;
+  ctr: number; // Click Through Rate
+  cpc: number; // Cost Per Click
   objetivo: string;
-}
-
-interface Lead {
-  id: string;
-  nome: string;
-  telefone: string;
-  email?: string;
-  origem: string;
-  campanha?: string;
-  status: string;
-  valorPotencial: number;
-  criadoEm: Date;
 }
 
 interface ConteudoSocial {
   id: string;
-  tipo: string;
+  tipo: "POST" | "STORY" | "REEL" | "VIDEO";
   titulo: string;
   descricao: string;
-  plataforma: string[];
-  status: string;
-  agendamento?: Date;
-  engajamento: {
+  plataforma: "INSTAGRAM" | "FACEBOOK" | "WHATSAPP" | "BLOG";
+  agendadoPara?: Date;
+  status: "AGENDADO" | "PUBLICADO" | "RASCUNHO";
+  engajamento?: {
     curtidas: number;
     comentarios: number;
     compartilhamentos: number;
     salvamentos: number;
   };
-  alcance: number;
-  impressoes: number;
-  criadoEm: Date;
+  imagem?: string;
 }
 
-interface MetricasMarketing {
-  visitasWebsite: number;
-  leadsGerados: number;
-  taxaConversao: number;
-  custoLead: number;
-  roas: number;
-  alcanceTotal: number;
-  engajamentoTotal: number;
-  seguidoresGanhos: number;
-}
+export default function MarketingDashboard() {
+  const [stats, setStats] = useState<MarketingStats | null>(null);
+  const [campanhas, setCampanhas] = useState<Campanha[]>([]);
+  const [conteudos, setConteudos] = useState<ConteudoSocial[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [novaCampanha, setNovaCampanha] = useState(false);
+  const [novoConteudo, setNovoConteudo] = useState(false);
 
-function StatsCard({
-  title,
-  value,
-  icon: Icon,
-  description,
-  color = "primary",
-  trend,
-  percentage,
-}: {
-  title: string;
-  value: string | number;
-  icon: any;
-  description?: string;
-  color?: string;
-  trend?: string;
-  percentage?: number;
-}) {
-  return (
-    <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+  useEffect(() => {
+    carregarDados();
+  }, []);
+
+  const handleExportReport = async () => {
+    try {
+      // Generate marketing report data
+      const marketingData = [
+        {
+          campanha: "Jardim Goiás Premium",
+          tipo: "Social Media",
+          orcamento: 8000,
+          gastoAtual: 4200,
+          conversoes: 45,
+          roi: "235%",
+        },
+        {
+          campanha: "Casas Aldeota",
+          tipo: "Google Ads",
+          orcamento: 5000,
+          gastoAtual: 3800,
+          conversoes: 32,
+          roi: "180%",
+        },
+        {
+          campanha: "Apartamentos Centro",
+          tipo: "Email Marketing",
+          orcamento: 1500,
+          gastoAtual: 1200,
+          conversoes: 28,
+          roi: "220%",
+        },
+        {
+          campanha: "Blog Imobiliário",
+          tipo: "SEO/Conteúdo",
+          orcamento: 2000,
+          gastoAtual: 1800,
+          conversoes: 15,
+          roi: "150%",
+        },
+      ];
+
+      // Create a simple report
+      const reportContent = `
+        <div id="marketing-report" style="padding: 20px; font-family: Arial, sans-serif;">
+          <h1>Relatório de Marketing - ${new Date().toLocaleDateString("pt-BR")}</h1>
+          <h2>Resumo de Campanhas</h2>
+          <table border="1" style="width: 100%; border-collapse: collapse;">
+            <tr style="background-color: #f0f0f0;">
+              <th style="padding: 10px;">Campanha</th>
+              <th style="padding: 10px;">Tipo</th>
+              <th style="padding: 10px;">Orçamento</th>
+              <th style="padding: 10px;">Gasto Atual</th>
+              <th style="padding: 10px;">Conversões</th>
+              <th style="padding: 10px;">ROI</th>
+            </tr>
+            ${marketingData
+              .map(
+                (item) => `
+              <tr>
+                <td style="padding: 10px;">${item.campanha}</td>
+                <td style="padding: 10px;">${item.tipo}</td>
+                <td style="padding: 10px;">R$ ${item.orcamento.toLocaleString("pt-BR")}</td>
+                <td style="padding: 10px;">R$ ${item.gastoAtual.toLocaleString("pt-BR")}</td>
+                <td style="padding: 10px;">${item.conversoes}</td>
+                <td style="padding: 10px;">${item.roi}</td>
+              </tr>
+            `,
+              )
+              .join("")}
+          </table>
+          <br>
+          <p><strong>Total de Leads Gerados:</strong> ${stats?.leadsGerados || 0}</p>
+          <p><strong>Taxa de Conversão:</strong> ${stats?.conversaoLeads || 0}%</p>
+          <p><strong>Alcance Total:</strong> ${stats?.alcanceTotal?.toLocaleString("pt-BR") || 0}</p>
+        </div>
+      `;
+
+      // Create temporary element
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = reportContent;
+      document.body.appendChild(tempDiv);
+
+      // Import and use the PDF generator
+      const { generateCustomReport } = await import("@/utils/pdfGenerator");
+      await generateCustomReport("marketing-report", "Relatório de Marketing");
+
+      // Cleanup
+      document.body.removeChild(tempDiv);
+
+      alert("Relatório de marketing exportado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao exportar relatório:", error);
+      alert("Erro ao exportar relatório. Tente novamente.");
+    }
+  };
+
+  const carregarDados = async () => {
+    try {
+      // Simular dados de marketing
+      const statsSimuladas: MarketingStats = {
+        visitasSite: 12450,
+        leadsGerados: 156,
+        conversaoLeads: 12.5,
+        engajamentoSocial: 8.3,
+        alcanceTotal: 45600,
+        impressoes: 234500,
+        cliques: 3420,
+        gastoAnuncios: 4500,
+        retornoInvestimento: 320,
+        seguidores: {
+          instagram: 15600,
+          facebook: 8900,
+          whatsapp: 2300,
+        },
+      };
+
+      const campanhasSimuladas: Campanha[] = [
+        {
+          id: "1",
+          nome: "Lançamento Jardim Goiás Premium",
+          tipo: "SOCIAL_MEDIA",
+          status: "ATIVA",
+          inicio: new Date("2024-12-01"),
+          fim: new Date("2025-01-31"),
+          orcamento: 8000,
+          gastoAtual: 4200,
+          impressoes: 89000,
+          cliques: 1250,
+          conversoes: 45,
+          ctr: 1.4,
+          cpc: 3.36,
+          objetivo: "Gerar leads para lançamento imobiliário",
+        },
+        {
+          id: "2",
+          nome: "Google Ads - Apartamentos Setor Oeste",
+          tipo: "GOOGLE_ADS",
+          status: "ATIVA",
+          inicio: new Date("2024-11-15"),
+          orcamento: 5000,
+          gastoAtual: 3400,
+          impressoes: 156000,
+          cliques: 890,
+          conversoes: 23,
+          ctr: 0.57,
+          cpc: 3.82,
+          objetivo: "Aumentar vendas de apartamentos",
+        },
+        {
+          id: "3",
+          nome: "Newsletter Dezembro",
+          tipo: "EMAIL",
+          status: "FINALIZADA",
+          inicio: new Date("2024-12-01"),
+          fim: new Date("2024-12-31"),
+          orcamento: 500,
+          gastoAtual: 400,
+          impressoes: 12000,
+          cliques: 450,
+          conversoes: 18,
+          ctr: 3.75,
+          cpc: 0.89,
+          objetivo: "Engajar base de clientes",
+        },
+      ];
+
+      const conteudosSimulados: ConteudoSocial[] = [
+        {
+          id: "1",
+          tipo: "POST",
+          titulo: "Casa dos Sonhos no Jardim Goiás",
+          descricao:
+            "🏡 Sua casa dos sonhos te espera! Casa térrea com 3 quartos, piscina e área gourmet no coração do Jardim Goiás. #JardimGoias #CasaDosSonhos",
+          plataforma: "INSTAGRAM",
+          agendadoPara: new Date("2025-01-07T10:00:00"),
+          status: "AGENDADO",
+          imagem:
+            "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=400&fit=crop",
+        },
+        {
+          id: "2",
+          tipo: "STORY",
+          titulo: "Tour Virtual - Apartamento Setor Bueno",
+          descricao:
+            "✨ Tour virtual exclusivo! Apartamento moderno com vista incrível. Deslize para conhecer cada detalhe.",
+          plataforma: "INSTAGRAM",
+          status: "PUBLICADO",
+          engajamento: {
+            curtidas: 234,
+            comentarios: 12,
+            compartilhamentos: 45,
+            salvamentos: 67,
+          },
+        },
+        {
+          id: "3",
+          tipo: "REEL",
+          titulo: "Dicas para Primeira Compra",
+          descricao:
+            "📝 5 dicas essenciais para quem está comprando o primeiro imóvel! Salve este post e compartilhe com quem precisa.",
+          plataforma: "INSTAGRAM",
+          status: "RASCUNHO",
+        },
+      ];
+
+      setStats(statsSimuladas);
+      setCampanhas(campanhasSimuladas);
+      setConteudos(conteudosSimulados);
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  const formatPercentage = (value: number) => {
+    return `${value.toFixed(1)}%`;
+  };
+
+  const MetricCard = ({
+    title,
+    value,
+    icon: Icon,
+    trend,
+    trendValue,
+    color = "primary",
+  }: {
+    title: string;
+    value: string | number;
+    icon: any;
+    trend?: "up" | "down";
+    trendValue?: string;
+    color?: string;
+  }) => (
+    <Card className="hover:shadow-lg transition-shadow">
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-3xl font-bold text-foreground">{value}</p>
-            {description && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {description}
-              </p>
+            <p className="text-3xl font-bold">{value}</p>
+            {trendValue && (
+              <div className="flex items-center mt-2">
+                <TrendingUp
+                  className={`h-4 w-4 mr-1 ${
+                    trend === "up" ? "text-green-600" : "text-red-600"
+                  } ${trend === "down" ? "rotate-180" : ""}`}
+                />
+                <span
+                  className={`text-sm font-medium ${
+                    trend === "up" ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {trendValue}
+                </span>
+              </div>
             )}
           </div>
           <div
@@ -150,242 +391,9 @@ function StatsCard({
             <Icon className={`h-6 w-6 text-${color}`} />
           </div>
         </div>
-        {(trend || percentage !== undefined) && (
-          <div className="flex items-center justify-between mt-4 pt-4 border-t">
-            {trend && (
-              <div className="flex items-center">
-                <TrendingUp
-                  className={`h-4 w-4 mr-1 ${
-                    percentage && percentage > 0
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                />
-                <span
-                  className={`text-sm font-medium ${
-                    percentage && percentage > 0
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {trend}
-                </span>
-              </div>
-            )}
-            {percentage !== undefined && (
-              <span
-                className={`text-sm font-bold ${
-                  percentage > 0 ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {percentage > 0 ? "+" : ""}
-                {percentage}%
-              </span>
-            )}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
-}
-
-export default function MarketingDashboard() {
-  const [campanhas, setCampanhas] = useState<Campanha[]>([]);
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [conteudos, setConteudos] = useState<ConteudoSocial[]>([]);
-  const [metricas, setMetricas] = useState<MetricasMarketing | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("overview");
-
-  useEffect(() => {
-    carregarDados();
-  }, []);
-
-  const carregarDados = async () => {
-    try {
-      // Dados simulados ultra-robustos
-      const campanhasSimuladas: Campanha[] = [
-        {
-          id: "1",
-          nome: "Lançamento Residencial Bueno Park",
-          tipo: "PAID_SOCIAL",
-          status: "ATIVA",
-          orcamento: 15000,
-          gastoAtual: 8750,
-          alcance: 45000,
-          cliques: 1250,
-          conversoes: 23,
-          ctr: 2.78,
-          cpc: 7.0,
-          roas: 4.2,
-          dataInicio: new Date("2025-01-01"),
-          dataFim: new Date("2025-01-31"),
-          plataforma: "Facebook + Instagram",
-          objetivo: "Geração de Leads",
-        },
-        {
-          id: "2",
-          nome: "Google Ads - Apartamentos Goiânia",
-          tipo: "SEARCH",
-          status: "ATIVA",
-          orcamento: 10000,
-          gastoAtual: 6200,
-          alcance: 28000,
-          cliques: 890,
-          conversoes: 31,
-          ctr: 3.18,
-          cpc: 6.97,
-          roas: 5.1,
-          dataInicio: new Date("2024-12-15"),
-          dataFim: new Date("2025-02-15"),
-          plataforma: "Google Ads",
-          objetivo: "Vendas",
-        },
-        {
-          id: "3",
-          nome: "Retargeting - Visitantes Website",
-          tipo: "DISPLAY",
-          status: "PAUSADA",
-          orcamento: 5000,
-          gastoAtual: 3400,
-          alcance: 12500,
-          cliques: 450,
-          conversoes: 8,
-          ctr: 3.6,
-          cpc: 7.56,
-          roas: 2.8,
-          dataInicio: new Date("2024-12-01"),
-          dataFim: new Date("2025-01-15"),
-          plataforma: "Google Display",
-          objetivo: "Conversão",
-        },
-      ];
-
-      const leadsSimulados: Lead[] = [
-        {
-          id: "1",
-          nome: "Maria Silva",
-          telefone: "(62) 9 8888-7777",
-          email: "maria@email.com",
-          origem: "Facebook Ads",
-          campanha: "Lançamento Residencial Bueno Park",
-          status: "QUALIFICADO",
-          valorPotencial: 650000,
-          criadoEm: new Date("2025-01-06T14:30:00"),
-        },
-        {
-          id: "2",
-          nome: "João Santos",
-          telefone: "(62) 9 7777-6666",
-          email: "joao@email.com",
-          origem: "Google Ads",
-          campanha: "Google Ads - Apartamentos Goiânia",
-          status: "NOVO",
-          valorPotencial: 450000,
-          criadoEm: new Date("2025-01-06T10:15:00"),
-        },
-        {
-          id: "3",
-          nome: "Ana Costa",
-          telefone: "(62) 9 6666-5555",
-          origem: "Instagram",
-          campanha: "Lançamento Residencial Bueno Park",
-          status: "CONVERTIDO",
-          valorPotencial: 380000,
-          criadoEm: new Date("2025-01-05T16:45:00"),
-        },
-      ];
-
-      const conteudosSimulados: ConteudoSocial[] = [
-        {
-          id: "1",
-          tipo: "POST_IMAGEM",
-          titulo: "Apartamento dos Sonhos no Setor Bueno",
-          descricao:
-            "Conheça nosso novo lançamento com vista panorâmica e acabamento de luxo! 🏢✨",
-          plataforma: ["Instagram", "Facebook"],
-          status: "PUBLICADO",
-          engajamento: {
-            curtidas: 245,
-            comentarios: 18,
-            compartilhamentos: 12,
-            salvamentos: 34,
-          },
-          alcance: 8500,
-          impressoes: 12400,
-          criadoEm: new Date("2025-01-05T09:00:00"),
-        },
-        {
-          id: "2",
-          tipo: "VIDEO",
-          titulo: "Tour Virtual - Casa Jardim Goiás",
-          descricao:
-            "Faça um tour virtual pela nossa casa modelo e apaixone-se! 🏠💕",
-          plataforma: ["Instagram", "YouTube"],
-          status: "AGENDADO",
-          agendamento: new Date("2025-01-08T18:00:00"),
-          engajamento: {
-            curtidas: 0,
-            comentarios: 0,
-            compartilhamentos: 0,
-            salvamentos: 0,
-          },
-          alcance: 0,
-          impressoes: 0,
-          criadoEm: new Date("2025-01-06T15:30:00"),
-        },
-        {
-          id: "3",
-          tipo: "STORIES",
-          titulo: "Dica de Financiamento",
-          descricao: "Saiba como conseguir o melhor financiamento imobiliário",
-          plataforma: ["Instagram"],
-          status: "RASCUNHO",
-          engajamento: {
-            curtidas: 0,
-            comentarios: 0,
-            compartilhamentos: 0,
-            salvamentos: 0,
-          },
-          alcance: 0,
-          impressoes: 0,
-          criadoEm: new Date("2025-01-06T11:20:00"),
-        },
-      ];
-
-      const metricasSimuladas: MetricasMarketing = {
-        visitasWebsite: 15420,
-        leadsGerados: 89,
-        taxaConversao: 5.77,
-        custoLead: 152.3,
-        roas: 4.1,
-        alcanceTotal: 85500,
-        engajamentoTotal: 1890,
-        seguidoresGanhos: 234,
-      };
-
-      setCampanhas(campanhasSimuladas);
-      setLeads(leadsSimulados);
-      setConteudos(conteudosSimulados);
-      setMetricas(metricasSimuladas);
-    } catch (error) {
-      console.error("Erro ao carregar dados:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatarMoeda = (valor: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-      maximumFractionDigits: 0,
-    }).format(valor);
-  };
-
-  const formatarNumero = (numero: number) => {
-    return new Intl.NumberFormat("pt-BR").format(numero);
-  };
 
   if (loading) {
     return (
@@ -405,35 +413,21 @@ export default function MarketingDashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              Dashboard de Marketing
+              Dashboard Marketing
             </h1>
             <p className="text-muted-foreground">
-              Controle total das campanhas, leads e performance de marketing
+              Gerencie campanhas, conteúdo e análises de marketing
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm">
-              <Bell className="h-4 w-4 mr-2" />
-              Alertas
-            </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleExportReport}>
               <Download className="h-4 w-4 mr-2" />
-              Relatórios
+              Exportar Relatório
             </Button>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Campanha
+            <Button variant="outline" size="sm">
+              <Settings className="h-4 w-4 mr-2" />
+              Configura��ões
             </Button>
-            <img
-              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=250"
-              alt="Siqueira Campos Imóveis"
-              className="h-14 w-auto dark:hidden"
-            />
-            <img
-              src="https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-escuro-e97fe8?format=webp&width=250"
-              alt="Siqueira Campos Imóveis"
-              className="hidden h-14 w-auto dark:block"
-            />
           </div>
         </div>
       </div>
@@ -447,262 +441,191 @@ export default function MarketingDashboard() {
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
             <TabsTrigger value="campanhas">Campanhas</TabsTrigger>
-            <TabsTrigger value="leads">Leads</TabsTrigger>
             <TabsTrigger value="conteudo">Conteúdo</TabsTrigger>
+            <TabsTrigger value="blog">Blog</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="configuracoes">Config</TabsTrigger>
+            <TabsTrigger value="leads">Leads</TabsTrigger>
           </TabsList>
 
           {/* Visão Geral */}
           <TabsContent value="overview" className="space-y-6">
-            {/* ROI Alert */}
-            <Card className="border-0 shadow-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold mb-2">
-                      🎯 Performance Excepcional!
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      ROAS médio de 4.1x - 310% acima da meta do setor
-                      imobiliário
-                    </p>
-                    <div className="flex items-center space-x-4">
-                      <Button>
-                        <TrendingUp className="h-4 w-4 mr-2" />
-                        Ver Detalhes
-                      </Button>
-                      <Button variant="outline">
-                        <Share2 className="h-4 w-4 mr-2" />
-                        Compartilhar Report
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-4xl font-bold text-green-600">4.1x</p>
-                    <p className="text-sm text-muted-foreground">ROAS Médio</p>
-                  </div>
+            {stats && (
+              <>
+                {/* Métricas Principais */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <MetricCard
+                    title="Visitas ao Site"
+                    value={stats.visitasSite.toLocaleString()}
+                    icon={Eye}
+                    trend="up"
+                    trendValue="+23%"
+                    color="blue"
+                  />
+                  <MetricCard
+                    title="Leads Gerados"
+                    value={stats.leadsGerados}
+                    icon={Users}
+                    trend="up"
+                    trendValue="+18%"
+                    color="green"
+                  />
+                  <MetricCard
+                    title="Taxa de Conversão"
+                    value={formatPercentage(stats.conversaoLeads)}
+                    icon={Target}
+                    trend="up"
+                    trendValue="+2.3%"
+                    color="purple"
+                  />
+                  <MetricCard
+                    title="ROI"
+                    value={formatPercentage(stats.retornoInvestimento)}
+                    icon={DollarSign}
+                    trend="up"
+                    trendValue="+45%"
+                    color="yellow"
+                  />
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* Métricas Principais */}
-            {metricas && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatsCard
-                  title="Visitas Website"
-                  value={formatarNumero(metricas.visitasWebsite)}
-                  icon={Eye}
-                  description="Este mês"
-                  color="blue"
-                  trend="+23% vs mês anterior"
-                  percentage={23}
-                />
-                <StatsCard
-                  title="Leads Gerados"
-                  value={metricas.leadsGerados}
-                  icon={Users}
-                  description={`Taxa: ${metricas.taxaConversao}%`}
-                  color="green"
-                  trend="+18% vs mês anterior"
-                  percentage={18}
-                />
-                <StatsCard
-                  title="Custo por Lead"
-                  value={formatarMoeda(metricas.custoLead)}
-                  icon={DollarSign}
-                  description="Média das campanhas"
-                  color="yellow"
-                  trend="-12% vs mês anterior"
-                  percentage={-12}
-                />
-                <StatsCard
-                  title="ROAS"
-                  value={`${metricas.roas}x`}
-                  icon={TrendingUp}
-                  description="Return on Ad Spend"
-                  color="purple"
-                  trend="+15% vs mês anterior"
-                  percentage={15}
-                />
-              </div>
-            )}
-
-            {/* Performance por Canal */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Performance por Canal</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      {
-                        canal: "Google Ads",
-                        leads: 31,
-                        custo: 216,
-                        roas: 5.1,
-                        cor: "bg-blue-500",
-                      },
-                      {
-                        canal: "Facebook + Instagram",
-                        leads: 23,
-                        custo: 380,
-                        roas: 4.2,
-                        cor: "bg-purple-500",
-                      },
-                      {
-                        canal: "Google Display",
-                        leads: 8,
-                        custo: 425,
-                        roas: 2.8,
-                        cor: "bg-green-500",
-                      },
-                      {
-                        canal: "WhatsApp Business",
-                        leads: 27,
-                        custo: 45,
-                        roas: 8.9,
-                        cor: "bg-green-600",
-                      },
-                    ].map((canal) => (
-                      <div
-                        key={canal.canal}
-                        className="flex items-center justify-between p-4 border rounded-lg"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div
-                            className={`w-4 h-4 rounded-full ${canal.cor}`}
-                          ></div>
-                          <div>
-                            <p className="font-medium">{canal.canal}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {canal.leads} leads • Custo:{" "}
-                              {formatarMoeda(canal.custo)}
-                            </p>
+                {/* Redes Sociais e Engajamento */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Share2 className="mr-2 h-5 w-5" />
+                        Redes Sociais
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <Instagram className="h-6 w-6 text-pink-600" />
+                            <span>Instagram</span>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-lg">{canal.roas}x</p>
-                          <p className="text-sm text-muted-foreground">ROAS</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Funil de Conversão</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      {
-                        etapa: "Impressões",
-                        quantidade: 156000,
-                        taxa: 100,
-                        cor: "bg-blue-100",
-                      },
-                      {
-                        etapa: "Cliques",
-                        quantidade: 4850,
-                        taxa: 3.1,
-                        cor: "bg-blue-200",
-                      },
-                      {
-                        etapa: "Visitas Landing",
-                        quantidade: 3920,
-                        taxa: 2.5,
-                        cor: "bg-blue-300",
-                      },
-                      {
-                        etapa: "Leads",
-                        quantidade: 89,
-                        taxa: 2.3,
-                        cor: "bg-blue-500",
-                      },
-                      {
-                        etapa: "Vendas",
-                        quantidade: 12,
-                        taxa: 13.5,
-                        cor: "bg-blue-700",
-                      },
-                    ].map((etapa) => (
-                      <div key={etapa.etapa} className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <p className="font-medium">{etapa.etapa}</p>
                           <div className="text-right">
                             <p className="font-bold">
-                              {formatarNumero(etapa.quantidade)}
+                              {stats.seguidores.instagram.toLocaleString()}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {etapa.taxa}%
+                              seguidores
                             </p>
                           </div>
                         </div>
-                        <div className="w-full bg-muted rounded-full h-3">
-                          <div
-                            className={`h-3 rounded-full ${etapa.cor} transition-all duration-500`}
-                            style={{
-                              width: `${Math.min(etapa.taxa * 10, 100)}%`,
-                            }}
-                          />
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <Facebook className="h-6 w-6 text-blue-600" />
+                            <span>Facebook</span>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold">
+                              {stats.seguidores.facebook.toLocaleString()}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              seguidores
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <MessageSquare className="h-6 w-6 text-green-600" />
+                            <span>WhatsApp</span>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold">
+                              {stats.seguidores.whatsapp.toLocaleString()}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              contatos
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                    </CardContent>
+                  </Card>
 
-            {/* Conteúdo Recente */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Conteúdo de Melhor Performance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {conteudos.slice(0, 3).map((conteudo) => (
-                    <div
-                      key={conteudo.id}
-                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <Badge variant="outline">{conteudo.tipo}</Badge>
-                        <Badge
-                          variant={
-                            conteudo.status === "PUBLICADO"
-                              ? "default"
-                              : conteudo.status === "AGENDADO"
-                                ? "secondary"
-                                : "outline"
-                          }
-                        >
-                          {conteudo.status}
-                        </Badge>
-                      </div>
-                      <h4 className="font-bold mb-2">{conteudo.titulo}</h4>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {conteudo.descricao.substring(0, 80)}...
-                      </p>
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center space-x-2">
-                          <Heart className="h-4 w-4 text-red-500" />
-                          <span>{conteudo.engajamento.curtidas}</span>
-                          <MessageSquare className="h-4 w-4 text-blue-500" />
-                          <span>{conteudo.engajamento.comentarios}</span>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <BarChart3 className="mr-2 h-5 w-5" />
+                        Performance Anúncios
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span>Impressões</span>
+                          <span className="font-bold">
+                            {stats.impressoes.toLocaleString()}
+                          </span>
                         </div>
-                        <span className="text-muted-foreground">
-                          {formatarNumero(conteudo.alcance)} alcance
-                        </span>
+                        <div className="flex justify-between items-center">
+                          <span>Cliques</span>
+                          <span className="font-bold">
+                            {stats.cliques.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span>CTR Médio</span>
+                          <span className="font-bold text-green-600">
+                            {((stats.cliques / stats.impressoes) * 100).toFixed(
+                              2,
+                            )}
+                            %
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span>Gasto Total</span>
+                          <span className="font-bold">
+                            {formatCurrency(stats.gastoAnuncios)}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardContent>
-            </Card>
+
+                {/* Campanhas Ativas */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Campanhas Ativas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {campanhas
+                        .filter((c) => c.status === "ATIVA")
+                        .map((campanha) => (
+                          <div
+                            key={campanha.id}
+                            className="flex items-center justify-between p-4 border rounded-lg"
+                          >
+                            <div className="flex items-center space-x-4">
+                              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <Megaphone className="h-6 w-6 text-primary" />
+                              </div>
+                              <div>
+                                <p className="font-bold">{campanha.nome}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {campanha.tipo} • CTR: {campanha.ctr}%
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-green-600">
+                                {campanha.conversoes} conversões
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {formatCurrency(campanha.gastoAtual)} /{" "}
+                                {formatCurrency(campanha.orcamento)}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
           </TabsContent>
 
           {/* Campanhas */}
@@ -714,129 +637,160 @@ export default function MarketingDashboard() {
                   <Filter className="h-4 w-4 mr-2" />
                   Filtrar
                 </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Exportar
-                </Button>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova Campanha
-                </Button>
+                <Dialog open={novaCampanha} onOpenChange={setNovaCampanha}>
+                  <DialogTrigger asChild>
+                    <Button size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nova Campanha
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Criar Nova Campanha</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Nome da Campanha</Label>
+                        <Input placeholder="Ex: Lançamento Setor Oeste" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Tipo</Label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o tipo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="SOCIAL_MEDIA">
+                              Redes Sociais
+                            </SelectItem>
+                            <SelectItem value="GOOGLE_ADS">
+                              Google Ads
+                            </SelectItem>
+                            <SelectItem value="EMAIL">
+                              Email Marketing
+                            </SelectItem>
+                            <SelectItem value="BLOG">Blog/SEO</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Orçamento</Label>
+                        <Input type="number" placeholder="5000" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Data de Início</Label>
+                        <Input type="date" />
+                      </div>
+                      <div className="col-span-2 space-y-2">
+                        <Label>Objetivo</Label>
+                        <Textarea placeholder="Descreva o objetivo da campanha..." />
+                      </div>
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setNovaCampanha(false)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button onClick={() => setNovaCampanha(false)}>
+                        Criar Campanha
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
 
-            {/* Stats de Campanhas */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <StatsCard
-                title="Campanhas Ativas"
-                value={campanhas.filter((c) => c.status === "ATIVA").length}
-                icon={Activity}
-                color="green"
-              />
-              <StatsCard
-                title="Orçamento Total"
-                value={formatarMoeda(
-                  campanhas.reduce((acc, c) => acc + c.orcamento, 0),
-                )}
-                icon={DollarSign}
-                color="blue"
-              />
-              <StatsCard
-                title="Gasto Atual"
-                value={formatarMoeda(
-                  campanhas.reduce((acc, c) => acc + c.gastoAtual, 0),
-                )}
-                icon={TrendingUp}
-                color="purple"
-              />
-              <StatsCard
-                title="CTR Médio"
-                value={`${(
-                  campanhas.reduce((acc, c) => acc + c.ctr, 0) /
-                  campanhas.length
-                ).toFixed(2)}%`}
-                icon={MousePointer}
-                color="orange"
-              />
-            </div>
-
             {/* Lista de Campanhas */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Todas as Campanhas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {campanhas.map((campanha) => (
-                    <div
-                      key={campanha.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="font-bold">{campanha.nome}</h3>
-                          <Badge
-                            variant={
-                              campanha.status === "ATIVA"
-                                ? "default"
-                                : campanha.status === "PAUSADA"
-                                  ? "secondary"
-                                  : "outline"
-                            }
-                          >
-                            {campanha.status}
-                          </Badge>
-                          <Badge variant="outline">{campanha.tipo}</Badge>
+            <div className="grid gap-6">
+              {campanhas.map((campanha) => (
+                <Card
+                  key={campanha.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <Megaphone className="h-6 w-6 text-primary" />
                         </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                          <div>
-                            <p className="text-muted-foreground">Orçamento</p>
-                            <p className="font-medium">
-                              {formatarMoeda(campanha.orcamento)}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Gasto Atual</p>
-                            <p className="font-medium">
-                              {formatarMoeda(campanha.gastoAtual)}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Conversões</p>
-                            <p className="font-medium">{campanha.conversoes}</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">ROAS</p>
-                            <p className="font-bold text-green-600">
-                              {campanha.roas}x
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="mt-3">
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Progresso do Orçamento</span>
-                            <span>
-                              {Math.round(
-                                (campanha.gastoAtual / campanha.orcamento) *
-                                  100,
-                              )}
-                              %
-                            </span>
-                          </div>
-                          <div className="w-full bg-muted rounded-full h-2">
-                            <div
-                              className="bg-primary h-2 rounded-full transition-all duration-500"
-                              style={{
-                                width: `${Math.min((campanha.gastoAtual / campanha.orcamento) * 100, 100)}%`,
-                              }}
-                            />
-                          </div>
+                        <div>
+                          <h3 className="font-bold text-lg">{campanha.nome}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {campanha.objetivo}
+                          </p>
                         </div>
                       </div>
+                      <div className="flex items-center space-x-3">
+                        <Badge
+                          variant={
+                            campanha.status === "ATIVA"
+                              ? "default"
+                              : campanha.status === "PAUSADA"
+                                ? "secondary"
+                                : campanha.status === "FINALIZADA"
+                                  ? "outline"
+                                  : "destructive"
+                          }
+                        >
+                          {campanha.status}
+                        </Badge>
+                        <Badge variant="outline">{campanha.tipo}</Badge>
+                      </div>
+                    </div>
 
-                      <div className="flex space-x-2 ml-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold">
+                          {campanha.impressoes.toLocaleString()}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Impressões
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold">
+                          {campanha.cliques.toLocaleString()}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Cliques</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-green-600">
+                          {campanha.conversoes}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Conversões
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold">
+                          {formatCurrency(campanha.gastoAtual)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Gasto / {formatCurrency(campanha.orcamento)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-muted-foreground">
+                            CTR:
+                          </span>
+                          <span className="font-bold">{campanha.ctr}%</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-muted-foreground">
+                            CPC:
+                          </span>
+                          <span className="font-bold">
+                            {formatCurrency(campanha.cpc)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
                         <Button size="sm" variant="outline">
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -844,122 +798,14 @@ export default function MarketingDashboard() {
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button size="sm" variant="outline">
-                          <BarChart3 className="h-4 w-4" />
+                          <Settings className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Leads */}
-          <TabsContent value="leads" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Leads de Marketing</h2>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtrar
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Exportar
-                </Button>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Importar Leads
-                </Button>
-              </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-
-            {/* Stats de Leads */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <StatsCard
-                title="Total Leads"
-                value={leads.length}
-                icon={Users}
-                color="blue"
-              />
-              <StatsCard
-                title="Qualificados"
-                value={leads.filter((l) => l.status === "QUALIFICADO").length}
-                icon={CheckCircle}
-                color="green"
-              />
-              <StatsCard
-                title="Convertidos"
-                value={leads.filter((l) => l.status === "CONVERTIDO").length}
-                icon={Target}
-                color="purple"
-              />
-              <StatsCard
-                title="Valor Potencial"
-                value={formatarMoeda(
-                  leads.reduce((acc, l) => acc + l.valorPotencial, 0),
-                )}
-                icon={DollarSign}
-                color="green"
-              />
-            </div>
-
-            {/* Lista de Leads */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Leads Recentes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {leads.map((lead) => (
-                    <div
-                      key={lead.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                          <Users className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-bold">{lead.nome}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {lead.telefone}
-                            {lead.email && ` • ${lead.email}`}
-                          </p>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <Badge variant="outline">{lead.origem}</Badge>
-                            {lead.campanha && (
-                              <Badge variant="outline" className="text-xs">
-                                {lead.campanha}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-lg text-green-600">
-                          {formatarMoeda(lead.valorPotencial)}
-                        </p>
-                        <Badge
-                          variant={
-                            lead.status === "CONVERTIDO"
-                              ? "default"
-                              : lead.status === "QUALIFICADO"
-                                ? "secondary"
-                                : "outline"
-                          }
-                        >
-                          {lead.status}
-                        </Badge>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {lead.criadoEm.toLocaleDateString("pt-BR")}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           {/* Conteúdo */}
@@ -971,81 +817,144 @@ export default function MarketingDashboard() {
                   <Calendar className="h-4 w-4 mr-2" />
                   Calendário
                 </Button>
-                <Button variant="outline" size="sm">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload
-                </Button>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Novo Conteúdo
-                </Button>
+                <Dialog open={novoConteudo} onOpenChange={setNovoConteudo}>
+                  <DialogTrigger asChild>
+                    <Button size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Novo Conteúdo
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Criar Novo Conteúdo</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Tipo de Conteúdo</Label>
+                          <Select>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione o tipo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="POST">Post</SelectItem>
+                              <SelectItem value="STORY">Story</SelectItem>
+                              <SelectItem value="REEL">Reel</SelectItem>
+                              <SelectItem value="VIDEO">Video</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Plataforma</Label>
+                          <Select>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione a plataforma" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="INSTAGRAM">
+                                Instagram
+                              </SelectItem>
+                              <SelectItem value="FACEBOOK">Facebook</SelectItem>
+                              <SelectItem value="WHATSAPP">WhatsApp</SelectItem>
+                              <SelectItem value="BLOG">Blog</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Título</Label>
+                        <Input placeholder="Título do conteúdo" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Descrição</Label>
+                        <Textarea
+                          placeholder="Descrição e texto do post..."
+                          rows={4}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Agendar para</Label>
+                        <Input type="datetime-local" />
+                      </div>
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setNovoConteudo(false)}
+                      >
+                        Salvar Rascunho
+                      </Button>
+                      <Button onClick={() => setNovoConteudo(false)}>
+                        Agendar
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
 
-            {/* Stats de Conteúdo */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <StatsCard
-                title="Posts Publicados"
-                value={conteudos.filter((c) => c.status === "PUBLICADO").length}
-                icon={CheckCircle}
-                color="green"
-              />
-              <StatsCard
-                title="Agendados"
-                value={conteudos.filter((c) => c.status === "AGENDADO").length}
-                icon={Clock}
-                color="yellow"
-              />
-              <StatsCard
-                title="Engajamento Total"
-                value={formatarNumero(
-                  conteudos.reduce(
-                    (acc, c) =>
-                      acc +
-                      c.engajamento.curtidas +
-                      c.engajamento.comentarios +
-                      c.engajamento.compartilhamentos,
-                    0,
-                  ),
-                )}
-                icon={Heart}
-                color="red"
-              />
-              <StatsCard
-                title="Alcance Total"
-                value={formatarNumero(
-                  conteudos.reduce((acc, c) => acc + c.alcance, 0),
-                )}
-                icon={Eye}
-                color="blue"
-              />
-            </div>
-
-            {/* Lista de Conteúdos */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Biblioteca de Conteúdo</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {conteudos.map((conteudo) => (
-                    <div
-                      key={conteudo.id}
-                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="outline">{conteudo.tipo}</Badge>
-                          {conteudo.plataforma.map((plat) => (
-                            <Badge
-                              key={plat}
-                              variant="secondary"
-                              className="text-xs"
-                            >
-                              {plat}
-                            </Badge>
-                          ))}
+            {/* Conteúdo Agendado */}
+            <div className="grid gap-6">
+              {conteudos.map((conteudo) => (
+                <Card
+                  key={conteudo.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-start space-x-4">
+                        {conteudo.imagem && (
+                          <img
+                            src={conteudo.imagem}
+                            alt={conteudo.titulo}
+                            className="w-16 h-16 rounded-lg object-cover"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h3 className="font-bold text-lg mb-2">
+                            {conteudo.titulo}
+                          </h3>
+                          <p className="text-muted-foreground mb-3">
+                            {conteudo.descricao}
+                          </p>
+                          <div className="flex items-center space-x-4">
+                            <Badge variant="outline">{conteudo.tipo}</Badge>
+                            <div className="flex items-center space-x-2">
+                              {conteudo.plataforma === "INSTAGRAM" && (
+                                <Instagram className="h-4 w-4 text-pink-600" />
+                              )}
+                              {conteudo.plataforma === "FACEBOOK" && (
+                                <Facebook className="h-4 w-4 text-blue-600" />
+                              )}
+                              {conteudo.plataforma === "WHATSAPP" && (
+                                <MessageSquare className="h-4 w-4 text-green-600" />
+                              )}
+                              <span className="text-sm">
+                                {conteudo.plataforma}
+                              </span>
+                            </div>
+                            {conteudo.agendadoPara && (
+                              <div className="flex items-center space-x-2">
+                                <Clock className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm text-muted-foreground">
+                                  {conteudo.agendadoPara.toLocaleDateString(
+                                    "pt-BR",
+                                  )}{" "}
+                                  às{" "}
+                                  {conteudo.agendadoPara.toLocaleTimeString(
+                                    "pt-BR",
+                                    {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    },
+                                  )}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
                         <Badge
                           variant={
                             conteudo.status === "PUBLICADO"
@@ -1057,69 +966,57 @@ export default function MarketingDashboard() {
                         >
                           {conteudo.status}
                         </Badge>
-                      </div>
-
-                      <h4 className="font-bold mb-2">{conteudo.titulo}</h4>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        {conteudo.descricao}
-                      </p>
-
-                      {conteudo.status === "PUBLICADO" && (
-                        <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
-                          <div className="flex items-center space-x-2">
-                            <Heart className="h-4 w-4 text-red-500" />
-                            <span>{conteudo.engajamento.curtidas}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <MessageSquare className="h-4 w-4 text-blue-500" />
-                            <span>{conteudo.engajamento.comentarios}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Share2 className="h-4 w-4 text-green-500" />
-                            <span>
-                              {conteudo.engajamento.compartilhamentos}
-                            </span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Eye className="h-4 w-4 text-purple-500" />
-                            <span>{formatarNumero(conteudo.alcance)}</span>
-                          </div>
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="outline">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                      )}
-
-                      {conteudo.agendamento && (
-                        <p className="text-sm text-muted-foreground mb-3">
-                          <Calendar className="h-3 w-3 inline mr-1" />
-                          Agendado para{" "}
-                          {conteudo.agendamento.toLocaleDateString(
-                            "pt-BR",
-                          )} às{" "}
-                          {conteudo.agendamento.toLocaleTimeString("pt-BR", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      )}
-
-                      <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <BarChart3 className="h-4 w-4" />
-                        </Button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+
+                    {conteudo.engajamento && (
+                      <div className="grid grid-cols-4 gap-4 pt-4 border-t">
+                        <div className="text-center">
+                          <p className="text-xl font-bold">
+                            {conteudo.engajamento.curtidas}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Curtidas
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xl font-bold">
+                            {conteudo.engajamento.comentarios}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Comentários
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xl font-bold">
+                            {conteudo.engajamento.compartilhamentos}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Compartilhamentos
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xl font-bold">
+                            {conteudo.engajamento.salvamentos}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Salvamentos
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </TabsContent>
 
           {/* Analytics */}
@@ -1138,232 +1035,132 @@ export default function MarketingDashboard() {
               </div>
             </div>
 
-            {/* Analytics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="border-0 shadow-lg">
+            {/* Métricas Detalhadas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Card>
                 <CardHeader>
-                  <CardTitle>Tendência de Leads</CardTitle>
+                  <CardTitle>Tráfego do Site</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center">
-                    <p className="text-4xl font-bold text-green-600 mb-2">
-                      +47%
-                    </p>
-                    <p className="text-muted-foreground">vs mês anterior</p>
-                    <div className="mt-4 h-32 bg-gradient-to-t from-green-100 to-green-50 rounded-lg flex items-end justify-center">
-                      <LineChart className="h-16 w-16 text-green-600" />
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span>Visitantes Únicos</span>
+                      <span className="font-bold">8,431</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Visualizações</span>
+                      <span className="font-bold">12,450</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Tempo Médio</span>
+                      <span className="font-bold">2m 34s</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Taxa de Rejeição</span>
+                      <span className="font-bold text-green-600">42%</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-lg">
+              <Card>
                 <CardHeader>
-                  <CardTitle>Custo por Aquisição</CardTitle>
+                  <CardTitle>Origem do Tráfego</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center">
-                    <p className="text-4xl font-bold text-blue-600 mb-2">
-                      -23%
-                    </p>
-                    <p className="text-muted-foreground">
-                      Redução no CPA médio
-                    </p>
-                    <div className="mt-4 h-32 bg-gradient-to-t from-blue-100 to-blue-50 rounded-lg flex items-end justify-center">
-                      <TrendingUp className="h-16 w-16 text-blue-600" />
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span>Orgânico</span>
+                      <span className="font-bold">45%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Redes Sociais</span>
+                      <span className="font-bold">32%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Anúncios Pagos</span>
+                      <span className="font-bold">15%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Direto</span>
+                      <span className="font-bold">8%</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-lg">
+              <Card>
                 <CardHeader>
-                  <CardTitle>Engajamento Social</CardTitle>
+                  <CardTitle>Dispositivos</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center">
-                    <p className="text-4xl font-bold text-purple-600 mb-2">
-                      +89%
-                    </p>
-                    <p className="text-muted-foreground">
-                      Crescimento do engajamento
-                    </p>
-                    <div className="mt-4 h-32 bg-gradient-to-t from-purple-100 to-purple-50 rounded-lg flex items-end justify-center">
-                      <Heart className="h-16 w-16 text-purple-600" />
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span>Mobile</span>
+                      <span className="font-bold">68%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Desktop</span>
+                      <span className="font-bold">28%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Tablet</span>
+                      <span className="font-bold">4%</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
 
-            {/* Insights Avançados */}
+          {/* Blog */}
+          <TabsContent value="blog" className="space-y-6">
+            <BlogManagement userRole="MARKETING" />
+          </TabsContent>
+
+          {/* Leads */}
+          <TabsContent value="leads" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Leads de Marketing</h2>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtrar por Origem
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar Lista
+                </Button>
+              </div>
+            </div>
+
+            {/* Funil de Conversão */}
             <Card>
               <CardHeader>
-                <CardTitle>Insights de IA</CardTitle>
+                <CardTitle>Funil de Conversão</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[
-                    {
-                      insight:
-                        "🎯 Campanhas no Facebook têm 34% melhor performance nas terças e quintas entre 19h-21h",
-                      acao: "Ajustar agendamento",
-                      impacto: "Alto",
-                    },
-                    {
-                      insight:
-                        "📱 Usuários mobile têm 67% mais probabilidade de converter em formulários simplificados",
-                      acao: "Otimizar landing pages",
-                      impacto: "Alto",
-                    },
-                    {
-                      insight:
-                        "🏠 Imóveis com tours virtuais geram 3.2x mais leads qualificados",
-                      acao: "Investir em conteúdo 360°",
-                      impacto: "Médio",
-                    },
-                    {
-                      insight:
-                        "💰 Keywords 'financiamento' e 'entrada facilitada' têm CPC 45% menor",
-                      acao: "Expandir campanhas",
-                      impacto: "Alto",
-                    },
-                  ].map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium mb-1">{item.insight}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Ação recomendada: {item.acao}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <Badge
-                          variant={
-                            item.impacto === "Alto"
-                              ? "default"
-                              : item.impacto === "Médio"
-                                ? "secondary"
-                                : "outline"
-                          }
-                        >
-                          {item.impacto}
-                        </Badge>
-                        <Button size="sm" variant="outline">
-                          Aplicar
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Configurações */}
-          <TabsContent value="configuracoes" className="space-y-6">
-            <h2 className="text-2xl font-bold">Configurações de Marketing</h2>
-
-            {/* Integrações */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Integrações</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {[
-                  {
-                    nome: "Google Ads",
-                    status: "Conectado",
-                    icon: Search,
-                    descricao: "Campanhas de busca e display",
-                  },
-                  {
-                    nome: "Facebook Business",
-                    status: "Conectado",
-                    icon: Facebook,
-                    descricao: "Facebook e Instagram Ads",
-                  },
-                  {
-                    nome: "Google Analytics",
-                    status: "Conectado",
-                    icon: BarChart3,
-                    descricao: "Análise de website",
-                  },
-                  {
-                    nome: "WhatsApp Business API",
-                    status: "Pendente",
-                    icon: MessageSquare,
-                    descricao: "Automação de mensagens",
-                  },
-                ].map((integracao) => (
-                  <div
-                    key={integracao.nome}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <integracao.icon className="h-8 w-8 text-primary" />
-                      <div>
-                        <p className="font-medium">{integracao.nome}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {integracao.descricao}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Badge
-                        variant={
-                          integracao.status === "Conectado"
-                            ? "default"
-                            : "secondary"
-                        }
-                      >
-                        {integracao.status}
-                      </Badge>
-                      <Button size="sm" variant="outline">
-                        {integracao.status === "Conectado"
-                          ? "Gerenciar"
-                          : "Conectar"}
-                      </Button>
-                    </div>
+                  <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                    <span>Visitantes do Site</span>
+                    <span className="font-bold text-xl">12,450</span>
                   </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Automações */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Automações</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Auto-resposta WhatsApp</p>
-                    <p className="text-sm text-muted-foreground">
-                      Resposta automática para novos contatos
-                    </p>
+                  <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                    <span>Leads Gerados</span>
+                    <span className="font-bold text-xl">1,543</span>
                   </div>
-                  <Button size="sm">Configurar</Button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Nutrição de Leads</p>
-                    <p className="text-sm text-muted-foreground">
-                      Email marketing automático para leads
-                    </p>
+                  <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
+                    <span>Leads Qualificados</span>
+                    <span className="font-bold text-xl">389</span>
                   </div>
-                  <Button size="sm">Configurar</Button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Remarketing Pixel</p>
-                    <p className="text-sm text-muted-foreground">
-                      Rastreamento para campanhas de retargeting
-                    </p>
+                  <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
+                    <span>Oportunidades</span>
+                    <span className="font-bold text-xl">156</span>
                   </div>
-                  <Button size="sm">Configurar</Button>
+                  <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+                    <span>Vendas Fechadas</span>
+                    <span className="font-bold text-xl">45</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
