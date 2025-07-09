@@ -1020,24 +1020,49 @@ log_step 13 $TOTAL_STEPS "Aguardando serviços ficarem prontos"
 
 log_info "⏳ Aguardando todos os serviços ficarem online..."
 
-# Aguardar com logs em tempo real
-for i in {1..12}; do
-    wait_with_countdown 10 "Aguardando serviços... (${i}/12)"
+# Aguardar e monitorar com logs em tempo real melhorados
+log_info "🔄 Iniciando monitoramento detalhado dos serviços..."
 
-    # Verificar containers
+for i in {1..18}; do  # Aumentar tempo total de espera
+    wait_with_countdown 10 "Aguardando serviços... (${i}/18)"
+
+    # Verificar containers com detalhes
     RUNNING_CONTAINERS=$(docker-compose ps --filter status=running --services | wc -l)
-    log_info "Containers rodando: $RUNNING_CONTAINERS"
+    TOTAL_SERVICES=$(docker-compose config --services | wc -l)
 
-    # Mostrar logs dos containers que falharam
+    realtime_echo "${BLUE}Status: $RUNNING_CONTAINERS/$TOTAL_SERVICES containers rodando${NC}"
+
+    # Mostrar status detalhado de cada container
+    realtime_echo "${CYAN}Containers ativos:${NC}"
+    docker-compose ps --format "table {{.Name}}\t{{.Status}}" 2>/dev/null | head -10 || true
+
+    # Verificar containers com problemas e mostrar logs
     FAILED_CONTAINERS=$(docker-compose ps --filter status=exited --services)
     if [ ! -z "$FAILED_CONTAINERS" ]; then
         log_warning "⚠️ Containers com problemas: $FAILED_CONTAINERS"
         echo "$FAILED_CONTAINERS" | while read container; do
             if [ ! -z "$container" ]; then
-                log_info "Logs do $container:"
-                docker-compose logs --tail=5 "$container" | head -10
+                log_info "Logs recentes do $container:"
+                docker-compose logs --tail=3 "$container" 2>/dev/null | head -5 || true
+                echo ""
             fi
         done
+    fi
+
+    # Verificar se serviços principais estão prontos
+    monitor_processes "app" 5
+    monitor_processes "postgres" 5
+    monitor_processes "redis" 5
+
+    # Se todos os containers estão rodando, fazer verificação extra
+    if [ $RUNNING_CONTAINERS -eq $TOTAL_SERVICES ]; then
+        log_success "🎯 Todos os containers estão rodando! Verificando APIs..."
+
+        # Testar APIs rapidamente
+        if timeout 5 curl -s http://localhost:3000/api/health > /dev/null 2>&1; then
+            log_success "🚀 API respondendo! Deploy quase pronto..."
+            break
+        fi
     fi
 done
 
