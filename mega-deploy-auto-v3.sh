@@ -924,7 +924,7 @@ test_traefik_dashboard() {
     done
 
     if [ "$dashboard_accessible" = false ]; then
-        log_warning "❌ Dashboard Traefik não acess��vel"
+        log_warning "❌ Dashboard Traefik não acessível"
 
         # Verificar configuração do dashboard
         local traefik_config=$(docker inspect "$traefik_name" --format '{{.Config.Cmd}}' 2>/dev/null)
@@ -1405,7 +1405,7 @@ check_traefik_conflicts_final() {
     realtime_echo "   • Rodando: $traefik_count"
 
     if [ $traefik_count -gt 1 ]; then
-        log_warning "���️ Múltiplos Traefiks rodando - resolvendo conflitos..."
+        log_warning "⚠️ Múltiplos Traefiks rodando - resolvendo conflitos..."
 
         echo "$running_traefiks" | while read traefik; do
             if [ ! -z "$traefik" ]; then
@@ -1670,7 +1670,7 @@ WHITE='\033[1;37m'
 NC='\033[0m'
 
 clear
-realtime_echo "${PURPLE}���� =========================================="
+realtime_echo "${PURPLE}🏠 =========================================="
 realtime_echo "🚀 MEGA DEPLOY AUTOMÁTICO V3 - TEMPO REAL"
 realtime_echo "🏠 Siqueira Campos Imóveis"
 realtime_echo "🔥 APAGA TUDO E REFAZ + LOGS EM TEMPO REAL"
@@ -3197,6 +3197,52 @@ generate_final_status_report() {
         realtime_echo "   ⚠️ Portainer antigo ainda rodando - pode precisar de limpeza manual"
     fi
 
+    # Status do Traefik
+    realtime_echo ""
+    realtime_echo "${CYAN}🔀 Status do Traefik:${NC}"
+
+    local traefik_running=$(docker ps --filter "name=siqueira-traefik" --format "{{.Names}}" 2>/dev/null)
+    local old_traefik=$(docker ps --filter "name=traefik" --format "{{.Names}}" | grep -v "siqueira-traefik" 2>/dev/null)
+
+    if [ ! -z "$traefik_running" ]; then
+        # Testar funcionalidades rapidamente
+        local dashboard_ok="❌"
+        local proxy_ok="❌"
+        local ssl_ok="❌"
+
+        if timeout 5 curl -s http://localhost:8080/api/overview > /dev/null 2>&1; then
+            dashboard_ok="✅"
+        fi
+
+        if timeout 5 curl -s http://localhost:80 > /dev/null 2>&1; then
+            local response=$(timeout 3 curl -s -o /dev/null -w "%{http_code}" http://localhost:80 2>/dev/null)
+            if [ "$response" != "502" ] && [ "$response" != "503" ] && [ "$response" != "504" ]; then
+                proxy_ok="✅"
+            fi
+        fi
+
+        if timeout 5 curl -sk https://localhost:443 > /dev/null 2>&1; then
+            ssl_ok="✅"
+        fi
+
+        realtime_echo "   ✅ Traefik novo funcionando"
+        realtime_echo "   $dashboard_ok Dashboard (http://IP_VPS:8080)"
+        realtime_echo "   $proxy_ok Proxy HTTP (porta 80)"
+        realtime_echo "   $ssl_ok HTTPS/SSL (porta 443)"
+
+        if [ ! -z "$old_traefik" ]; then
+            realtime_echo "   ⚠️ Traefik antigo desabilitado: $old_traefik"
+            realtime_echo "   💡 Erro de Gateway/SSL corrigido!"
+        fi
+    else
+        realtime_echo "   ❌ Traefik não detectado"
+
+        if [ ! -z "$old_traefik" ]; then
+            realtime_echo "   ⚠️ Traefik antigo ainda ativo: $old_traefik"
+            realtime_echo "   🔧 Execute novamente para correção completa"
+        fi
+    fi
+
     # Status das stacks
     local total_stacks=$(docker ps -a --filter "label=com.docker.compose.project" --format "{{.Label \"com.docker.compose.project\"}}" | sort | uniq | grep -v '^$' | wc -l)
     local running_stacks=$(docker ps --filter "label=com.docker.compose.project" --format "{{.Label \"com.docker.compose.project\"}}" | sort | uniq | grep -v '^$' | wc -l)
@@ -3376,7 +3422,7 @@ EOF
 realtime_echo ""
 realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
 realtime_echo "${GREEN}🚀 MEGA DEPLOY AUTOMÁTICO V3 CONCLUÍDO! 🚀${NC}"
-realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉��🎉🎉🎉🎉${NC}"
+realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
 realtime_echo ""
 realtime_echo "${CYAN}🆕 Novidades V3 - Logs em Tempo Real:${NC}"
 realtime_echo "   • 📝 Logs em tempo real durante todo o processo"
