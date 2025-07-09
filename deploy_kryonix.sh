@@ -1364,7 +1364,7 @@ EOF
 intelligent_github_webhook() {
     log "DEPLOY" "🔗 Configurando webhook inteligente do GitHub..."
     
-    # Criar servidor webhook Python avançado
+    # Criar servidor webhook Python avan��ado
     cat > "$KRYONIX_DIR/webhook-server.py" << 'EOF'
 #!/usr/bin/env python3
 import json
@@ -1615,9 +1615,9 @@ intelligent_services_deploy() {
     log "INFO" "⏳ Aguardando serviços base ficarem prontos..."
     sleep 30
     
-    # Iniciar serviços de aplicação
+        # Iniciar serviços de aplicação
     log "DEPLOY" "🚀 Iniciando serviços de aplicação..."
-    docker-compose up -d adminer portainer minio n8n evolution-api prometheus grafana chatgpt-stack
+    docker-compose up -d adminer portainer-siqueira portainer-meuboot minio n8n evolution-api prometheus grafana chatgpt-stack
     
     # Aguardar estabilização
     sleep 20
@@ -1820,7 +1820,7 @@ EOF
     echo "  📁 Diretório Local: $PROJECT_DIR"
     echo "  🔄 Auto-deploy: ATIVO (webhook + systemd)"
     echo "  📊 Monitoramento: ATIVO (Prometheus + Grafana)"
-    echo "  ���️ Segurança: ATIVA (UFW + Fail2ban + HTTPS)"
+    echo "  🛡️ Segurança: ATIVA (UFW + Fail2ban + HTTPS)"
     echo
     
     echo -e "${GREEN}📝 COMANDOS ÚTEIS INTELIGENTES:${NC}"
