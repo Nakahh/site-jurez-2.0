@@ -1376,11 +1376,19 @@ else
     realtime_echo "${GREEN}Timeout atingido. Finalizando script...${NC}"
 fi
 
-# Restaurar descritores de arquivo
-exec 1>&3 2>&4
+# Restaurar descritores de arquivo com segurança
+if [[ -n "${3:-}" ]] && [[ -n "${4:-}" ]]; then
+    exec 1>&3 2>&4 2>/dev/null || true
+fi
 
 realtime_echo ""
 realtime_echo "${GREEN}✅ MEGA DEPLOY V3 FINALIZADO!${NC}"
-realtime_echo "${CYAN}📝 Log salvo em: $LOG_FILE${NC}"
+realtime_echo "${CYAN}📝 Log salvo em: ${LOG_FILE:-"não disponível"}${NC}"
 realtime_echo "${CYAN}📋 Documentação: ACESSO_MEGA_DEPLOY_V3.md${NC}"
 realtime_echo ""
+realtime_echo "${YELLOW}Pressione ENTER para finalizar ou Ctrl+C para sair...${NC}"
+
+# Aguardar indefinidamente até o usuário pressionar ENTER
+read -r final_input || true
+
+realtime_echo "${GREEN}Script finalizado pelo usuário. Obrigado!${NC}"
