@@ -585,7 +585,7 @@ auto_diagnose_and_fix() {
             check_and_fix_dependencies
             ;;
         *"Operation not permitted"*|*"Operation not supported"*)
-            log_fix "🛡️ Problema de sistema. Verificando..."
+            log_fix "🛡��� Problema de sistema. Verificando..."
             check_system_resources
             ;;
         *"timeout"*|*"timed out"*)
@@ -1456,17 +1456,40 @@ show_progress 12 $TOTAL_STEPS
 # ============= PASSO 12: BUILD E DEPLOY =============
 log_step 12 $TOTAL_STEPS "Build e deploy do sistema"
 
-log_info "🚀 Construindo e executando sistema completo V3..."
+log_info "🚀 Construindo e executando sistema ultra-robusto V3..."
 
-# Build em paralelo para acelerar
+# Verificação pré-build
+log_info "🔍 Verificação pré-build..."
+check_and_fix_docker
+check_and_fix_disk_space
+
+# Build com monitoramento avançado
 log_info "📦 Fazendo pull das imagens base..."
-run_with_progress "docker-compose pull --parallel" "Pull das imagens"
+if ! run_with_progress "docker-compose pull --parallel" "Pull das imagens" 600 5; then
+    log_fix "Pull falhou. Tentando pull sequencial..."
+    run_with_progress "docker-compose pull" "Pull sequencial das imagens" 900 3
+fi
 
-log_info "🔨 Construindo aplicação..."
-run_with_progress "docker-compose build --parallel" "Build da aplicação"
+log_info "🔨 Construindo aplicação com cache otimizado..."
+# Limpeza preventiva antes do build
+docker builder prune -f 2>/dev/null || true
 
-log_info "🚀 Iniciando todos os serviços..."
-run_with_progress "docker-compose up -d" "Iniciar serviços"
+if ! run_with_progress "docker-compose build --parallel --no-cache" "Build da aplicação" 1200 3; then
+    log_fix "Build paralelo falhou. Tentando build sequencial..."
+    run_with_progress "docker-compose build" "Build sequencial" 1800 2
+fi
+
+# Verificação pós-build
+log_info "🔍 Verificação pós-build..."
+docker images | grep -E "(siqueira|<none>)" || true
+
+log_info "🚀 Iniciando todos os serviços com restart automático..."
+if ! run_with_progress "docker-compose up -d --remove-orphans" "Iniciar serviços" 300 3; then
+    log_fix "Início falhou. Tentando início forçado..."
+    docker-compose down --remove-orphans 2>/dev/null || true
+    sleep 5
+    run_with_progress "docker-compose up -d --force-recreate" "Início forçado" 300 2
+fi
 
 log_success "✅ Sistema iniciado!"
 show_progress 13 $TOTAL_STEPS
