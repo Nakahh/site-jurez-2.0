@@ -306,7 +306,7 @@ intelligent_swarm_setup() {
     docker network create -d overlay --attachable --scope swarm frontend_network 2>/dev/null || true
     docker network create -d overlay --attachable --scope swarm backend_network 2>/dev/null || true
     
-    # Configurar nó como manager
+    # Configurar n�� como manager
     docker node update --label-add role=manager $(docker node ls -q)
     
     log "SUCCESS" "Docker Swarm configurado com sucesso!"
@@ -1388,7 +1388,7 @@ import time
 WEBHOOK_SECRET = "kryonix_webhook_secret_2024"
 PROJECT_DIR = "/opt/site-jurez-2.0"
 KRYONIX_DIR = "/opt/kryonix"
-LOG_FILE = "/tmp/kryonix-webhook.log"
+LOG_FILE = "/var/log/kryonix-webhook.log"
 
 # Configurar logging
 logging.basicConfig(
