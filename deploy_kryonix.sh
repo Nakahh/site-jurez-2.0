@@ -107,11 +107,17 @@ EOF
 # Verificar se é root
 check_root() {
     if [[ $EUID -ne 0 ]]; then
-        log "ERROR" "Este script deve ser executado como root!"
+        echo -e "${RED}❌ Este script deve ser executado como root!${NC}"
         echo
         echo -e "${YELLOW}Execute: ${BOLD}sudo bash deploy_kryonix.sh${NC}"
         exit 1
     fi
+
+    # Criar diretório de logs com permissões corretas
+    mkdir -p /var/log
+    touch "$LOG_FILE"
+    chmod 666 "$LOG_FILE"
+
     log "SUCCESS" "Executando como root ✓"
 }
 
@@ -1631,7 +1637,7 @@ intelligent_services_deploy() {
 
 # Configuração inteligente dos bancos de dados
 intelligent_database_config() {
-    log "INSTALL" "������ Configurando bancos de dados inteligentemente..."
+    log "INSTALL" "���️ Configurando bancos de dados inteligentemente..."
     
     # Aguardar PostgreSQL estar pronto
     log "INFO" "⏳ Aguardando PostgreSQL estar pronto..."
