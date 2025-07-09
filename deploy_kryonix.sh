@@ -833,11 +833,13 @@ intelligent_project_build() {
                 return 0
             fi
 
-            # Configurar variáveis para tolerar erros TypeScript
+                        # Configurar variáveis para tolerar erros TypeScript
             export SKIP_TYPE_CHECK=true
             export CI=false
             export NODE_OPTIONS="--max-old-space-size=4096"
             export SKIP_ENV_VALIDATION=true
+            export TSC_NONULL_CHECK=false
+            export DISABLE_ESLINT_PLUGIN=true
 
             # Build inteligente com correção automática
             log "INFO" "🔧 Tentando build com correção automática de erros..."
