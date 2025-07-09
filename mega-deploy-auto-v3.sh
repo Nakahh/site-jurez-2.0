@@ -51,9 +51,9 @@ cleanup() {
     exit 1
 }
 
-# Configurar traps para diferentes sinais
-trap cleanup SIGINT SIGTERM
-trap 'echo "Script finalizado normalmente"' EXIT
+# Configurar traps para diferentes sinais de forma segura
+trap cleanup SIGINT SIGTERM 2>/dev/null || true
+trap 'echo "Script finalizado normalmente" 2>/dev/null || true' EXIT 2>/dev/null || true
 
 # Função para manter processo vivo
 keep_alive() {
