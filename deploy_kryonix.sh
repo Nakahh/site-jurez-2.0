@@ -238,6 +238,19 @@ intelligent_system_update() {
     # Configurar timezone
     timedatectl set-timezone America/Sao_Paulo 2>/dev/null || true
     
+        # Instalar Node.js LTS após dependências principais
+    log "INSTALL" "Instalando Node.js LTS via NodeSource..."
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - 2>/dev/null || true
+    apt-get install -y nodejs 2>/dev/null || true
+
+    # Verificar se npm funciona, se não, tentar resolver
+    if ! command -v npm &> /dev/null; then
+        log "WARNING" "NPM não encontrado, tentando resolver conflitos..."
+        apt-get remove -y nodejs npm 2>/dev/null || true
+        apt-get autoremove -y 2>/dev/null || true
+        apt-get install -y nodejs npm 2>/dev/null || true
+    fi
+
     log "SUCCESS" "Sistema Ubuntu atualizado com sucesso!"
 }
 
@@ -1533,7 +1546,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
                         self.end_headers()
                         
                 except json.JSONDecodeError:
-                    log_message("❌ Payload JSON inválido", "ERROR")
+                    log_message("�� Payload JSON inválido", "ERROR")
                     self.send_response(400)
                     self.end_headers()
             else:
@@ -1770,7 +1783,7 @@ intelligent_https_test() {
             log "SUCCESS" "✅ $domain - HTTPS funcionando"
             ((successful_tests++))
         else
-            log "WARNING" "⚠️ $domain - HTTPS não acessível (normal se certificados ainda estão sendo gerados)"
+            log "WARNING" "⚠️ $domain - HTTPS não acessível (normal se certificados ainda est��o sendo gerados)"
         fi
     done
     
