@@ -1306,7 +1306,71 @@ realtime_echo "${PURPLE}🏠 Siqueira Campos Imóveis V3 ONLINE! 🏠${NC}"
 realtime_echo "${GREEN}Deploy executado em $(date)${NC}"
 realtime_echo ""
 
-# Manter o terminal aberto por 30 segundos para visualização
-wait_with_countdown 30 "Mantendo terminal aberto para visualização"
+# Finalização melhorada com opção de manter terminal aberto
+realtime_echo ""
+realtime_echo "${GREEN}🎉 DEPLOY V3 FINALIZADO COM SUCESSO!${NC}"
+realtime_echo ""
 
-log_success "🎉 DEPLOY V3 FINALIZADO COM SUCESSO!"
+# Perguntar se usuário quer manter terminal aberto
+realtime_echo "${YELLOW}Opções:${NC}"
+realtime_echo "1) Manter terminal aberto para monitoramento"
+realtime_echo "2) Finalizar script agora"
+realtime_echo "3) Mostrar logs dos containers"
+realtime_echo ""
+
+# Aguardar por 15 segundos ou input do usuário
+realtime_echo "${CYAN}Escolha uma opção (1-3) ou aguarde 15s para finalizar:${NC}"
+
+# Usar timeout para não travar indefinidamente
+if read -t 15 -r choice; then
+    case $choice in
+        1)
+            realtime_echo "${GREEN}Mantendo terminal aberto para monitoramento...${NC}"
+            realtime_echo "${CYAN}Pressione Ctrl+C para sair quando quiser${NC}"
+            realtime_echo ""
+
+            # Loop de monitoramento
+            while true; do
+                realtime_echo "=== Status dos Containers ($(date)) ==="
+                docker-compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null || true
+                echo ""
+
+                # Verificar APIs
+                if curl -s http://localhost:3000/api/health > /dev/null 2>&1; then
+                    realtime_echo "✅ API Health: OK"
+                else
+                    realtime_echo "❌ API Health: FAIL"
+                fi
+
+                echo ""
+                wait_with_countdown 30 "Próxima verificação em"
+            done
+            ;;
+        2)
+            realtime_echo "${GREEN}Finalizando script...${NC}"
+            ;;
+        3)
+            realtime_echo "${CYAN}Logs dos containers:${NC}"
+            docker-compose logs --tail=20 2>/dev/null || true
+
+            realtime_echo ""
+            realtime_echo "${YELLOW}Pressione ENTER para finalizar...${NC}"
+            read -r
+            ;;
+        *)
+            realtime_echo "${YELLOW}Opção inválida. Finalizando...${NC}"
+            ;;
+    esac
+else
+    realtime_echo ""
+    realtime_echo "${GREEN}Timeout atingido. Finalizando script...${NC}"
+fi
+
+# Restaurar descritores de arquivo
+exec 1>&3 2>&4
+
+realtime_echo ""
+realtime_echo "${GREEN}✅ MEGA DEPLOY V3 FINALIZADO!${NC}"
+realtime_echo "${CYAN}📝 Log salvo em: $LOG_FILE${NC}"
+realtime_echo "${CYAN}📋 Documentação: ACESSO_MEGA_DEPLOY_V3.md${NC}"
+realtime_echo ""
