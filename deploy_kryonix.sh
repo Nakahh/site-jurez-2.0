@@ -276,7 +276,7 @@ intelligent_docker_install() {
 }
 EOF
     
-    # Iniciar e habilitar serviços
+    # Iniciar e habilitar servi��os
     systemctl start docker
     systemctl enable docker
     systemctl start containerd
@@ -637,16 +637,23 @@ EOF
 intelligent_database_setup() {
     log "INSTALL" "🗄️ Configurando bancos de dados inteligentes..."
     
-    # Script de inicialização do PostgreSQL
+        # Script de inicialização do PostgreSQL
     cat > "$KRYONIX_DIR/postgres/init/init.sql" << EOF
 -- Criar bancos de dados
-CREATE DATABASE IF NOT EXISTS n8n_db;
-CREATE DATABASE IF NOT EXISTS evolution_db;
-CREATE DATABASE IF NOT EXISTS chatgpt_db;
-CREATE DATABASE IF NOT EXISTS project_db;
+SELECT 'CREATE DATABASE n8n_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'n8n_db')\\gexec
+SELECT 'CREATE DATABASE evolution_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'evolution_db')\\gexec
+SELECT 'CREATE DATABASE chatgpt_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'chatgpt_db')\\gexec
+SELECT 'CREATE DATABASE project_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'project_db')\\gexec
 
 -- Criar usuário para aplicação
-CREATE USER IF NOT EXISTS app_user WITH PASSWORD '$POSTGRES_PASSWORD';
+DO
+\$\$
+BEGIN
+   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'app_user') THEN
+      CREATE USER app_user WITH PASSWORD '$POSTGRES_PASSWORD';
+   END IF;
+END
+\$\$;
 
 -- Conceder permissões
 GRANT ALL PRIVILEGES ON DATABASE n8n_db TO app_user;
@@ -1869,7 +1876,7 @@ EOF
     echo
     
     log "SUCCESS" "🎉 SISTEMA KRYONIX INTELIGENTE TOTALMENTE OPERACIONAL!"
-    log "SUCCESS" "🚀 Todos os servi��os estão rodando com HTTPS automático!"
+    log "SUCCESS" "🚀 Todos os servi��os estão rodando com HTTPS autom��tico!"
     log "SUCCESS" "🔄 Auto-deploy ativo - push no GitHub atualizará automaticamente!"
     echo
     
