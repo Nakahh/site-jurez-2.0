@@ -7,6 +7,7 @@
 # ============= CONFIGURAÇÕES V3 MELHORADAS =============
 # Configurações para manter script rodando sem fechar sozinho
 set +e  # NÃO parar em erros - permitir continuidade
+set +u  # NÃO parar com variáveis não definidas
 set -o pipefail  # Manter detecção de erros em pipes
 IFS=$'\n\t'       # Separador seguro
 
