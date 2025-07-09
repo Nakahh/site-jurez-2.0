@@ -661,7 +661,7 @@ GRANT ALL PRIVILEGES ON DATABASE evolution_db TO app_user;
 GRANT ALL PRIVILEGES ON DATABASE chatgpt_db TO app_user;
 GRANT ALL PRIVILEGES ON DATABASE project_db TO app_user;
 
--- Configuraç��es de performance
+-- Configurações de performance
 ALTER SYSTEM SET shared_preload_libraries = 'pg_stat_statements';
 ALTER SYSTEM SET max_connections = 200;
 ALTER SYSTEM SET shared_buffers = '256MB';
@@ -1633,7 +1633,7 @@ intelligent_services_deploy() {
     create_intelligent_prometheus_config
     
     # Build dos containers do projeto
-    log "DEPLOY" "��� Fazendo build dos containers do projeto..."
+    log "DEPLOY" "🔨 Fazendo build dos containers do projeto..."
     docker-compose build project-frontend project-backend
     
     # Iniciar serviços em ordem
@@ -1744,7 +1744,7 @@ intelligent_health_check() {
         log "SUCCESS" "🎯 Sistema está majoritariamente saudável!"
         return 0
     else
-        log "WARNING" "⚠�� Sistema precisa de atenção - muitos serviços com problemas"
+        log "WARNING" "⚠️ Sistema precisa de atenção - muitos serviços com problemas"
         return 1
     fi
 }
@@ -1876,7 +1876,7 @@ EOF
     echo
     
     log "SUCCESS" "🎉 SISTEMA KRYONIX INTELIGENTE TOTALMENTE OPERACIONAL!"
-    log "SUCCESS" "🚀 Todos os servi��os estão rodando com HTTPS automático!"
+        log "SUCCESS" "🚀 Todos os serviços estão rodando com HTTPS automático!"
     log "SUCCESS" "🔄 Auto-deploy ativo - push no GitHub atualizará automaticamente!"
     echo
     
@@ -1896,7 +1896,7 @@ intelligent_main() {
     check_root
     
     log "DEPLOY" "🚀 Iniciando deploy KRYONIX INTELIGENTE..."
-    log "INFO" "📋 Todas as operações são automatizadas e �� prova de falhas"
+    log "INFO" "📋 Todas as operações são automatizadas e à prova de falhas"
     
     # Fase 1: Preparação Inteligente
     log "DEPLOY" "🔧 FASE 1: Preparação e Reset Inteligente"
