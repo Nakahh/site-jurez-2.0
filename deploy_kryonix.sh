@@ -14,6 +14,15 @@ LOG_FILE="/var/log/kryonix-install.log"
 PROJECT_DIR="/opt/site-jurez-2.0"
 KRYONIX_DIR="/opt/kryonix"
 
+# Inicializar arquivo de log com permissões corretas
+if [[ $EUID -eq 0 ]]; then
+    mkdir -p /var/log
+    touch "$LOG_FILE" 2>/dev/null || LOG_FILE="/tmp/kryonix-install.log"
+    chmod 666 "$LOG_FILE" 2>/dev/null || true
+else
+    LOG_FILE="/tmp/kryonix-install.log"
+fi
+
 # Cores para output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -306,7 +315,7 @@ intelligent_swarm_setup() {
     docker network create -d overlay --attachable --scope swarm frontend_network 2>/dev/null || true
     docker network create -d overlay --attachable --scope swarm backend_network 2>/dev/null || true
     
-    # Configurar n�� como manager
+    # Configurar nó como manager
     docker node update --label-add role=manager $(docker node ls -q)
     
     log "SUCCESS" "Docker Swarm configurado com sucesso!"
@@ -1853,7 +1862,7 @@ EOF
     echo
     
     log "SUCCESS" "🎉 SISTEMA KRYONIX INTELIGENTE TOTALMENTE OPERACIONAL!"
-    log "SUCCESS" "🚀 Todos os serviços estão rodando com HTTPS automático!"
+    log "SUCCESS" "🚀 Todos os servi��os estão rodando com HTTPS automático!"
     log "SUCCESS" "🔄 Auto-deploy ativo - push no GitHub atualizará automaticamente!"
     echo
     
