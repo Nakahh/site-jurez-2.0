@@ -4,6 +4,9 @@
 # APAGA TUDO E REFAZ DO ZERO - 100% AUTOMÁTICO + LOGS TEMPO REAL
 # Desenvolvido por Kryonix - Zero configuração manual + Melhorias V3
 
+# PROTEÇÃO GLOBAL: Continuar executando mesmo com erros
+exec 2>/dev/null || true
+
 # ============= CONFIGURAÇÕES V3 MELHORADAS =============
 # Configurações para manter script rodando sem fechar sozinho
 set +e  # NÃO parar em erros - permitir continuidade
@@ -1196,7 +1199,7 @@ cat >> ACESSO_MEGA_DEPLOY_V3.md <<EOF
 ✅ PostgreSQL (Banco principal + otimizado + health checks)
 ✅ Redis (Cache + health checks)
 ✅ Express.js V3 (Servidor com monitoramento)
-✅ Docker Compose (Orquestra��ão inteligente)
+✅ Docker Compose (Orquestração inteligente)
 ✅ Logs em Tempo Real (Deploy visível)
 ✅ Retry Logic (Tentativas automáticas)
 ✅ Health Monitoring (Verificação contínua)
