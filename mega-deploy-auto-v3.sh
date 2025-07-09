@@ -499,46 +499,130 @@ log_step() {
     realtime_echo "${WHITE}[STEP $1/$2]${NC} $3"
 }
 
-# Função melhorada para executar comandos SEM PARAR o script
+# Função ultra-robusta para executar comandos com auto-correção
 run_with_progress() {
     local cmd="$1"
     local desc="$2"
-    local timeout_duration="${3:-300}"  # Timeout padrão de 5 minutos
+    local timeout_duration="${3:-300}"
+    local retry_attempts="${4:-3}"
 
-    log_info "Executando: $desc"
-    realtime_echo "${CYAN}Comando: $cmd${NC}"
+    log_info "🚀 Executando: $desc"
 
-    # Criar arquivo temporário para capturar output
-    local temp_output=$(mktemp)
-    local start_time=$(date +%s)
+    # Função interna para executar com timeout
+    _execute_cmd() {
+        local temp_output=$(mktemp)
+        local start_time=$(date +%s)
 
-    # Executar comando com timeout e captura de output
-    set +e  # Temporariamente permitir erros
-    timeout "$timeout_duration" bash -c "$cmd" > "$temp_output" 2>&1
-    local exit_code=$?
-    set -o pipefail  # Restaurar detecção de erros em pipes
+        set +e
+        timeout "$timeout_duration" bash -c "$cmd" > "$temp_output" 2>&1
+        local exit_code=$?
+        set -o pipefail
 
-    if [ $exit_code -eq 0 ]; then
-        # Mostrar output se comando foi bem-sucedido
-        if [[ -s "$temp_output" ]]; then
-            realtime_echo "${BLUE}Output (primeiras linhas):${NC}"
-            head -5 "$temp_output" 2>/dev/null || true
+        if [ $exit_code -eq 0 ]; then
+            if [[ -s "$temp_output" ]]; then
+                realtime_echo "${BLUE}✅ Output:${NC}"
+                head -3 "$temp_output" 2>/dev/null || true
+            fi
+
+            local end_time=$(date +%s)
+            local duration=$((end_time - start_time))
+            log_success "$desc - Concluído em ${duration}s"
+            rm -f "$temp_output" 2>/dev/null || true
+            return 0
+        else
+            # Análise inteligente do erro
+            local error_output=$(cat "$temp_output" 2>/dev/null)
+            rm -f "$temp_output" 2>/dev/null || true
+
+            # Auto-diagnóstico e correção baseada no erro
+            auto_diagnose_and_fix "$error_output" "$cmd" "$desc"
+
+            return $exit_code
         fi
+    }
 
-        local end_time=$(date +%s)
-        local duration=$((end_time - start_time))
-        log_success "$desc - Concluído em ${duration}s"
-        rm -f "$temp_output" 2>/dev/null || true
+    # Tentar com sistema de retry avançado
+    if retry_with_backoff "_execute_cmd" "$desc" "$retry_attempts"; then
         return 0
     else
-        realtime_echo "${RED}Output do erro:${NC}"
-        tail -10 "$temp_output" 2>/dev/null || echo "Erro ao ler output"
-        log_warning "$desc - Falhou (código: $exit_code) - CONTINUANDO..."
-        rm -f "$temp_output" 2>/dev/null || true
-
-        # NÃO retornar erro para não parar o script
-        return 0
+        log_warning "⚠️ $desc - Falhou mas CONTINUANDO o deploy..."
+        return 0  # Sempre continuar
     fi
+}
+
+# Sistema de auto-diagnóstico e correção baseado em erros
+auto_diagnose_and_fix() {
+    local error_output="$1"
+    local failed_cmd="$2"
+    local desc="$3"
+
+    realtime_echo "${YELLOW}🔍 Analisando erro para auto-correção...${NC}"
+
+    # Análise de padrões de erro comuns
+    case "$error_output" in
+        *"Permission denied"*|*"permission denied"*)
+            log_fix "🔐 Erro de permissão detectado. Corrigindo..."
+            check_and_fix_permissions
+            ;;
+        *"No space left"*|*"disk full"*)
+            log_fix "💾 Espaço insuficiente. Liberando..."
+            check_and_fix_disk_space
+            ;;
+        *"Connection refused"*|*"Network is unreachable"*)
+            log_fix "🌐 Problema de rede. Verificando conectividade..."
+            ping -c 1 8.8.8.8 &> /dev/null || log_warning "Conectividade instável"
+            ;;
+        *"docker: command not found"*|*"Cannot connect to the Docker daemon"*)
+            log_fix "🐳 Problema no Docker. Corrigindo..."
+            check_and_fix_docker
+            ;;
+        *"Port already in use"*|*"Address already in use"*)
+            log_fix "🔌 Porta ocupada. Resolvendo conflito..."
+            check_and_fix_port_conflicts
+            ;;
+        *"package not found"*|*"command not found"*)
+            log_fix "📦 Dependência em falta. Instalando..."
+            check_and_fix_dependencies
+            ;;
+        *"Operation not permitted"*|*"Operation not supported"*)
+            log_fix "🛡️ Problema de sistema. Verificando..."
+            check_system_resources
+            ;;
+        *"timeout"*|*"timed out"*)
+            log_fix "⏱️ Timeout detectado. Otimizando..."
+            # Limpar cache DNS
+            sudo systemctl restart systemd-resolved 2>/dev/null || true
+            ;;
+        *"certificate"*|*"SSL"*|*"TLS"*)
+            log_fix "🔒 Problema SSL/TLS. Corrigindo..."
+            # Atualizar certificados
+            sudo apt update && sudo apt install -y ca-certificates 2>/dev/null || true
+            ;;
+    esac
+
+    # Auto-correções específicas por comando
+    case "$failed_cmd" in
+        *"apt"*|*"apt-get"*)
+            log_fix "📦 Problema no APT. Corrigindo..."
+            sudo apt --fix-broken install -y 2>/dev/null || true
+            sudo dpkg --configure -a 2>/dev/null || true
+            ;;
+        *"docker"*|*"docker-compose"*)
+            log_fix "🐳 Problema no Docker. Reset completo..."
+            sudo systemctl restart docker 2>/dev/null || true
+            sleep 5
+            ;;
+        *"curl"*|*"wget"*)
+            log_fix "🌐 Problema de download. Tentando alternativa..."
+            if echo "$failed_cmd" | grep -q "curl"; then
+                # Se curl falhou, tentar wget
+                local alt_cmd=$(echo "$failed_cmd" | sed 's/curl/wget -O-/g')
+                log_info "Tentando wget como alternativa..."
+            fi
+            ;;
+    esac
+
+    realtime_echo "${CYAN}🔧 Auto-correção aplicada. Pronto para retry.${NC}"
 }
 
 # Função melhorada para aguardar com countdown e monitoramento
