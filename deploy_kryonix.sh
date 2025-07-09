@@ -69,26 +69,33 @@ log() {
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     
     case $level in
-        "SUCCESS")
-            echo -e "${GREEN}✅ [$timestamp] $message${NC}" | tee -a "$LOG_FILE"
+                "SUCCESS")
+            echo -e "${GREEN}✅ [$timestamp] $message${NC}"
+            echo "[$timestamp] [SUCCESS] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
-        "ERROR")
-            echo -e "${RED}❌ [$timestamp] $message${NC}" | tee -a "$LOG_FILE"
+                "ERROR")
+            echo -e "${RED}❌ [$timestamp] $message${NC}"
+            echo "[$timestamp] [ERROR] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
-        "WARNING")
-            echo -e "${YELLOW}⚠️  [$timestamp] $message${NC}" | tee -a "$LOG_FILE"
+                "WARNING")
+            echo -e "${YELLOW}⚠️  [$timestamp] $message${NC}"
+            echo "[$timestamp] [WARNING] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
-        "INFO")
-            echo -e "${BLUE}ℹ️  [$timestamp] $message${NC}" | tee -a "$LOG_FILE"
+                "INFO")
+            echo -e "${BLUE}ℹ️  [$timestamp] $message${NC}"
+            echo "[$timestamp] [INFO] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
-        "INSTALL")
-            echo -e "${PURPLE}⚙️  [$timestamp] $message${NC}" | tee -a "$LOG_FILE"
+                "INSTALL")
+            echo -e "${PURPLE}���️  [$timestamp] $message${NC}"
+            echo "[$timestamp] [INSTALL] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
-        "DEPLOY")
-            echo -e "${CYAN}🚀 [$timestamp] $message${NC}" | tee -a "$LOG_FILE"
+                "DEPLOY")
+            echo -e "${CYAN}🚀 [$timestamp] $message${NC}"
+            echo "[$timestamp] [DEPLOY] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
-        *)
-            echo -e "${BOLD}📋 [$timestamp] $message${NC}" | tee -a "$LOG_FILE"
+                *)
+            echo -e "${BOLD}📋 [$timestamp] $message${NC}"
+            echo "[$timestamp] [DEFAULT] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
     esac
 }
@@ -541,7 +548,7 @@ intelligent_project_analysis() {
     log "SUCCESS" "Análise do projeto concluída!"
     echo "  🎯 Tipo: $PROJECT_TYPE"
     echo "  🌐 Frontend Port: $FRONTEND_PORT"
-    echo "  ⚙️  Backend Port: $BACKEND_PORT"
+    echo "  ⚙��  Backend Port: $BACKEND_PORT"
 }
 
 # Criação de estrutura inteligente
@@ -1838,7 +1845,7 @@ EOF
     echo "  🛡️ Segurança: ATIVA (UFW + Fail2ban + HTTPS)"
     echo
     
-    echo -e "${GREEN}📝 COMANDOS ÚTEIS INTELIGENTES:${NC}"
+    echo -e "${GREEN}📝 COMANDOS ��TEIS INTELIGENTES:${NC}"
     echo "  📊 Status geral:                docker-compose ps"
     echo "  📋 Logs em tempo real:          docker-compose logs -f"
     echo "  🔄 Restart serviços:            docker-compose restart"
