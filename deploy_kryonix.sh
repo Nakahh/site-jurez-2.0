@@ -276,7 +276,7 @@ intelligent_docker_install() {
 }
 EOF
     
-    # Iniciar e habilitar servi��os
+    # Iniciar e habilitar serviços
     systemctl start docker
     systemctl enable docker
     systemctl start containerd
@@ -1666,12 +1666,12 @@ intelligent_database_config() {
     log "INFO" "⏳ Aguardando PostgreSQL estar pronto..."
     timeout 120 bash -c 'until docker exec kryonix-postgres pg_isready -U kryonix_user -d kryonix_main; do sleep 3; done'
     
-    # Criar bancos de dados adicionais
+        # Criar bancos de dados adicionais
     log "INFO" "📋 Criando bancos de dados..."
-    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "CREATE DATABASE IF NOT EXISTS n8n_db;" 2>/dev/null || true
-    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "CREATE DATABASE IF NOT EXISTS evolution_db;" 2>/dev/null || true
-    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "CREATE DATABASE IF NOT EXISTS chatgpt_db;" 2>/dev/null || true
-    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "CREATE DATABASE IF NOT EXISTS project_db;" 2>/dev/null || true
+    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "SELECT 'CREATE DATABASE n8n_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'n8n_db')\\gexec" 2>/dev/null || true
+    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "SELECT 'CREATE DATABASE evolution_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'evolution_db')\\gexec" 2>/dev/null || true
+    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "SELECT 'CREATE DATABASE chatgpt_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'chatgpt_db')\\gexec" 2>/dev/null || true
+    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "SELECT 'CREATE DATABASE project_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'project_db')\\gexec" 2>/dev/null || true
     
     # Executar migrações do projeto se existir Prisma
     if [ -f "$PROJECT_DIR/prisma/schema.prisma" ]; then
@@ -1837,7 +1837,7 @@ EOF
     echo -e "${RED}🔐 CREDENCIAIS IMPORTANTES:${NC}"
     echo "  🐳 Portainer: $PORTAINER_USER / $PORTAINER_PASS"
     echo "  📊 Grafana: admin / $GRAFANA_PASSWORD"
-    echo "  🔗 N8N: kryonix / $N8N_PASSWORD"
+    echo "  �� N8N: kryonix / $N8N_PASSWORD"
     echo "  🗄️ PostgreSQL: kryonix_user / $POSTGRES_PASSWORD"
     echo "  📦 MinIO: kryonix_minio_admin / $MINIO_PASSWORD"
     echo
@@ -1876,7 +1876,7 @@ EOF
     echo
     
     log "SUCCESS" "🎉 SISTEMA KRYONIX INTELIGENTE TOTALMENTE OPERACIONAL!"
-    log "SUCCESS" "🚀 Todos os servi��os estão rodando com HTTPS autom��tico!"
+    log "SUCCESS" "🚀 Todos os servi��os estão rodando com HTTPS automático!"
     log "SUCCESS" "🔄 Auto-deploy ativo - push no GitHub atualizará automaticamente!"
     echo
     
