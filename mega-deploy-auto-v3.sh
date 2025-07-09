@@ -64,20 +64,20 @@ keep_alive() {
     done &
 }
 
-# Função melhorada para output em tempo real sem buffering
+# Função simplificada para output em tempo real
 realtime_echo() {
     local message="$1"
 
-    # Output para stdout e stderr com flush forçado
-    printf "%s\n" "$message" | tee /dev/stderr
+    # Output simples que funciona sempre
+    echo -e "$message" 2>/dev/null || echo "$message"
 
-    # Forçar flush dos buffers
-    exec >&3 2>&4
-    printf "%s\n" "$message"
-    exec > >(tee -a "$LOG_FILE") 2>&1
+    # Salvar no log se arquivo existe
+    if [[ -n "${LOG_FILE:-}" ]]; then
+        echo -e "$message" >> "$LOG_FILE" 2>/dev/null || true
+    fi
 
     # Micro pausa para sincronização
-    sleep 0.05
+    sleep 0.02
 }
 
 # Função para progress bar
@@ -1288,7 +1288,7 @@ realtime_echo ""
 
 if [ "$USE_ALT_PORTS" = true ]; then
     realtime_echo "${YELLOW}⚠️ Usando portas alternativas:${NC}"
-    realtime_echo "   • HTTP: ${YELLOW}http://IP_VPS:8000${NC}"
+    realtime_echo "   �� HTTP: ${YELLOW}http://IP_VPS:8000${NC}"
     realtime_echo "   • HTTPS: ${YELLOW}https://IP_VPS:8443${NC}"
     realtime_echo "   • Traefik: ${YELLOW}http://IP_VPS:8080${NC}"
     realtime_echo ""
