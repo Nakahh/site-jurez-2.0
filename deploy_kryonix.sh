@@ -1631,7 +1631,7 @@ intelligent_services_deploy() {
 
 # Configuração inteligente dos bancos de dados
 intelligent_database_config() {
-    log "INSTALL" "🗄️ Configurando bancos de dados inteligentemente..."
+    log "INSTALL" "���️ Configurando bancos de dados inteligentemente..."
     
     # Aguardar PostgreSQL estar pronto
     log "INFO" "⏳ Aguardando PostgreSQL estar pronto..."
@@ -1773,9 +1773,9 @@ EOF
     log "SUCCESS" "🌐 SISTEMA KRYONIX TOTALMENTE OPERACIONAL!"
     echo
     
-    echo -e "${CYAN}📊 MONITORAMENTO & GESTÃO INTELIGENTE:${NC}"
-    echo "  🐳 Portainer (Docker):          https://portainer.siqueicamposimoveis.com.br"
-    echo "  🐳 Portainer (MeuBoot):         https://portainer.meuboot.site"
+        echo -e "${CYAN}📊 MONITORAMENTO & GESTÃO INTELIGENTE:${NC}"
+    echo "  🐳 Portainer Siqueira (Docker): https://portainer.siqueicamposimoveis.com.br"
+    echo "  🐳 Portainer MeuBoot (Docker):  https://portainer.meuboot.site"
     echo "  🔀 Traefik Dashboard:           https://traefik.siqueicamposimoveis.com.br"
     echo "  📊 Grafana Dashboards:          https://grafana.siqueicamposimoveis.com.br"
     echo "  📈 Prometheus Metrics:          https://prometheus.siqueicamposimoveis.com.br"
@@ -1788,7 +1788,7 @@ EOF
     echo
     
     echo -e "${BLUE}🤖 AUTOMAÇÃO & IA INTELIGENTE:${NC}"
-    echo "  ���� N8N Workflows (Siqueira):    https://n8n.siqueicamposimoveis.com.br"
+    echo "  🔗 N8N Workflows (Siqueira):    https://n8n.siqueicamposimoveis.com.br"
     echo "  🔗 N8N Workflows (MeuBoot):     https://n8n.meuboot.site"
     echo "  🔗 N8N Webhook:                 https://webhookn8n.meuboot.site"
     echo "  🤖 ChatGPT Stack:               https://chatgpt.siqueicamposimoveis.com.br"
