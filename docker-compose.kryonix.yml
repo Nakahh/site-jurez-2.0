@@ -1,0 +1,335 @@
+version: "3.8"
+
+services:
+  # Traefik - Reverse Proxy com HTTPS automático
+  traefik:
+    image: traefik:v3.0
+    container_name: kryonix-traefik
+    restart: unless-stopped
+    command:
+      - "--api.dashboard=true"
+      - "--api.debug=true"
+      - "--log.level=INFO"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=kryonixnet"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=vitor.nakahh@gmail.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--global.checknewversion=false"
+      - "--global.sendanonymoususage=false"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/opt/kryonix/traefik/certs:/letsencrypt"
+    networks:
+      - kryonixnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.siqueicamposimoveis.com.br`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=admin:$$2y$$10$$K7y9F5x8P2Qx9Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q"
+      # Redirect HTTP to HTTPS
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: kryonix-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kryonix_main
+      POSTGRES_USER: kryonix_user
+      POSTGRES_PASSWORD: kryonix_strong_password_2024
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - "/opt/kryonix/postgres/data:/var/lib/postgresql/data"
+    networks:
+      - kryonixnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kryonix_user -d kryonix_main"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: kryonix-redis
+    restart: unless-stopped
+    command: redis-server --requirepass kryonix_redis_password_2024 --appendonly yes
+    volumes:
+      - "/opt/kryonix/redis/data:/data"
+    networks:
+      - kryonixnet
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Adminer - Database Management
+  adminer:
+    image: adminer:4.8.1
+    container_name: kryonix-adminer
+    restart: unless-stopped
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    networks:
+      - kryonixnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.siqueicamposimoveis.com.br`)"
+      - "traefik.http.routers.adminer.entrypoints=websecure"
+      - "traefik.http.routers.adminer.tls.certresolver=letsencrypt"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+
+  # Portainer - Docker Management
+  portainer:
+    image: portainer/portainer-ee:latest
+    container_name: kryonix-portainer
+    restart: unless-stopped
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/opt/kryonix/portainer:/data"
+    networks:
+      - kryonixnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.siqueicamposimoveis.com.br`) || Host(`portainer.meuboot.site`)"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.routers.portainer.tls.certresolver=letsencrypt"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+
+  # MinIO - Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: kryonix-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: kryonix_minio_admin
+      MINIO_ROOT_PASSWORD: kryonix_minio_password_2024
+      MINIO_BROWSER_REDIRECT_URL: https://minio.siqueicamposimoveis.com.br
+    volumes:
+      - "/opt/kryonix/minio/data:/data"
+    networks:
+      - kryonixnet
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      # MinIO API
+      - "traefik.http.routers.minio-api.rule=Host(`storage.siqueicamposimoveis.com.br`)"
+      - "traefik.http.routers.minio-api.entrypoints=websecure"
+      - "traefik.http.routers.minio-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.minio-api.service=minio-api"
+      - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
+      # MinIO Console
+      - "traefik.http.routers.minio-console.rule=Host(`minio.siqueicamposimoveis.com.br`)"
+      - "traefik.http.routers.minio-console.entrypoints=websecure"
+      - "traefik.http.routers.minio-console.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.minio-console.service=minio-console"
+      - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
+
+  # N8N - Workflow Automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: kryonix-n8n
+    restart: unless-stopped
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: true
+      N8N_BASIC_AUTH_USER: kryonix
+      N8N_BASIC_AUTH_PASSWORD: kryonix_n8n_password_2024
+      N8N_HOST: n8n.siqueicamposimoveis.com.br
+      N8N_PORT: 5678
+      N8N_PROTOCOL: https
+      WEBHOOK_URL: https://n8n.siqueicamposimoveis.com.br/
+      GENERIC_TIMEZONE: America/Sao_Paulo
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: n8n_db
+      DB_POSTGRESDB_USER: kryonix_user
+      DB_POSTGRESDB_PASSWORD: kryonix_strong_password_2024
+      N8N_EMAIL_MODE: smtp
+      N8N_SMTP_HOST: smtp.gmail.com
+      N8N_SMTP_PORT: 465
+      N8N_SMTP_USER: vitor.nakahh@gmail.com
+      N8N_SMTP_PASS: "@Vitor.12345@"
+      N8N_SMTP_SENDER: vitor.nakahh@gmail.com
+      N8N_SMTP_SSL: true
+    volumes:
+      - "/opt/kryonix/n8n/data:/home/node/.n8n"
+    depends_on:
+      - postgres
+    networks:
+      - kryonixnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.siqueicamposimoveis.com.br`) || Host(`n8n.meuboot.site`) || Host(`webhookn8n.meuboot.site`)"
+      - "traefik.http.routers.n8n.entrypoints=websecure"
+      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+
+  # Evolution API - WhatsApp Business
+  evolution-api:
+    image: atendai/evolution-api:latest
+    container_name: kryonix-evolution
+    restart: unless-stopped
+    environment:
+      SERVER_TYPE: https
+      SERVER_URL: https://evolution.siqueicamposimoveis.com.br
+      CORS_ORIGIN: "*"
+      CORS_METHODS: "GET,POST,PUT,DELETE"
+      CORS_CREDENTIALS: true
+      LOG_LEVEL: ERROR
+      LOG_COLOR: true
+      LOG_BAILEYS: error
+      DEL_INSTANCE: false
+      PROVIDER_HOST: 127.0.0.1
+      PROVIDER_PORT: 5656
+      PROVIDER_PREFIX: evolution
+      DATABASE_ENABLED: true
+      DATABASE_CONNECTION_URI: postgresql://kryonix_user:kryonix_strong_password_2024@postgres:5432/evolution_db
+      DATABASE_CONNECTION_CLIENT_NAME: evolution_api
+      REDIS_ENABLED: true
+      REDIS_URI: redis://:kryonix_redis_password_2024@redis:6379
+      REDIS_PREFIX_KEY: evolution_api
+      RABBITMQ_ENABLED: false
+      WEBSOCKET_ENABLED: true
+      WEBSOCKET_GLOBAL_EVENTS: true
+      WA_BUSINESS_TOKEN_WEBHOOK: evolution_webhook_token
+      WA_BUSINESS_URL: https://evolution.siqueicamposimoveis.com.br
+      WA_BUSINESS_VERSION: v18.0
+      WA_BUSINESS_LANGUAGE: pt_BR
+      WEBHOOK_GLOBAL_URL: https://n8n.siqueicamposimoveis.com.br/webhook
+      WEBHOOK_GLOBAL_ENABLED: true
+      WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS: true
+      CONFIG_SESSION_PHONE_CLIENT: "Evolution API"
+      CONFIG_SESSION_PHONE_NAME: "Chrome"
+      QRCODE_LIMIT: 10
+      AUTHENTICATION_TYPE: apikey
+      AUTHENTICATION_API_KEY: kryonix_evolution_api_key_2024
+      AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES: true
+      LANGUAGE: pt-BR
+    volumes:
+      - "/opt/kryonix/evolution/data:/evolution/instances"
+      - "/opt/kryonix/evolution/data:/evolution/store"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - kryonixnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.evolution.rule=Host(`evolution.siqueicamposimoveis.com.br`) || Host(`evo.meuboot.site`)"
+      - "traefik.http.routers.evolution.entrypoints=websecure"
+      - "traefik.http.routers.evolution.tls.certresolver=letsencrypt"
+      - "traefik.http.services.evolution.loadbalancer.server.port=8080"
+
+  # Prometheus - Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: kryonix-prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=200h"
+      - "--web.enable-lifecycle"
+    volumes:
+      - "/opt/kryonix/prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "/opt/kryonix/prometheus/data:/prometheus"
+    networks:
+      - kryonixnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.siqueicamposimoveis.com.br`)"
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+
+  # Grafana - Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: kryonix-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: kryonix_grafana_password_2024
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+      GF_SERVER_ROOT_URL: https://grafana.siqueicamposimoveis.com.br
+      GF_SERVER_DOMAIN: grafana.siqueicamposimoveis.com.br
+      GF_SMTP_ENABLED: true
+      GF_SMTP_HOST: smtp.gmail.com:465
+      GF_SMTP_USER: vitor.nakahh@gmail.com
+      GF_SMTP_PASSWORD: "@Vitor.12345@"
+      GF_SMTP_FROM_ADDRESS: vitor.nakahh@gmail.com
+      GF_SMTP_FROM_NAME: Kryonix Grafana
+    volumes:
+      - "/opt/kryonix/grafana/data:/var/lib/grafana"
+    depends_on:
+      - prometheus
+    networks:
+      - kryonixnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.siqueicamposimoveis.com.br`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
+  # ChatGPT Stack - AI Assistant
+  chatgpt-stack:
+    image: ghcr.io/mckaywrigley/chatbot-ui:main
+    container_name: kryonix-chatgpt
+    restart: unless-stopped
+    environment:
+      OPENAI_API_KEY: "sk-your-openai-api-key-here"
+      NEXTAUTH_SECRET: "kryonix_chatgpt_secret_2024"
+      NEXTAUTH_URL: "https://chatgpt.siqueicamposimoveis.com.br"
+      DATABASE_URL: "postgresql://kryonix_user:kryonix_strong_password_2024@postgres:5432/chatgpt_db"
+      NEXT_PUBLIC_SUPABASE_URL: "https://chatgpt.siqueicamposimoveis.com.br"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "kryonix_supabase_anon_key"
+      SUPABASE_SERVICE_ROLE_KEY: "kryonix_supabase_service_key"
+    depends_on:
+      - postgres
+    networks:
+      - kryonixnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chatgpt.rule=Host(`chatgpt.siqueicamposimoveis.com.br`) || Host(`bot.siqueicamposimoveis.com.br`)"
+      - "traefik.http.routers.chatgpt.entrypoints=websecure"
+      - "traefik.http.routers.chatgpt.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chatgpt.loadbalancer.server.port=3000"
+
+networks:
+  kryonixnet:
+    external: true
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  n8n_data:
+  evolution_data:
+  grafana_data:
+  prometheus_data:
+  traefik_certs:
