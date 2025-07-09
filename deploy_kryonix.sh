@@ -1575,7 +1575,7 @@ EOF
 }
 
 # Preparar senha do Portainer
-prepare_portainer_password() {
+prepare_portainer_passwords() {
     log "INSTALL" "🔐 Preparando senha criptografada do Portainer..."
     
     # Criar hash da senha
@@ -1773,7 +1773,7 @@ EOF
     log "SUCCESS" "🌐 SISTEMA KRYONIX TOTALMENTE OPERACIONAL!"
     echo
     
-    echo -e "${CYAN}📊 MONITORAMENTO & GESTÃO INTELIGENTE:${NC}"
+    echo -e "${CYAN}���� MONITORAMENTO & GESTÃO INTELIGENTE:${NC}"
     echo "  🐳 Portainer (Docker):          https://portainer.siqueicamposimoveis.com.br"
     echo "  🐳 Portainer (MeuBoot):         https://portainer.meuboot.site"
     echo "  🔀 Traefik Dashboard:           https://traefik.siqueicamposimoveis.com.br"
