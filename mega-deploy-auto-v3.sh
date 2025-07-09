@@ -30,13 +30,38 @@ stdbuf -oL -eL echo "🚀 INICIALIZANDO MEGA DEPLOY V3..."
 # Configurar logging
 setup_logging
 
-# Trap para cleanup em caso de interrupção
+# Função de cleanup melhorada para evitar fechamento abrupto
 cleanup() {
     echo -e "\n${RED}🛑 DEPLOY INTERROMPIDO! Executando cleanup...${NC}"
-    docker-compose down --remove-orphans 2>/dev/null || true
+
+    # Parar containers graciosamente
+    if command -v docker-compose &> /dev/null; then
+        echo "Parando containers..."
+        docker-compose down --remove-orphans 2>/dev/null || true
+    fi
+
+    # Restaurar descritores de arquivo
+    exec 1>&3 2>&4
+
+    echo "🧹 Cleanup concluído. Pressione ENTER para sair..."
+    read -r
     exit 1
 }
+
+# Configurar traps para diferentes sinais
 trap cleanup SIGINT SIGTERM
+trap 'echo "Script finalizado normalmente"' EXIT
+
+# Função para manter processo vivo
+keep_alive() {
+    while true; do
+        sleep 10
+        # Verificar se processo ainda está rodando
+        if ! ps -p $$ > /dev/null; then
+            break
+        fi
+    done &
+}
 
 # Função para output em tempo real
 realtime_echo() {
