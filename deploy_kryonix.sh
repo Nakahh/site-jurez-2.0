@@ -887,26 +887,45 @@ services:
       - "traefik.http.routers.adminer.middlewares=security-headers"
       - "traefik.http.services.adminer.loadbalancer.server.port=8080"
 
-  # Portainer - Gerenciamento Docker
-  portainer:
+    # Portainer Siqueira Campos - Gerenciamento Docker Principal
+  portainer-siqueira:
     image: portainer/portainer-ee:latest
-    container_name: kryonix-portainer
+    container_name: kryonix-portainer-siqueira
     restart: unless-stopped
     command: -H unix:///var/run/docker.sock --admin-password-file /tmp/portainer_password
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - "$KRYONIX_DIR/portainer:/data"
+      - "$KRYONIX_DIR/portainer-siqueira:/data"
       - "/tmp/portainer_password:/tmp/portainer_password:ro"
     networks:
       - kryonixnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer-siqueira.rule=Host(\`portainer.siqueicamposimoveis.com.br\`)"
+      - "traefik.http.routers.portainer-siqueira.entrypoints=websecure"
+      - "traefik.http.routers.portainer-siqueira.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.portainer-siqueira.middlewares=security-headers"
+      - "traefik.http.services.portainer-siqueira.loadbalancer.server.port=9000"
+
+  # Portainer MeuBoot - Gerenciamento Docker Secundário
+  portainer-meuboot:
+    image: portainer/portainer-ee:latest
+    container_name: kryonix-portainer-meuboot
+    restart: unless-stopped
+    command: -H unix:///var/run/docker.sock --admin-password-file /tmp/portainer_meuboot_password
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "$KRYONIX_DIR/portainer-meuboot:/data"
+      - "/tmp/portainer_meuboot_password:/tmp/portainer_meuboot_password:ro"
+    networks:
       - meubootnet
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.portainer.rule=Host(\`portainer.siqueicamposimoveis.com.br\`) || Host(\`portainer.meuboot.site\`)"
-      - "traefik.http.routers.portainer.entrypoints=websecure"
-      - "traefik.http.routers.portainer.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.portainer.middlewares=security-headers"
-      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "traefik.http.routers.portainer-meuboot.rule=Host(\`portainer.meuboot.site\`)"
+      - "traefik.http.routers.portainer-meuboot.entrypoints=websecure"
+      - "traefik.http.routers.portainer-meuboot.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.portainer-meuboot.middlewares=security-headers"
+      - "traefik.http.services.portainer-meuboot.loadbalancer.server.port=9000"
 
   # MinIO - Object Storage
   minio:
