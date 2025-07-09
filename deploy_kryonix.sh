@@ -1597,8 +1597,8 @@ intelligent_services_deploy() {
     
     cd "$KRYONIX_DIR"
     
-    # Preparar Portainer
-    prepare_portainer_password
+        # Preparar 2 Portainer
+    prepare_portainer_passwords
     
     # Criar arquivos de configuração adicionais
     create_intelligent_prometheus_config
@@ -1773,7 +1773,7 @@ EOF
     log "SUCCESS" "🌐 SISTEMA KRYONIX TOTALMENTE OPERACIONAL!"
     echo
     
-    echo -e "${CYAN}���� MONITORAMENTO & GESTÃO INTELIGENTE:${NC}"
+    echo -e "${CYAN}📊 MONITORAMENTO & GESTÃO INTELIGENTE:${NC}"
     echo "  🐳 Portainer (Docker):          https://portainer.siqueicamposimoveis.com.br"
     echo "  🐳 Portainer (MeuBoot):         https://portainer.meuboot.site"
     echo "  🔀 Traefik Dashboard:           https://traefik.siqueicamposimoveis.com.br"
@@ -1820,7 +1820,7 @@ EOF
     echo "  📁 Diretório Local: $PROJECT_DIR"
     echo "  🔄 Auto-deploy: ATIVO (webhook + systemd)"
     echo "  📊 Monitoramento: ATIVO (Prometheus + Grafana)"
-    echo "  🛡️ Segurança: ATIVA (UFW + Fail2ban + HTTPS)"
+    echo "  ���️ Segurança: ATIVA (UFW + Fail2ban + HTTPS)"
     echo
     
     echo -e "${GREEN}📝 COMANDOS ÚTEIS INTELIGENTES:${NC}"
