@@ -12,7 +12,7 @@ echo "🔧 Configurando para não fechar sozinho..."
 # Configurações para manter script rodando sem fechar sozinho
 set +e  # NÃO parar em erros - permitir continuidade
 set +u  # NÃO parar com variáveis não definidas
-set -o pipefail  # Manter detecç��o de erros em pipes
+set -o pipefail  # Manter detecção de erros em pipes
 IFS=$'\n\t'       # Separador seguro
 
 # Configurar logs em tempo real
@@ -191,11 +191,14 @@ check_portainer_stacks() {
         realtime_echo "${GREEN}📈 Resultado final:${NC}"
         realtime_echo "   • Stacks funcionando agora: $new_running_count/$total_stacks"
 
-        # Se ainda há stacks problemáticas, aplicar correção avançada
-        if [ $new_running_count -lt $total_stacks ]; then
-            log_warning "⚠️ Ainda há stacks problemáticas. Aplicando correção avançada..."
-            apply_advanced_stack_fixes
-        fi
+    # Se ainda há stacks problemáticas, aplicar correção avançada
+    if [ $new_running_count -lt $total_stacks ]; then
+        log_warning "⚠️ Ainda h�� stacks problemáticas. Aplicando correção avançada..."
+        apply_advanced_stack_fixes
+    fi
+
+    # Verificar conflitos entre Traefiks antigo e novo
+    check_traefik_conflicts_final
     else
         log_success "✅ Todas as stacks estão funcionando corretamente!"
     fi
@@ -2254,7 +2257,7 @@ app.get('*', (req, res) => {
 
 // Tratamento de sinais para graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('�� SIGTERM recebido, fechando servidor...');
+  console.log('🛑 SIGTERM recebido, fechando servidor...');
   process.exit(0);
 });
 
