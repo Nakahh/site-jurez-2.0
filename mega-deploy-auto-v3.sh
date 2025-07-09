@@ -5,8 +5,9 @@
 # Desenvolvido por Kryonix - Zero configuração manual + Melhorias V3
 
 # ============= CONFIGURAÇÕES V3 MELHORADAS =============
-# Configurações para manter script rodando e logs em tempo real
-set -euo pipefail  # Modo mais rigoroso
+# Configurações para manter script rodando sem fechar sozinho
+set +e  # NÃO parar em erros - permitir continuidade
+set -o pipefail  # Manter detecção de erros em pipes
 IFS=$'\n\t'       # Separador seguro
 
 # Configurar logs em tempo real
