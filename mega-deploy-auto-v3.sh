@@ -85,10 +85,13 @@ auto_fix_system() {
     # 7. Verificar recursos do sistema
     check_system_resources
 
-    # 8. Detectar e corrigir Portainer existente
+    # 8. Detectar e corrigir Traefik problemático
+    check_and_fix_existing_traefik
+
+    # 9. Detectar e corrigir Portainer existente
     check_and_fix_existing_portainer
 
-    # 9. Configurar Portainers para múltiplos domínios
+    # 10. Configurar Portainers para múltiplos domínios
     setup_multi_domain_portainers
 
     log_success "✅ Sistema de auto-correção concluído!"
@@ -1171,7 +1174,7 @@ monitor_processes() {
     done
 
     echo ""
-    log_warning "⚠�� $service_name ainda não está rodando após ${max_wait}s"
+    log_warning "⚠️ $service_name ainda não está rodando após ${max_wait}s"
     return 1
 }
 
@@ -2016,7 +2019,7 @@ create_pre_deploy_backup() {
     log_success "✅ Backup criado em: $backup_dir"
 }
 
-# Função de rollback automático
+# Função de rollback autom��tico
 auto_rollback() {
     log_warning "🔄 Iniciando rollback automático..."
 
@@ -2101,7 +2104,7 @@ log_step 12 $TOTAL_STEPS "Build e deploy do sistema"
 
 log_info "🚀 Construindo e executando sistema ultra-robusto V3..."
 
-# Verifica��ão pré-build
+# Verificação pré-build
 log_info "🔍 Verificação pré-build..."
 check_and_fix_docker
 check_and_fix_disk_space
@@ -2532,7 +2535,7 @@ generate_final_status_report() {
         realtime_echo "${YELLOW}⚠️ Alguns componentes podem precisar de atenção${NC}"
     fi
 
-    realtime_echo "${PURPLE}════════════════════════════════════════${NC}"
+    realtime_echo "${PURPLE}═════��══════════════════════════════════${NC}"
 }
 
 # Executar verificações
@@ -2570,7 +2573,7 @@ cat > ACESSO_MEGA_DEPLOY_V3.md <<EOF
 - 📝 **Logs Tempo Real**: Todo o processo é exibido em tempo real
 - 📊 **Progress Bar**: Acompanhe o progresso de cada etapa
 - 🔄 **Retry Logic**: Tentativas automáticas em caso de falha
-- 🧹 **Cleanup Automático**: Tratamento adequado de interrupções
+- ��� **Cleanup Automático**: Tratamento adequado de interrupções
 - 🔍 **Health Checks**: Monitoramento contínuo dos serviços
 - 🌐 **Conectividade Check**: Verificação de internet antes do deploy
 - 📁 **Backup Melhorado**: Inclui logs e configurações
