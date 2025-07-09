@@ -548,7 +548,7 @@ intelligent_project_analysis() {
     log "SUCCESS" "Análise do projeto concluída!"
     echo "  🎯 Tipo: $PROJECT_TYPE"
     echo "  🌐 Frontend Port: $FRONTEND_PORT"
-    echo "  ⚙��  Backend Port: $BACKEND_PORT"
+        echo "  ⚙️ Backend Port: $BACKEND_PORT"
 }
 
 # Criação de estrutura inteligente
@@ -1837,7 +1837,7 @@ EOF
     echo -e "${RED}🔐 CREDENCIAIS IMPORTANTES:${NC}"
     echo "  🐳 Portainer: $PORTAINER_USER / $PORTAINER_PASS"
     echo "  📊 Grafana: admin / $GRAFANA_PASSWORD"
-    echo "  �� N8N: kryonix / $N8N_PASSWORD"
+    echo "  🔗 N8N: kryonix / $N8N_PASSWORD"
     echo "  🗄️ PostgreSQL: kryonix_user / $POSTGRES_PASSWORD"
     echo "  📦 MinIO: kryonix_minio_admin / $MINIO_PASSWORD"
     echo
