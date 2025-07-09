@@ -14,6 +14,15 @@ LOG_FILE="/var/log/kryonix-install.log"
 PROJECT_DIR="/opt/site-jurez-2.0"
 KRYONIX_DIR="/opt/kryonix"
 
+# Inicializar arquivo de log com permissões corretas
+if [[ $EUID -eq 0 ]]; then
+    mkdir -p /var/log
+    touch "$LOG_FILE" 2>/dev/null || LOG_FILE="/tmp/kryonix-install.log"
+    chmod 666 "$LOG_FILE" 2>/dev/null || true
+else
+    LOG_FILE="/tmp/kryonix-install.log"
+fi
+
 # Cores para output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -60,26 +69,33 @@ log() {
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     
     case $level in
-        "SUCCESS")
-            echo -e "${GREEN}✅ [$timestamp] $message${NC}" | tee -a "$LOG_FILE"
+                "SUCCESS")
+            echo -e "${GREEN}✅ [$timestamp] $message${NC}"
+            echo "[$timestamp] [SUCCESS] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
-        "ERROR")
-            echo -e "${RED}❌ [$timestamp] $message${NC}" | tee -a "$LOG_FILE"
+                "ERROR")
+            echo -e "${RED}❌ [$timestamp] $message${NC}"
+            echo "[$timestamp] [ERROR] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
-        "WARNING")
-            echo -e "${YELLOW}⚠️  [$timestamp] $message${NC}" | tee -a "$LOG_FILE"
+                "WARNING")
+            echo -e "${YELLOW}⚠️  [$timestamp] $message${NC}"
+            echo "[$timestamp] [WARNING] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
-        "INFO")
-            echo -e "${BLUE}ℹ️  [$timestamp] $message${NC}" | tee -a "$LOG_FILE"
+                "INFO")
+            echo -e "${BLUE}ℹ️  [$timestamp] $message${NC}"
+            echo "[$timestamp] [INFO] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
-        "INSTALL")
-            echo -e "${PURPLE}⚙️  [$timestamp] $message${NC}" | tee -a "$LOG_FILE"
+                                "INSTALL")
+            echo -e "${PURPLE}⚙️  [$timestamp] $message${NC}"
+            echo "[$timestamp] [INSTALL] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
-        "DEPLOY")
-            echo -e "${CYAN}🚀 [$timestamp] $message${NC}" | tee -a "$LOG_FILE"
+                "DEPLOY")
+            echo -e "${CYAN}🚀 [$timestamp] $message${NC}"
+            echo "[$timestamp] [DEPLOY] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
-        *)
-            echo -e "${BOLD}📋 [$timestamp] $message${NC}" | tee -a "$LOG_FILE"
+                *)
+            echo -e "${BOLD}📋 [$timestamp] $message${NC}"
+            echo "[$timestamp] [DEFAULT] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
     esac
 }
@@ -107,11 +123,17 @@ EOF
 # Verificar se é root
 check_root() {
     if [[ $EUID -ne 0 ]]; then
-        log "ERROR" "Este script deve ser executado como root!"
+        echo -e "${RED}❌ Este script deve ser executado como root!${NC}"
         echo
         echo -e "${YELLOW}Execute: ${BOLD}sudo bash deploy_kryonix.sh${NC}"
         exit 1
     fi
+
+    # Criar diretório de logs com permissões corretas
+    mkdir -p /var/log
+    touch "$LOG_FILE"
+    chmod 666 "$LOG_FILE"
+
     log "SUCCESS" "Executando como root ✓"
 }
 
@@ -526,7 +548,7 @@ intelligent_project_analysis() {
     log "SUCCESS" "Análise do projeto concluída!"
     echo "  🎯 Tipo: $PROJECT_TYPE"
     echo "  🌐 Frontend Port: $FRONTEND_PORT"
-    echo "  ⚙️  Backend Port: $BACKEND_PORT"
+        echo "  ⚙️ Backend Port: $BACKEND_PORT"
 }
 
 # Criação de estrutura inteligente
@@ -615,16 +637,23 @@ EOF
 intelligent_database_setup() {
     log "INSTALL" "🗄️ Configurando bancos de dados inteligentes..."
     
-    # Script de inicialização do PostgreSQL
+        # Script de inicialização do PostgreSQL
     cat > "$KRYONIX_DIR/postgres/init/init.sql" << EOF
 -- Criar bancos de dados
-CREATE DATABASE IF NOT EXISTS n8n_db;
-CREATE DATABASE IF NOT EXISTS evolution_db;
-CREATE DATABASE IF NOT EXISTS chatgpt_db;
-CREATE DATABASE IF NOT EXISTS project_db;
+SELECT 'CREATE DATABASE n8n_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'n8n_db')\\gexec
+SELECT 'CREATE DATABASE evolution_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'evolution_db')\\gexec
+SELECT 'CREATE DATABASE chatgpt_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'chatgpt_db')\\gexec
+SELECT 'CREATE DATABASE project_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'project_db')\\gexec
 
 -- Criar usuário para aplicação
-CREATE USER IF NOT EXISTS app_user WITH PASSWORD '$POSTGRES_PASSWORD';
+DO
+\$\$
+BEGIN
+   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'app_user') THEN
+      CREATE USER app_user WITH PASSWORD '$POSTGRES_PASSWORD';
+   END IF;
+END
+\$\$;
 
 -- Conceder permissões
 GRANT ALL PRIVILEGES ON DATABASE n8n_db TO app_user;
@@ -1247,7 +1276,7 @@ COPY server/package*.json ./server/ 2>/dev/null || true
 # Instalar dependências
 RUN npm ci --only=production
 
-# Copiar código fonte
+# Copiar c��digo fonte
 COPY . .
 
 # Build se necessário
@@ -1631,18 +1660,18 @@ intelligent_services_deploy() {
 
 # Configuração inteligente dos bancos de dados
 intelligent_database_config() {
-    log "INSTALL" "���️ Configurando bancos de dados inteligentemente..."
+        log "INSTALL" "🗄️ Configurando bancos de dados inteligentemente..."
     
     # Aguardar PostgreSQL estar pronto
     log "INFO" "⏳ Aguardando PostgreSQL estar pronto..."
     timeout 120 bash -c 'until docker exec kryonix-postgres pg_isready -U kryonix_user -d kryonix_main; do sleep 3; done'
     
-    # Criar bancos de dados adicionais
+        # Criar bancos de dados adicionais
     log "INFO" "📋 Criando bancos de dados..."
-    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "CREATE DATABASE IF NOT EXISTS n8n_db;" 2>/dev/null || true
-    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "CREATE DATABASE IF NOT EXISTS evolution_db;" 2>/dev/null || true
-    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "CREATE DATABASE IF NOT EXISTS chatgpt_db;" 2>/dev/null || true
-    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "CREATE DATABASE IF NOT EXISTS project_db;" 2>/dev/null || true
+    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "SELECT 'CREATE DATABASE n8n_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'n8n_db')\\gexec" 2>/dev/null || true
+    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "SELECT 'CREATE DATABASE evolution_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'evolution_db')\\gexec" 2>/dev/null || true
+    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "SELECT 'CREATE DATABASE chatgpt_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'chatgpt_db')\\gexec" 2>/dev/null || true
+    docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "SELECT 'CREATE DATABASE project_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'project_db')\\gexec" 2>/dev/null || true
     
     # Executar migrações do projeto se existir Prisma
     if [ -f "$PROJECT_DIR/prisma/schema.prisma" ]; then
@@ -1823,14 +1852,14 @@ EOF
     echo "  🛡️ Segurança: ATIVA (UFW + Fail2ban + HTTPS)"
     echo
     
-    echo -e "${GREEN}📝 COMANDOS ÚTEIS INTELIGENTES:${NC}"
+        echo -e "${GREEN}📝 COMANDOS ÚTEIS INTELIGENTES:${NC}"
     echo "  📊 Status geral:                docker-compose ps"
     echo "  📋 Logs em tempo real:          docker-compose logs -f"
     echo "  🔄 Restart serviços:            docker-compose restart"
     echo "  🔍 Saúde dos serviços:          docker ps --format 'table {{.Names}}\\t{{.Status}}'"
     echo "  📊 Uso de recursos:             docker stats"
     echo "  🔗 Status webhook:              systemctl status kryonix-webhook"
-    echo "  📁 Logs do sistema:             tail -f $LOG_FILE"
+        echo "  📁 Logs do sistema:             tail -f $LOG_FILE"
     echo "  🔥 Status firewall:             ufw status"
     echo
     
@@ -1847,7 +1876,7 @@ EOF
     echo
     
     log "SUCCESS" "🎉 SISTEMA KRYONIX INTELIGENTE TOTALMENTE OPERACIONAL!"
-    log "SUCCESS" "🚀 Todos os serviços estão rodando com HTTPS automático!"
+        log "SUCCESS" "🚀 Todos os serviços estão rodando com HTTPS automático!"
     log "SUCCESS" "🔄 Auto-deploy ativo - push no GitHub atualizará automaticamente!"
     echo
     
