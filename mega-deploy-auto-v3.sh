@@ -222,11 +222,16 @@ DOMAIN="siqueicamposimoveis.com.br"
 EMAIL="admin@siqueicamposimoveis.com.br"
 TOTAL_STEPS=15
 
+# Inicializar processo keep-alive
+keep_alive
+
 log_success "🤖 MODO MEGA AUTOMÁTICO V3 ATIVADO!"
 log_info "   Domínio: $DOMAIN"
 log_info "   Email: $EMAIL"
 log_info "   Modo: Traefik + SSL + Docker + Auto-Fix + Logs Tempo Real"
 log_info "   Log File: $LOG_FILE"
+log_info "   PID: $$"
+log_info "   Terminal: $(tty 2>/dev/null || echo 'detached')"
 
 # Detectar sistema
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
@@ -614,7 +619,7 @@ app.get('/', (req, res) => {
 <body>
     <div class="container">
         <div class="logo">
-            <h1>�� Siqueira Campos Imóveis</h1>
+            <h1>🏠 Siqueira Campos Imóveis</h1>
             <p>Seu parceiro ideal no mercado imobiliário</p>
             <div class="version-badge">
                 <span class="realtime-indicator"></span>
