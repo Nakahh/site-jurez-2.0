@@ -906,7 +906,7 @@ retry_with_backoff() {
             return 0
         else
             if [ $attempt -lt $max_attempts ]; then
-                log_warning "⚠��� Tentativa $attempt falhou. Aguardando ${delay}s..."
+                log_warning "⚠️ Tentativa $attempt falhou. Aguardando ${delay}s..."
                 sleep $delay
                 delay=$((delay * 2))  # Backoff exponencial
 
@@ -977,7 +977,7 @@ NC='\033[0m'
 
 clear
 realtime_echo "${PURPLE}🏠 =========================================="
-realtime_echo "🚀 MEGA DEPLOY AUTOMÁTICO V3 - TEMPO REAL"
+realtime_echo "🚀 MEGA DEPLOY AUTOM��TICO V3 - TEMPO REAL"
 realtime_echo "🏠 Siqueira Campos Imóveis"
 realtime_echo "🔥 APAGA TUDO E REFAZ + LOGS EM TEMPO REAL"
 realtime_echo "🏠 ==========================================${NC}"
@@ -1194,6 +1194,9 @@ detect_second_domain() {
         fi
     fi
 }
+
+# Detectar automaticamente segundo domínio
+detect_second_domain
 
 # Inicializar processo keep-alive
 keep_alive
@@ -1688,7 +1691,7 @@ process.on('SIGTERM', () => {
 });
 
 process.on('SIGINT', () => {
-  console.log('🛑 SIGINT recebido, fechando servidor...');
+  console.log('��� SIGINT recebido, fechando servidor...');
   process.exit(0);
 });
 
@@ -2042,7 +2045,7 @@ auto_rollback() {
             cat "$backup_path/postgres_backup.sql" | docker-compose exec -T postgres psql -U postgres 2>/dev/null || true
         fi
 
-        log_success "��� Rollback concluído"
+        log_success "✅ Rollback concluído"
     else
         log_warning "⚠️ Backup não encontrado. Rollback manual necessário."
     fi
@@ -2079,7 +2082,7 @@ echo "📝 Backup dos logs..."
 cp deploy*.log \$BACKUP_DIR/ 2>/dev/null && echo "✅ Logs OK" || echo "⚠️ Logs não encontrados"
 
 # Manter apenas 7 backups
-echo "�� Limpando backups antigos..."
+echo "🧹 Limpando backups antigos..."
 find \$BACKUP_DIR -type f -mtime +7 -delete 2>/dev/null
 
 echo "✅ Backup V3 \$DATE concluído!"
