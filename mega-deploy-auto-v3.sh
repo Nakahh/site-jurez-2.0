@@ -977,7 +977,7 @@ NC='\033[0m'
 
 clear
 realtime_echo "${PURPLE}🏠 =========================================="
-realtime_echo "🚀 MEGA DEPLOY AUTOM��TICO V3 - TEMPO REAL"
+realtime_echo "🚀 MEGA DEPLOY AUTOMÁTICO V3 - TEMPO REAL"
 realtime_echo "🏠 Siqueira Campos Imóveis"
 realtime_echo "🔥 APAGA TUDO E REFAZ + LOGS EM TEMPO REAL"
 realtime_echo "🏠 ==========================================${NC}"
@@ -1171,7 +1171,7 @@ monitor_processes() {
     done
 
     echo ""
-    log_warning "⚠️ $service_name ainda não está rodando após ${max_wait}s"
+    log_warning "⚠�� $service_name ainda não está rodando após ${max_wait}s"
     return 1
 }
 
@@ -1691,7 +1691,7 @@ process.on('SIGTERM', () => {
 });
 
 process.on('SIGINT', () => {
-  console.log('��� SIGINT recebido, fechando servidor...');
+  console.log('🛑 SIGINT recebido, fechando servidor...');
   process.exit(0);
 });
 
@@ -2101,7 +2101,7 @@ log_step 12 $TOTAL_STEPS "Build e deploy do sistema"
 
 log_info "🚀 Construindo e executando sistema ultra-robusto V3..."
 
-# Verificação pré-build
+# Verifica��ão pré-build
 log_info "🔍 Verificação pré-build..."
 check_and_fix_docker
 check_and_fix_disk_space
@@ -2478,6 +2478,48 @@ generate_final_status_report() {
     else
         realtime_echo "   • Site: https://$DOMAIN"
         realtime_echo "   • Traefik: https://traefik.$DOMAIN"
+    fi
+
+    # Status dos Portainers
+    realtime_echo ""
+    realtime_echo "${CYAN}🐳 Portainers Configurados:${NC}"
+
+    # Verificar Portainer 1
+    if timeout 5 curl -s http://localhost:9001 > /dev/null 2>&1; then
+        realtime_echo "   ✅ Portainer 1: https://portainer.$DOMAIN (porta 9001)"
+    else
+        realtime_echo "   ❌ Portainer 1: Não acessível"
+    fi
+
+    # Verificar Portainer 2
+    if timeout 5 curl -s http://localhost:9002 > /dev/null 2>&1; then
+        realtime_echo "   ✅ Portainer 2: https://portainer.${DOMAIN2:-"domain2.local"} (porta 9002)"
+    else
+        realtime_echo "   ❌ Portainer 2: Não acessível"
+    fi
+
+    # Verificar se Portainer antigo ainda existe
+    if docker ps | grep -q portainer && ! docker ps | grep -q "siqueira-portainer"; then
+        realtime_echo "   ⚠️ Portainer antigo ainda rodando - pode precisar de limpeza manual"
+    fi
+
+    # Status das stacks
+    local total_stacks=$(docker ps -a --filter "label=com.docker.compose.project" --format "{{.Label \"com.docker.compose.project\"}}" | sort | uniq | grep -v '^$' | wc -l)
+    local running_stacks=$(docker ps --filter "label=com.docker.compose.project" --format "{{.Label \"com.docker.compose.project\"}}" | sort | uniq | grep -v '^$' | wc -l)
+
+    if [ $total_stacks -gt 0 ]; then
+        realtime_echo ""
+        realtime_echo "${CYAN}📋 Status das Stacks Docker:${NC}"
+        realtime_echo "   • Total de stacks: $total_stacks"
+        realtime_echo "   • Stacks funcionando: $running_stacks"
+
+        if [ $running_stacks -eq $total_stacks ]; then
+            realtime_echo "   ✅ Todas as stacks funcionando!"
+        else
+            local problematic=$((total_stacks - running_stacks))
+            realtime_echo "   ⚠️ $problematic stacks ainda com problemas"
+            realtime_echo "   💡 Use os Portainers para gerenciar stacks manualmente"
+        fi
     fi
 
     # Status final
