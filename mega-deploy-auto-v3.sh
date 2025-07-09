@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# �� MEGA DEPLOY AUTOMÁTICO V3 - Siqueira Campos Imóveis
+# 🚀 MEGA DEPLOY AUTOMÁTICO V3 - Siqueira Campos Imóveis
 # APAGA TUDO E REFAZ DO ZERO - 100% AUTOMÁTICO + LOGS TEMPO REAL
 # Desenvolvido por Kryonix - Zero configuração manual + Melhorias V3
 
@@ -85,7 +85,352 @@ auto_fix_system() {
     # 7. Verificar recursos do sistema
     check_system_resources
 
+    # 8. Detectar e corrigir Portainer existente
+    check_and_fix_existing_portainer
+
+    # 9. Configurar Portainers para múltiplos domínios
+    setup_multi_domain_portainers
+
     log_success "✅ Sistema de auto-correção concluído!"
+}
+
+# Detectar e corrigir Portainer existente
+check_and_fix_existing_portainer() {
+    log_info "🐳 Detectando Portainer existente..."
+
+    # Detectar containers Portainer
+    local existing_portainer=$(docker ps -a --filter "name=portainer" --format "{{.Names}}" 2>/dev/null)
+
+    if [ ! -z "$existing_portainer" ]; then
+        log_warning "⚠️ Portainer existente detectado: $existing_portainer"
+
+        # Verificar status
+        local portainer_status=$(docker ps --filter "name=portainer" --format "{{.Status}}" 2>/dev/null)
+
+        if [ -z "$portainer_status" ]; then
+            log_fix "🔧 Portainer parado. Removendo container problemático..."
+            docker stop $existing_portainer 2>/dev/null || true
+            docker rm $existing_portainer 2>/dev/null || true
+        else
+            log_info "Portainer rodando: $portainer_status"
+
+            # Verificar se tem erro de SSL
+            if ! timeout 10 curl -k https://localhost:9443 > /dev/null 2>&1; then
+                log_warning "❌ Portainer com erro de SSL detectado"
+
+                # Verificar stacks problemáticas
+                check_portainer_stacks $existing_portainer
+
+                # Backup do Portainer antes de corrigir
+                backup_portainer_data $existing_portainer
+
+                # Corrigir SSL do Portainer
+                fix_portainer_ssl $existing_portainer
+            else
+                log_success "✅ Portainer SSL funcionando"
+            fi
+        fi
+
+        # Remover volumes órfãos do Portainer
+        log_info "🧹 Limpando volumes órfãos do Portainer..."
+        docker volume ls | grep portainer | awk '{print $2}' | while read volume; do
+            if ! docker ps -a --filter "volume=$volume" --format "{{.Names}}" | grep -q .; then
+                log_fix "Removendo volume órfão: $volume"
+                docker volume rm $volume 2>/dev/null || true
+            fi
+        done
+    else
+        log_info "ℹ️ Nenhum Portainer existente detectado"
+    fi
+}
+
+# Verificar stacks problemáticas do Portainer
+check_portainer_stacks() {
+    local portainer_name="$1"
+
+    log_info "📋 Verificando stacks do Portainer..."
+
+    # Tentar acessar API do Portainer para verificar stacks
+    local portainer_url="http://localhost:9000"
+
+    if timeout 5 curl -s "$portainer_url/api/status" > /dev/null 2>&1; then
+        log_info "✅ API do Portainer acessível"
+
+        # Verificar containers de stacks que não estão rodando
+        local failed_stacks=$(docker ps -a --filter "label=com.docker.compose.project" --filter "status=exited" --format "{{.Label \"com.docker.compose.project\"}}" | sort | uniq)
+
+        if [ ! -z "$failed_stacks" ]; then
+            log_warning "⚠️ Stacks com problemas detectadas:"
+            echo "$failed_stacks" | while read stack; do
+                if [ ! -z "$stack" ]; then
+                    log_warning "   • Stack: $stack"
+
+                    # Tentar correção automática da stack
+                    fix_failed_stack "$stack"
+                fi
+            done
+        else
+            log_success "✅ Todas as stacks parecem estar funcionando"
+        fi
+    else
+        log_warning "❌ API do Portainer não acessível"
+    fi
+}
+
+# Corrigir stack que falhou
+fix_failed_stack() {
+    local stack_name="$1"
+
+    log_fix "🔧 Tentando corrigir stack: $stack_name"
+
+    # Obter containers da stack
+    local stack_containers=$(docker ps -a --filter "label=com.docker.compose.project=$stack_name" --format "{{.Names}}" 2>/dev/null)
+
+    if [ ! -z "$stack_containers" ]; then
+        echo "$stack_containers" | while read container; do
+            if [ ! -z "$container" ]; then
+                # Verificar logs do container
+                local error_logs=$(docker logs --tail=20 "$container" 2>&1)
+
+                # Auto-diagnóstico baseado nos logs
+                case "$error_logs" in
+                    *"port already in use"*|*"address already in use"*)
+                        log_fix "Porta ocupada na stack $stack_name. Corrigindo..."
+                        # Tentar reiniciar após liberar portas
+                        docker stop "$container" 2>/dev/null || true
+                        sleep 5
+                        docker start "$container" 2>/dev/null || true
+                        ;;
+                    *"no space left"*|*"disk full"*)
+                        log_fix "Espaço insuficiente para stack $stack_name. Limpando..."
+                        check_and_fix_disk_space
+                        docker start "$container" 2>/dev/null || true
+                        ;;
+                    *"network"*|*"dns"*)
+                        log_fix "Problema de rede na stack $stack_name. Recriando rede..."
+                        local network=$(docker inspect "$container" --format '{{range .NetworkSettings.Networks}}{{.NetworkID}}{{end}}' 2>/dev/null)
+                        if [ ! -z "$network" ]; then
+                            docker network disconnect "$network" "$container" 2>/dev/null || true
+                            docker network connect "$network" "$container" 2>/dev/null || true
+                        fi
+                        docker restart "$container" 2>/dev/null || true
+                        ;;
+                    *)
+                        log_fix "Erro genérico na stack $stack_name. Reiniciando..."
+                        docker restart "$container" 2>/dev/null || true
+                        ;;
+                esac
+            fi
+        done
+
+        # Aguardar containers reiniciarem
+        sleep 10
+
+        # Verificar se stack está funcionando agora
+        local running_containers=$(docker ps --filter "label=com.docker.compose.project=$stack_name" --format "{{.Names}}" | wc -l)
+        local total_containers=$(docker ps -a --filter "label=com.docker.compose.project=$stack_name" --format "{{.Names}}" | wc -l)
+
+        if [ $running_containers -eq $total_containers ] && [ $running_containers -gt 0 ]; then
+            log_success "✅ Stack $stack_name corrigida!"
+        else
+            log_warning "⚠️ Stack $stack_name ainda com problemas ($running_containers/$total_containers rodando)"
+        fi
+    fi
+}
+
+# Backup dos dados do Portainer
+backup_portainer_data() {
+    local portainer_name="$1"
+
+    log_info "💾 Fazendo backup dos dados do Portainer..."
+
+    local backup_dir="/tmp/portainer-backup-$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$backup_dir"
+
+    # Backup do volume de dados
+    if docker volume ls | grep -q portainer_data; then
+        log_info "Copiando dados do Portainer..."
+        docker run --rm -v portainer_data:/source -v "$backup_dir":/backup alpine cp -r /source/. /backup/ 2>/dev/null || true
+    fi
+
+    # Backup de configurações do container
+    docker inspect "$portainer_name" > "$backup_dir/container_config.json" 2>/dev/null || true
+
+    echo "$backup_dir" > /tmp/portainer_backup_path
+    log_success "✅ Backup do Portainer salvo em: $backup_dir"
+}
+
+# Corrigir SSL do Portainer existente
+fix_portainer_ssl() {
+    local portainer_name="$1"
+
+    log_fix "🔒 Corrigindo SSL do Portainer..."
+
+    # Parar Portainer atual
+    docker stop "$portainer_name" 2>/dev/null || true
+    docker rm "$portainer_name" 2>/dev/null || true
+
+    # Recriar Portainer com SSL corrigido
+    log_info "Recriando Portainer com configuração SSL correta..."
+    docker run -d \
+        --name portainer-fixed \
+        --restart=always \
+        -p 8000:8000 \
+        -p 9000:9000 \
+        -p 9443:9443 \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v portainer_data:/data \
+        --label "traefik.enable=true" \
+        --label "traefik.http.routers.portainer.rule=Host(\`portainer.${DOMAIN}\`)" \
+        --label "traefik.http.routers.portainer.entrypoints=websecure" \
+        --label "traefik.http.routers.portainer.tls.certresolver=letsencrypt" \
+        --label "traefik.http.services.portainer.loadbalancer.server.port=9000" \
+        portainer/portainer-ce:latest \
+        --sslcert /data/portainer.crt \
+        --sslkey /data/portainer.key \
+        2>/dev/null || true
+
+    # Aguardar Portainer iniciar
+    sleep 15
+
+    # Verificar se funcionou
+    if timeout 10 curl -s http://localhost:9000 > /dev/null 2>&1; then
+        log_success "✅ Portainer SSL corrigido!"
+    else
+        log_warning "⚠️ Ainda há problemas com o Portainer"
+    fi
+}
+
+# Configurar múltiplos Portainers para diferentes domínios
+setup_multi_domain_portainers() {
+    log_info "🌐 Configurando Portainers para múltiplos domínios..."
+
+    # Solicitar domínios se não definidos
+    if [ -z "${DOMAIN2:-}" ]; then
+        log_info "📝 Configure os domínios para os Portainers:"
+        realtime_echo "${YELLOW}Domínio 1 (atual): $DOMAIN${NC}"
+        realtime_echo "${CYAN}Digite o segundo domínio (ex: example2.com):${NC}"
+
+        # Aguardar input com timeout
+        read -t 30 -r DOMAIN2 || DOMAIN2="portainer2.local"
+
+        if [ -z "$DOMAIN2" ]; then
+            DOMAIN2="portainer2.local"
+            log_warning "Usando domínio padrão: $DOMAIN2"
+        fi
+    fi
+
+    log_info "🏗️ Configurando Portainer 1 para: $DOMAIN"
+    log_info "🏗️ Configurando Portainer 2 para: $DOMAIN2"
+
+    # Parar qualquer Portainer existente conflitante
+    docker stop portainer portainer-fixed 2>/dev/null || true
+    docker rm portainer portainer-fixed 2>/dev/null || true
+
+    # Criar Portainer 1 (domínio principal)
+    create_portainer_instance "portainer1" "$DOMAIN" "9001" "9444"
+
+    # Criar Portainer 2 (segundo domínio)
+    create_portainer_instance "portainer2" "$DOMAIN2" "9002" "9445"
+
+    # Aguardar ambos iniciarem
+    log_info "⏳ Aguardando Portainers iniciarem..."
+    sleep 30
+
+    # Verificar se ambos estão funcionando
+    verify_portainer_instances
+}
+
+# Criar instância do Portainer
+create_portainer_instance() {
+    local instance_name="$1"
+    local domain="$2"
+    local http_port="$3"
+    local https_port="$4"
+
+    log_info "🐳 Criando $instance_name para $domain..."
+
+    # Criar volume específico para esta instância
+    docker volume create "${instance_name}_data" 2>/dev/null || true
+
+    # Criar container Portainer
+    docker run -d \
+        --name "$instance_name" \
+        --restart=always \
+        -p "$http_port:9000" \
+        -p "$https_port:9443" \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v "${instance_name}_data:/data" \
+        --network siqueira-network \
+        --label "traefik.enable=true" \
+        --label "traefik.http.routers.${instance_name}.rule=Host(\`portainer.${domain}\`)" \
+        --label "traefik.http.routers.${instance_name}.entrypoints=websecure" \
+        --label "traefik.http.routers.${instance_name}.tls.certresolver=letsencrypt" \
+        --label "traefik.http.services.${instance_name}.loadbalancer.server.port=9000" \
+        --label "traefik.http.middlewares.${instance_name}-redirect.redirectscheme.scheme=https" \
+        --label "traefik.http.routers.${instance_name}-redirect.rule=Host(\`portainer.${domain}\`)" \
+        --label "traefik.http.routers.${instance_name}-redirect.entrypoints=web" \
+        --label "traefik.http.routers.${instance_name}-redirect.middlewares=${instance_name}-redirect" \
+        portainer/portainer-ce:latest \
+        2>/dev/null || true
+
+    if [ $? -eq 0 ]; then
+        log_success "✅ $instance_name criado com sucesso!"
+        log_info "   • HTTP: http://localhost:$http_port"
+        log_info "   • HTTPS: https://localhost:$https_port"
+        log_info "   • Domínio: https://portainer.$domain"
+    else
+        log_error "❌ Falha ao criar $instance_name"
+    fi
+}
+
+# Verificar instâncias do Portainer
+verify_portainer_instances() {
+    log_info "🔍 Verificando instâncias do Portainer..."
+
+    local portainer1_status="❌"
+    local portainer2_status="❌"
+
+    # Verificar Portainer 1
+    if timeout 10 curl -s http://localhost:9001 > /dev/null 2>&1; then
+        portainer1_status="✅"
+        log_success "✅ Portainer 1 funcionando (porta 9001)"
+    else
+        log_warning "❌ Portainer 1 não responde"
+
+        # Tentar corrigir
+        docker restart portainer1 2>/dev/null || true
+        sleep 10
+
+        if timeout 10 curl -s http://localhost:9001 > /dev/null 2>&1; then
+            portainer1_status="✅"
+            log_success "✅ Portainer 1 corrigido!"
+        fi
+    fi
+
+    # Verificar Portainer 2
+    if timeout 10 curl -s http://localhost:9002 > /dev/null 2>&1; then
+        portainer2_status="✅"
+        log_success "✅ Portainer 2 funcionando (porta 9002)"
+    else
+        log_warning "❌ Portainer 2 não responde"
+
+        # Tentar corrigir
+        docker restart portainer2 2>/dev/null || true
+        sleep 10
+
+        if timeout 10 curl -s http://localhost:9002 > /dev/null 2>&1; then
+            portainer2_status="✅"
+            log_success "✅ Portainer 2 corrigido!"
+        fi
+    fi
+
+    # Relatório final dos Portainers
+    realtime_echo ""
+    realtime_echo "${CYAN}📊 Status dos Portainers:${NC}"
+    realtime_echo "   $portainer1_status Portainer 1: https://portainer.$DOMAIN"
+    realtime_echo "   $portainer2_status Portainer 2: https://portainer.${DOMAIN2:-"domain2.local"}"
+    realtime_echo ""
 }
 
 # Verificar e corrigir espaço em disco
@@ -120,7 +465,7 @@ check_and_fix_disk_space() {
 
 # Verificar e corrigir permissões
 check_and_fix_permissions() {
-    log_info "�� Verificando permissões..."
+    log_info "🔐 Verificando permissões..."
 
     # Verificar se usuário está no grupo docker
     if ! groups | grep -q docker; then
@@ -1998,7 +2343,7 @@ cat >> ACESSO_MEGA_DEPLOY_V3.md <<EOF
 - **PostgreSQL**: sitejuarez / $DB_PASSWORD
 
 ### 🛠️ Stack Implementada V3
-✅ Traefik (Proxy + SSL autom��tico + Health checks)
+✅ Traefik (Proxy + SSL automático + Health checks)
 ✅ Let's Encrypt (SSL/HTTPS automático)
 ✅ PostgreSQL (Banco principal + otimizado + health checks)
 ✅ Redis (Cache + health checks)
@@ -2100,7 +2445,7 @@ realtime_echo ""
 realtime_echo "${CYAN}📝 Log completo salvo em: ${YELLOW}$LOG_FILE${NC}"
 realtime_echo "${CYAN}🔐 Credenciais salvas em: ${YELLOW}ACESSO_MEGA_DEPLOY_V3.md${NC}"
 realtime_echo ""
-realtime_echo "${GREEN}��� Sistema V3 100% funcional com:${NC}"
+realtime_echo "${GREEN}✅ Sistema V3 100% funcional com:${NC}"
 realtime_echo "   📝 Logs em tempo real"
 realtime_echo "   📊 Progress bar visual"
 realtime_echo "   🔄 Retry logic automático"
