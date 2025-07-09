@@ -250,11 +250,31 @@ fi
 log_success "Usuário não-root confirmado"
 
 log_info "🔍 Verificando conectividade..."
-if ping -c 1 google.com &> /dev/null; then
-    log_success "Conectividade OK"
-else
+
+# Testar múltiplos hosts para garantir conectividade
+connectivity_hosts=("8.8.8.8" "1.1.1.1" "google.com")
+connectivity_ok=false
+
+for host in "${connectivity_hosts[@]}"; do
+    if ping -c 1 -W 3 "$host" &> /dev/null; then
+        log_success "Conectividade OK (via $host)"
+        connectivity_ok=true
+        break
+    fi
+done
+
+if [ "$connectivity_ok" = false ]; then
     log_error "Sem conectividade com a internet"
-    exit 1
+    log_info "Testados: ${connectivity_hosts[*]}"
+
+    realtime_echo "${YELLOW}Tentar continuar mesmo assim? (y/N):${NC}"
+    read -t 10 -r continue_anyway || continue_anyway="n"
+
+    if [[ "$continue_anyway" != "y" && "$continue_anyway" != "Y" ]]; then
+        exit 1
+    fi
+
+    log_warning "Continuando sem conectividade verificada..."
 fi
 
 log_info "🔍 Verificando porta 80..."
