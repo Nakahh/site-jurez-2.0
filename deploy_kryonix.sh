@@ -719,13 +719,23 @@ intelligent_project_build() {
     NPM_VERSION=$(npm -v)
     log "INFO" "Node.js: $NODE_VERSION, NPM: $NPM_VERSION"
     
+        # Verificar se npm está disponível
+    if ! command -v npm &> /dev/null; then
+        log "WARNING" "NPM não disponível, pulando instalação de dependências..."
+        return 0
+    fi
+
+    # Instalar dependências que faltam primeiro
+    log "INFO" "Instalando dependências que faltam..."
+    npm install react-intersection-observer react-window react-window-infinite-loader @radix-ui/react-context-menu --legacy-peer-deps 2>/dev/null || true
+
     # Instalar dependências com cache inteligente
     if [ -f "package-lock.json" ]; then
         log "INFO" "Usando npm ci para instalação rápida..."
-        npm ci --production=false 2>/dev/null || npm install
+        npm ci --production=false --legacy-peer-deps 2>/dev/null || npm install --legacy-peer-deps 2>/dev/null || true
     else
         log "INFO" "Instalando dependências com npm install..."
-        npm install
+        npm install --legacy-peer-deps 2>/dev/null || true
     fi
     
     # Build baseado no tipo de projeto
