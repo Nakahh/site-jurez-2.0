@@ -533,8 +533,8 @@ intelligent_project_analysis() {
 intelligent_directory_setup() {
     log "INSTALL" "📁 Criando estrutura de diretórios inteligente..."
     
-    # Criar estrutura principal
-    mkdir -p "$KRYONIX_DIR"/{traefik,portainer,postgres,redis,n8n,evolution,minio,grafana,prometheus,project}
+        # Criar estrutura principal
+    mkdir -p "$KRYONIX_DIR"/{traefik,portainer-siqueira,portainer-meuboot,postgres,redis,n8n,evolution,minio,grafana,prometheus,project}
     mkdir -p "$KRYONIX_DIR"/traefik/{config,certs,dynamic}
     mkdir -p "$KRYONIX_DIR"/postgres/{data,init}
     mkdir -p "$KRYONIX_DIR"/redis/data
