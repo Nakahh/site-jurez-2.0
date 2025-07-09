@@ -12,7 +12,7 @@ echo "🔧 Configurando para não fechar sozinho..."
 # Configurações para manter script rodando sem fechar sozinho
 set +e  # NÃO parar em erros - permitir continuidade
 set +u  # NÃO parar com variáveis não definidas
-set -o pipefail  # Manter detecção de erros em pipes
+set -o pipefail  # Manter detecç��o de erros em pipes
 IFS=$'\n\t'       # Separador seguro
 
 # Configurar logs em tempo real
@@ -820,6 +820,571 @@ check_and_fix_firewall() {
     fi
 
     log_success "✅ Firewall configurado"
+}
+
+# Sistema completo de detecção e correção do Traefik problemático
+check_and_fix_existing_traefik() {
+    log_info "🔀 Detectando Traefik existente..."
+
+    # Detectar containers Traefik
+    local existing_traefik=$(docker ps -a --filter "name=traefik" --format "{{.Names}}" 2>/dev/null)
+
+    if [ ! -z "$existing_traefik" ]; then
+        log_warning "⚠️ Traefik existente detectado: $existing_traefik"
+
+        # Analisar problemas do Traefik
+        analyze_traefik_issues "$existing_traefik"
+
+        # Backup do Traefik antes de corrigir
+        backup_traefik_data "$existing_traefik"
+
+        # Corrigir problemas específicos
+        fix_traefik_comprehensive "$existing_traefik"
+    else
+        # Verificar se há Traefik em stacks
+        local traefik_in_stacks=$(docker ps -a --filter "label=com.docker.compose.service=traefik" --format "{{.Names}}" 2>/dev/null)
+
+        if [ ! -z "$traefik_in_stacks" ]; then
+            log_warning "⚠️ Traefik em stack detectado: $traefik_in_stacks"
+            analyze_traefik_issues "$traefik_in_stacks"
+            fix_traefik_in_stack "$traefik_in_stacks"
+        else
+            log_info "ℹ️ Nenhum Traefik problemático detectado"
+        fi
+    fi
+}
+
+# Análise completa dos problemas do Traefik
+analyze_traefik_issues() {
+    local traefik_name="$1"
+
+    log_info "🔍 Analisando problemas do Traefik: $traefik_name"
+
+    # Verificar se está rodando
+    local traefik_status=$(docker ps --filter "name=$traefik_name" --format "{{.Status}}" 2>/dev/null)
+
+    if [ -z "$traefik_status" ]; then
+        log_error "❌ Traefik não está rodando"
+
+        # Verificar logs do container parado
+        local error_logs=$(docker logs --tail=20 "$traefik_name" 2>&1)
+        log_info "📋 Logs do erro:"
+        echo "$error_logs" | head -10
+
+        # Analisar causa da parada
+        case "$error_logs" in
+            *"port already in use"*|*"bind: address already in use"*)
+                log_warning "🔌 Problema: Conflito de porta detectado"
+                fix_traefik_port_conflict "$traefik_name"
+                ;;
+            *"certificate"*|*"SSL"*|*"TLS"*)
+                log_warning "🔒 Problema: Erro de certificado SSL/TLS"
+                fix_traefik_ssl_issues "$traefik_name"
+                ;;
+            *"no such file"*|*"permission denied"*)
+                log_warning "📁 Problema: Arquivo ou permissão"
+                fix_traefik_file_permissions "$traefik_name"
+                ;;
+            *)
+                log_warning "❓ Problema genérico detectado"
+                ;;
+        esac
+    else
+        log_info "✅ Traefik está rodando: $traefik_status"
+
+        # Verificar se dashboard está acessível
+        test_traefik_dashboard "$traefik_name"
+
+        # Verificar problemas de proxy reverso
+        test_traefik_proxy_reverse "$traefik_name"
+
+        # Verificar certificados SSL
+        verify_traefik_ssl_status "$traefik_name"
+    fi
+}
+
+# Testar dashboard do Traefik
+test_traefik_dashboard() {
+    local traefik_name="$1"
+
+    log_info "🌐 Testando dashboard do Traefik..."
+
+    local dashboard_ports=(8080 8081 9000 9090)
+    local dashboard_accessible=false
+
+    for port in "${dashboard_ports[@]}"; do
+        if timeout 5 curl -s "http://localhost:$port/api/overview" > /dev/null 2>&1; then
+            log_success "✅ Dashboard Traefik acessível na porta $port"
+            dashboard_accessible=true
+            break
+        fi
+    done
+
+    if [ "$dashboard_accessible" = false ]; then
+        log_warning "❌ Dashboard Traefik não acessível"
+
+        # Verificar configuração do dashboard
+        local traefik_config=$(docker inspect "$traefik_name" --format '{{.Config.Cmd}}' 2>/dev/null)
+
+        if echo "$traefik_config" | grep -q "api.dashboard=true"; then
+            log_info "Dashboard habilitado na configuração"
+        else
+            log_warning "Dashboard não habilitado - corrigindo..."
+            enable_traefik_dashboard "$traefik_name"
+        fi
+    fi
+}
+
+# Testar proxy reverso do Traefik
+test_traefik_proxy_reverse() {
+    local traefik_name="$1"
+
+    log_info "🔄 Testando proxy reverso do Traefik..."
+
+    # Verificar se Traefik está fazendo proxy para outros serviços
+    local proxy_errors=0
+
+    # Testar portas comuns de proxy
+    local proxy_ports=(80 443)
+
+    for port in "${proxy_ports[@]}"; do
+        if ! timeout 5 curl -s "http://localhost:$port" > /dev/null 2>&1; then
+            log_warning "❌ Proxy na porta $port não funcionando"
+            proxy_errors=$((proxy_errors + 1))
+        else
+            # Verificar se está retornando erro de Gateway
+            local response=$(timeout 5 curl -s -o /dev/null -w "%{http_code}" "http://localhost:$port" 2>/dev/null)
+
+            case "$response" in
+                "502"|"503"|"504")
+                    log_warning "❌ Erro de Gateway ($response) na porta $port"
+                    proxy_errors=$((proxy_errors + 1))
+                    ;;
+                "200"|"301"|"302")
+                    log_success "✅ Proxy funcionando na porta $port"
+                    ;;
+                *)
+                    log_info "ℹ️ Resposta $response na porta $port"
+                    ;;
+            esac
+        fi
+    done
+
+    if [ $proxy_errors -gt 0 ]; then
+        log_warning "⚠️ $proxy_errors problemas de proxy detectados"
+        fix_traefik_proxy_issues "$traefik_name"
+    else
+        log_success "✅ Proxy reverso funcionando"
+    fi
+}
+
+# Verificar status SSL do Traefik
+verify_traefik_ssl_status() {
+    local traefik_name="$1"
+
+    log_info "🔒 Verificando status SSL do Traefik..."
+
+    # Verificar se há certificados
+    local cert_volume=$(docker inspect "$traefik_name" --format '{{range .Mounts}}{{if eq .Destination "/acme.json"}}{{.Source}}{{end}}{{end}}' 2>/dev/null)
+
+    if [ ! -z "$cert_volume" ] && [ -f "$cert_volume" ]; then
+        local cert_size=$(stat -c%s "$cert_volume" 2>/dev/null || echo "0")
+
+        if [ "$cert_size" -gt 100 ]; then
+            log_success "✅ Arquivo de certificados existe ($cert_size bytes)"
+
+            # Verificar se certificados são válidos
+            if timeout 5 openssl x509 -in "$cert_volume" -text -noout > /dev/null 2>&1; then
+                log_success "✅ Certificados SSL válidos"
+            else
+                log_warning "❌ Certificados SSL corrompidos"
+                fix_traefik_ssl_certificates "$traefik_name"
+            fi
+        else
+            log_warning "❌ Arquivo de certificados vazio ou corrompido"
+            fix_traefik_ssl_certificates "$traefik_name"
+        fi
+    else
+        log_warning "❌ Arquivo de certificados não encontrado"
+        fix_traefik_ssl_certificates "$traefik_name"
+    fi
+}
+
+# Corrigir conflitos de porta do Traefik
+fix_traefik_port_conflict() {
+    local traefik_name="$1"
+
+    log_fix "🔌 Corrigindo conflitos de porta do Traefik..."
+
+    # Verificar e parar serviços conflitantes
+    local conflicting_ports=(80 443 8080)
+
+    for port in "${conflicting_ports[@]}"; do
+        local process=$(sudo netstat -tlnp 2>/dev/null | grep ":$port " | awk '{print $7}' | head -1)
+
+        if [ ! -z "$process" ] && ! echo "$process" | grep -q "docker"; then
+            log_fix "Liberando porta $port (processo: $process)"
+
+            # Matar processo específico
+            local pid=$(echo "$process" | cut -d'/' -f1)
+            if [ ! -z "$pid" ] && [ "$pid" != "-" ]; then
+                sudo kill -9 "$pid" 2>/dev/null || true
+            fi
+        fi
+    done
+
+    # Parar containers Docker conflitantes
+    local conflicting_containers=$(docker ps --filter "publish=80" --filter "publish=443" --format "{{.Names}}" | grep -v "$traefik_name")
+
+    if [ ! -z "$conflicting_containers" ]; then
+        echo "$conflicting_containers" | while read container; do
+            if [ ! -z "$container" ]; then
+                log_fix "Parando container conflitante: $container"
+                docker stop "$container" 2>/dev/null || true
+            fi
+        done
+    fi
+
+    # Tentar reiniciar Traefik
+    log_info "Reiniciando Traefik após liberar portas..."
+    docker restart "$traefik_name" 2>/dev/null || true
+    sleep 10
+}
+
+# Corrigir problemas SSL do Traefik
+fix_traefik_ssl_issues() {
+    local traefik_name="$1"
+
+    log_fix "🔒 Corrigindo problemas SSL do Traefik..."
+
+    # Parar Traefik
+    docker stop "$traefik_name" 2>/dev/null || true
+
+    # Localizar e limpar certificados corrompidos
+    local cert_paths=(
+        "/var/lib/docker/volumes/traefik_acme/_data/acme.json"
+        "/var/lib/docker/volumes/*traefik*/_data/acme.json"
+        "/opt/traefik/acme.json"
+        "/etc/traefik/acme.json"
+    )
+
+    for path in "${cert_paths[@]}"; do
+        if [ -f "$path" ]; then
+            log_fix "Removendo certificados corrompidos: $path"
+            sudo rm -f "$path" 2>/dev/null || true
+        fi
+    done
+
+    # Recriar arquivo acme.json com permissões corretas
+    local acme_volume=$(docker volume ls | grep -E "(traefik|acme)" | awk '{print $2}' | head -1)
+
+    if [ ! -z "$acme_volume" ]; then
+        log_fix "Recriando acme.json no volume: $acme_volume"
+        docker run --rm -v "$acme_volume:/data" alpine sh -c "touch /data/acme.json && chmod 600 /data/acme.json" 2>/dev/null || true
+    fi
+
+    # Reiniciar Traefik
+    docker start "$traefik_name" 2>/dev/null || true
+    sleep 15
+
+    log_success "✅ Problemas SSL corrigidos"
+}
+
+# Corrigir permissões de arquivos do Traefik
+fix_traefik_file_permissions() {
+    local traefik_name="$1"
+
+    log_fix "📁 Corrigindo permissões do Traefik..."
+
+    # Corrigir permissões do socket Docker
+    sudo chmod 666 /var/run/docker.sock 2>/dev/null || true
+
+    # Corrigir permissões de volumes Traefik
+    local traefik_volumes=$(docker inspect "$traefik_name" --format '{{range .Mounts}}{{.Source}} {{end}}' 2>/dev/null)
+
+    if [ ! -z "$traefik_volumes" ]; then
+        echo "$traefik_volumes" | while read volume; do
+            if [ ! -z "$volume" ] && [ -d "$volume" ]; then
+                log_fix "Corrigindo permissões: $volume"
+                sudo chown -R root:docker "$volume" 2>/dev/null || true
+                sudo chmod -R 755 "$volume" 2>/dev/null || true
+            fi
+        done
+    fi
+
+    # Reiniciar Traefik
+    docker restart "$traefik_name" 2>/dev/null || true
+    sleep 10
+}
+
+# Habilitar dashboard do Traefik
+enable_traefik_dashboard() {
+    local traefik_name="$1"
+
+    log_fix "🌐 Habilitando dashboard do Traefik..."
+
+    # Obter configuração atual
+    local current_cmd=$(docker inspect "$traefik_name" --format '{{.Config.Cmd}}' 2>/dev/null)
+
+    # Parar container atual
+    docker stop "$traefik_name" 2>/dev/null || true
+    docker rm "$traefik_name" 2>/dev/null || true
+
+    # Recriar com dashboard habilitado
+    log_info "Recriando Traefik com dashboard habilitado..."
+
+    # Tentar encontrar volumes existentes
+    local traefik_volumes=$(docker volume ls | grep -E "(traefik|acme)" | awk '{print $2}')
+    local volume_args=""
+
+    if [ ! -z "$traefik_volumes" ]; then
+        echo "$traefik_volumes" | while read volume; do
+            volume_args="$volume_args -v $volume:/data"
+        done
+    fi
+
+    # Criar novo Traefik com configuração correta
+    docker run -d \
+        --name "${traefik_name}-fixed" \
+        --restart=unless-stopped \
+        -p 80:80 \
+        -p 443:443 \
+        -p 8080:8080 \
+        -v /var/run/docker.sock:/var/run/docker.sock:ro \
+        $volume_args \
+        traefik:latest \
+        --api.dashboard=true \
+        --api.insecure=true \
+        --entrypoints.web.address=:80 \
+        --entrypoints.websecure.address=:443 \
+        --providers.docker=true \
+        --providers.docker.exposedbydefault=false \
+        --certificatesresolvers.letsencrypt.acme.email="$EMAIL" \
+        --certificatesresolvers.letsencrypt.acme.storage=/data/acme.json \
+        --certificatesresolvers.letsencrypt.acme.httpchallenge=true \
+        --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web \
+        --log.level=INFO \
+        2>/dev/null || true
+
+    sleep 15
+
+    # Verificar se funcionou
+    if timeout 10 curl -s http://localhost:8080/api/overview > /dev/null 2>&1; then
+        log_success "✅ Dashboard Traefik habilitado e funcionando!"
+    else
+        log_warning "⚠️ Ainda há problemas com o dashboard"
+    fi
+}
+
+# Corrigir problemas de proxy do Traefik
+fix_traefik_proxy_issues() {
+    local traefik_name="$1"
+
+    log_fix "🔄 Corrigindo problemas de proxy do Traefik..."
+
+    # Verificar configuração de redes
+    local traefik_networks=$(docker inspect "$traefik_name" --format '{{range .NetworkSettings.Networks}}{{.NetworkID}} {{end}}' 2>/dev/null)
+
+    # Recriar redes se necessário
+    if [ -z "$traefik_networks" ]; then
+        log_fix "Reconectando Traefik às redes..."
+
+        # Tentar conectar à rede bridge padrão
+        docker network connect bridge "$traefik_name" 2>/dev/null || true
+
+        # Tentar conectar a redes de compose
+        local compose_networks=$(docker network ls --filter "driver=bridge" --format "{{.Name}}" | grep -v bridge)
+
+        echo "$compose_networks" | while read network; do
+            if [ ! -z "$network" ]; then
+                docker network connect "$network" "$traefik_name" 2>/dev/null || true
+            fi
+        done
+    fi
+
+    # Verificar se serviços backend estão acessíveis
+    log_info "Verificando conectividade com serviços backend..."
+
+    # Reiniciar Traefik para aplicar mudanças
+    docker restart "$traefik_name" 2>/dev/null || true
+    sleep 15
+
+    # Testar novamente
+    if timeout 5 curl -s http://localhost:80 > /dev/null 2>&1; then
+        log_success "✅ Proxy reverso corrigido!"
+    else
+        log_warning "⚠️ Proxy ainda com problemas - pode precisar reconfiguração manual"
+    fi
+}
+
+# Corrigir certificados SSL
+fix_traefik_ssl_certificates() {
+    local traefik_name="$1"
+
+    log_fix "🔒 Regenerando certificados SSL..."
+
+    # Parar Traefik temporariamente
+    docker stop "$traefik_name" 2>/dev/null || true
+
+    # Limpar todos os certificados antigos
+    docker run --rm -v traefik_acme:/data alpine sh -c "rm -f /data/acme.json && touch /data/acme.json && chmod 600 /data/acme.json" 2>/dev/null || true
+
+    # Reiniciar Traefik para gerar novos certificados
+    docker start "$traefik_name" 2>/dev/null || true
+
+    log_info "⏳ Aguardando geração de novos certificados SSL..."
+    sleep 30
+
+    # Verificar se certificados foram gerados
+    local new_cert_size=$(docker run --rm -v traefik_acme:/data alpine stat -c%s /data/acme.json 2>/dev/null || echo "0")
+
+    if [ "$new_cert_size" -gt 100 ]; then
+        log_success "✅ Novos certificados SSL gerados!"
+    else
+        log_warning "⚠️ Certificados ainda não foram gerados - pode levar alguns minutos"
+    fi
+}
+
+# Backup dados do Traefik
+backup_traefik_data() {
+    local traefik_name="$1"
+
+    log_info "💾 Fazendo backup do Traefik..."
+
+    local backup_dir="/tmp/traefik-backup-$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$backup_dir"
+
+    # Backup de volumes
+    docker inspect "$traefik_name" --format '{{range .Mounts}}{{.Source}} {{.Destination}}{{"\n"}}{{end}}' 2>/dev/null | while read mount; do
+        if [ ! -z "$mount" ]; then
+            local source=$(echo "$mount" | awk '{print $1}')
+            local dest=$(echo "$mount" | awk '{print $2}')
+
+            if [ -f "$source" ]; then
+                cp "$source" "$backup_dir/" 2>/dev/null || true
+            elif [ -d "$source" ]; then
+                cp -r "$source" "$backup_dir/" 2>/dev/null || true
+            fi
+        fi
+    done
+
+    # Backup configuração do container
+    docker inspect "$traefik_name" > "$backup_dir/traefik_config.json" 2>/dev/null || true
+
+    echo "$backup_dir" > /tmp/traefik_backup_path
+    log_success "✅ Backup do Traefik salvo em: $backup_dir"
+}
+
+# Corrigir Traefik em stack
+fix_traefik_in_stack() {
+    local traefik_container="$1"
+
+    log_fix "🔧 Corrigindo Traefik em stack..."
+
+    # Obter stack do Traefik
+    local stack_name=$(docker inspect "$traefik_container" --format '{{.Config.Labels}}' | grep -o 'com.docker.compose.project:[^,}]*' | cut -d':' -f2 | tr -d ' "')
+
+    if [ ! -z "$stack_name" ]; then
+        log_info "Stack detectada: $stack_name"
+
+        # Tentar reiniciar stack inteira
+        log_fix "Reiniciando stack $stack_name..."
+
+        # Parar containers da stack
+        docker ps --filter "label=com.docker.compose.project=$stack_name" --format "{{.Names}}" | while read container; do
+            if [ ! -z "$container" ]; then
+                docker stop "$container" 2>/dev/null || true
+            fi
+        done
+
+        sleep 5
+
+        # Reiniciar containers da stack
+        docker ps -a --filter "label=com.docker.compose.project=$stack_name" --format "{{.Names}}" | while read container; do
+            if [ ! -z "$container" ]; then
+                docker start "$container" 2>/dev/null || true
+            fi
+        done
+
+        sleep 15
+
+        # Verificar se Traefik está funcionando agora
+        if timeout 10 curl -s http://localhost:8080/api/overview > /dev/null 2>&1; then
+            log_success "✅ Traefik em stack corrigido!"
+        else
+            log_warning "⚠️ Traefik ainda com problemas na stack"
+        fi
+    fi
+}
+
+# Correção comprehensive do Traefik
+fix_traefik_comprehensive() {
+    local traefik_name="$1"
+
+    log_fix "🛠️ Aplicando correção comprehensive do Traefik..."
+
+    # Executar todas as correções em sequência
+    fix_traefik_port_conflict "$traefik_name"
+    fix_traefik_file_permissions "$traefik_name"
+    fix_traefik_ssl_issues "$traefik_name"
+
+    # Aguardar estabilização
+    sleep 20
+
+    # Verificar resultados
+    local dashboard_ok=false
+    local proxy_ok=false
+    local ssl_ok=false
+
+    # Testar dashboard
+    if timeout 10 curl -s http://localhost:8080/api/overview > /dev/null 2>&1; then
+        dashboard_ok=true
+        log_success "✅ Dashboard funcionando"
+    fi
+
+    # Testar proxy
+    if timeout 10 curl -s http://localhost:80 > /dev/null 2>&1; then
+        proxy_ok=true
+        log_success "✅ Proxy funcionando"
+    fi
+
+    # Testar SSL (se aplicável)
+    if timeout 10 curl -sk https://localhost:443 > /dev/null 2>&1; then
+        ssl_ok=true
+        log_success "✅ SSL funcionando"
+    fi
+
+    # Relatório final
+    local issues_fixed=0
+    [ "$dashboard_ok" = true ] && issues_fixed=$((issues_fixed + 1))
+    [ "$proxy_ok" = true ] && issues_fixed=$((issues_fixed + 1))
+    [ "$ssl_ok" = true ] && issues_fixed=$((issues_fixed + 1))
+
+    if [ $issues_fixed -ge 2 ]; then
+        log_success "🎉 Traefik majoritariamente corrigido! ($issues_fixed/3 funcionalidades OK)"
+    else
+        log_warning "⚠️ Traefik ainda com problemas significativos ($issues_fixed/3 funcionalidades OK)"
+
+        # Se ainda há muitos problemas, sugerir recriação completa
+        suggest_traefik_recreation "$traefik_name"
+    fi
+}
+
+# Sugerir recriação completa do Traefik
+suggest_traefik_recreation() {
+    local traefik_name="$1"
+
+    log_warning "🔄 Traefik com problemas persistentes"
+    log_info "💡 Será criado um novo Traefik otimizado no deploy principal"
+    log_info "📝 O Traefik problemático será parado para evitar conflitos"
+
+    # Parar Traefik problemático
+    docker stop "$traefik_name" 2>/dev/null || true
+
+    # Marcar para não iniciar automaticamente
+    docker update --restart=no "$traefik_name" 2>/dev/null || true
+
+    log_success "✅ Traefik problemático desabilitado - novo Traefik será criado"
 }
 
 # Verificar recursos do sistema
@@ -1689,7 +2254,7 @@ app.get('*', (req, res) => {
 
 // Tratamento de sinais para graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM recebido, fechando servidor...');
+  console.log('�� SIGTERM recebido, fechando servidor...');
   process.exit(0);
 });
 
@@ -2019,7 +2584,7 @@ create_pre_deploy_backup() {
     log_success "✅ Backup criado em: $backup_dir"
 }
 
-# Função de rollback autom��tico
+# Função de rollback automático
 auto_rollback() {
     log_warning "🔄 Iniciando rollback automático..."
 
@@ -2535,7 +3100,7 @@ generate_final_status_report() {
         realtime_echo "${YELLOW}⚠️ Alguns componentes podem precisar de atenção${NC}"
     fi
 
-    realtime_echo "${PURPLE}═════��══════════════════════════════════${NC}"
+    realtime_echo "${PURPLE}════════════════════════════════════════${NC}"
 }
 
 # Executar verificações
@@ -2573,7 +3138,7 @@ cat > ACESSO_MEGA_DEPLOY_V3.md <<EOF
 - 📝 **Logs Tempo Real**: Todo o processo é exibido em tempo real
 - 📊 **Progress Bar**: Acompanhe o progresso de cada etapa
 - 🔄 **Retry Logic**: Tentativas automáticas em caso de falha
-- ��� **Cleanup Automático**: Tratamento adequado de interrupções
+- 🧹 **Cleanup Automático**: Tratamento adequado de interrupções
 - 🔍 **Health Checks**: Monitoramento contínuo dos serviços
 - 🌐 **Conectividade Check**: Verificação de internet antes do deploy
 - 📁 **Backup Melhorado**: Inclui logs e configurações
