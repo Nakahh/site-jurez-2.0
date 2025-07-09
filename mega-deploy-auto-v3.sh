@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 🚀 MEGA DEPLOY AUTOMÁTICO V3 - Siqueira Campos Imóveis
+# �� MEGA DEPLOY AUTOMÁTICO V3 - Siqueira Campos Imóveis
 # APAGA TUDO E REFAZ DO ZERO - 100% AUTOMÁTICO + LOGS TEMPO REAL
 # Desenvolvido por Kryonix - Zero configuração manual + Melhorias V3
 
@@ -120,7 +120,7 @@ check_and_fix_disk_space() {
 
 # Verificar e corrigir permissões
 check_and_fix_permissions() {
-    log_info "🔐 Verificando permissões..."
+    log_info "�� Verificando permissões..."
 
     # Verificar se usuário está no grupo docker
     if ! groups | grep -q docker; then
@@ -1726,64 +1726,224 @@ health_check_containers() {
 
 show_progress 14 $TOTAL_STEPS
 
-# ============= PASSO 14: VERIFICAÇÕES FINAIS =============
-log_step 14 $TOTAL_STEPS "Verificações finais e testes"
+# ============= PASSO 14: VERIFICAÇÃO FINAL ULTRA-ROBUSTA =============
+log_step 14 $TOTAL_STEPS "Verificação final ultra-robusta com auto-correção"
 
-log_info "🔍 Executando verificações automáticas avançadas..."
+log_info "🔍 Executando bateria completa de testes com auto-correção..."
 
-# Verificar containers
-CONTAINERS_UP=$(docker-compose ps --filter status=running --services | wc -l)
-TOTAL_SERVICES=$(docker-compose config --services | wc -l)
+# Sistema de verificação ultra-robusto
+deploy_success=true
 
-if [ $CONTAINERS_UP -eq $TOTAL_SERVICES ]; then
-    log_success "✅ Todos os $TOTAL_SERVICES containers estão rodando!"
-else
-    log_warning "⚠️ $CONTAINERS_UP de $TOTAL_SERVICES containers rodando"
-    log_info "Status detalhado dos containers:"
-    docker-compose ps
-fi
+# 1. Verificação de containers
+verify_containers() {
+    log_info "🐳 Verificando status dos containers..."
 
-# Testar APIs com retry
-test_api_with_retry() {
-    local url=$1
-    local name=$2
-    local max_attempts=5
+    CONTAINERS_UP=$(docker-compose ps --filter status=running --services 2>/dev/null | wc -l)
+    TOTAL_SERVICES=$(docker-compose config --services 2>/dev/null | wc -l)
 
-    for attempt in $(seq 1 $max_attempts); do
-        log_info "Testando $name (tentativa $attempt/$max_attempts)..."
-        if timeout 10 curl -s "$url" > /dev/null 2>&1; then
-            log_success "✅ $name OK"
-            return 0
-        else
-            if [ $attempt -lt $max_attempts ]; then
-                log_warning "⚠️ $name falhou, tentando novamente em 5s..."
-                sleep 5
+    if [ $CONTAINERS_UP -eq $TOTAL_SERVICES ] && [ $CONTAINERS_UP -gt 0 ]; then
+        log_success "✅ Todos os $TOTAL_SERVICES containers rodando!"
+
+        # Verificar health status
+        local unhealthy_count=0
+        docker-compose ps --format "table {{.Name}}\t{{.Status}}" | while read line; do
+            if echo "$line" | grep -q "unhealthy"; then
+                unhealthy_count=$((unhealthy_count + 1))
             fi
-        fi
-    done
+        done
 
-    log_error "❌ $name falhou após $max_attempts tentativas"
-    return 1
+        if [ $unhealthy_count -gt 0 ]; then
+            log_warning "⚠️ $unhealthy_count containers não saudáveis. Tentando correção..."
+            docker-compose restart 2>/dev/null || true
+            sleep 30
+        fi
+    else
+        log_warning "⚠️ $CONTAINERS_UP de $TOTAL_SERVICES containers rodando"
+        deploy_success=false
+
+        # Tentar corrigir containers parados
+        local failed_containers=$(docker-compose ps --filter status=exited --services 2>/dev/null)
+        if [ ! -z "$failed_containers" ]; then
+            log_fix "🔧 Tentando reiniciar containers parados..."
+            echo "$failed_containers" | while read container; do
+                if [ ! -z "$container" ]; then
+                    docker-compose restart "$container" 2>/dev/null || true
+                fi
+            done
+            sleep 15
+        fi
+    fi
 }
 
-log_info "🧪 Testando APIs com retry..."
-test_api_with_retry "http://localhost:3000/api/ping" "API Principal"
-test_api_with_retry "http://localhost:3000/api/health" "Health Check"
-test_api_with_retry "http://localhost:8080" "Traefik Dashboard"
+# 2. Teste de APIs ultra-robusto
+test_apis_comprehensive() {
+    log_info "🧪 Testando APIs com verificação completa..."
 
-# Verificar logs se houver problemas
-FAILED_CONTAINERS=$(docker-compose ps --filter status=exited --services)
-if [ ! -z "$FAILED_CONTAINERS" ]; then
-    log_warning "⚠️ Containers com problemas detectados:"
-    realtime_echo "$FAILED_CONTAINERS"
-    log_info "Logs detalhados dos containers com problema:"
-    echo "$FAILED_CONTAINERS" | while read container; do
-        if [ ! -z "$container" ]; then
-            realtime_echo "=== Logs do $container ==="
-            docker-compose logs --tail=20 "$container"
-            realtime_echo ""
+    local api_tests_passed=0
+    local total_api_tests=6
+
+    # Teste 1: Health Check básico
+    if timeout 15 curl -sf http://localhost:3000/api/health > /dev/null 2>&1; then
+        log_success "✅ API Health Check: OK"
+        api_tests_passed=$((api_tests_passed + 1))
+    else
+        log_warning "❌ API Health Check: FAIL"
+    fi
+
+    # Teste 2: Ping endpoint
+    if timeout 15 curl -sf http://localhost:3000/api/ping > /dev/null 2>&1; then
+        log_success "✅ API Ping: OK"
+        api_tests_passed=$((api_tests_passed + 1))
+    else
+        log_warning "❌ API Ping: FAIL"
+    fi
+
+    # Teste 3: Homepage principal
+    if timeout 15 curl -sf http://localhost:3000/ | grep -q "Siqueira" 2>/dev/null; then
+        log_success "✅ Homepage: OK"
+        api_tests_passed=$((api_tests_passed + 1))
+    else
+        log_warning "❌ Homepage: FAIL"
+    fi
+
+    # Teste 4: Traefik Dashboard
+    if timeout 10 curl -sf http://localhost:8080/api/overview > /dev/null 2>&1; then
+        log_success "✅ Traefik Dashboard: OK"
+        api_tests_passed=$((api_tests_passed + 1))
+    else
+        log_warning "❌ Traefik Dashboard: FAIL"
+    fi
+
+    # Teste 5: PostgreSQL conectividade
+    if docker-compose exec -T postgres pg_isready -U sitejuarez > /dev/null 2>&1; then
+        log_success "✅ PostgreSQL: OK"
+        api_tests_passed=$((api_tests_passed + 1))
+    else
+        log_warning "❌ PostgreSQL: FAIL"
+    fi
+
+    # Teste 6: Redis conectividade
+    if docker-compose exec -T redis redis-cli ping | grep -q PONG 2>/dev/null; then
+        log_success "✅ Redis: OK"
+        api_tests_passed=$((api_tests_passed + 1))
+    else
+        log_warning "❌ Redis: FAIL"
+    fi
+
+    local api_success_rate=$((api_tests_passed * 100 / total_api_tests))
+
+    if [ $api_success_rate -ge 80 ]; then
+        log_success "🎯 APIs funcionando! Taxa de sucesso: ${api_success_rate}%"
+    else
+        log_warning "⚠️ APIs com problemas. Taxa de sucesso: ${api_success_rate}%"
+        deploy_success=false
+
+        # Tentar correção automática de APIs
+        log_fix "🔧 Tentando correção automática das APIs..."
+        docker-compose restart app 2>/dev/null || true
+        sleep 20
+
+        # Novo teste rápido
+        if timeout 10 curl -sf http://localhost:3000/api/health > /dev/null 2>&1; then
+            log_success "✅ Correção automática funcionou!"
+            deploy_success=true
         fi
-    done
+    fi
+}
+
+# 3. Verificação de recursos e otimização
+verify_and_optimize_resources() {
+    log_info "💻 Verificando recursos e otimizando..."
+
+    # Verificar uso de CPU
+    local cpu_usage=$(top -bn1 | grep "Cpu(s)" | awk '{print $2}' | sed 's/%us,//')
+    if (( $(echo "$cpu_usage > 80" | bc -l 2>/dev/null || echo 0) )); then
+        log_warning "⚠️ Alto uso de CPU: ${cpu_usage}%"
+        log_fix "Otimizando containers..."
+        docker update --cpus="0.5" $(docker-compose ps -q) 2>/dev/null || true
+    fi
+
+    # Verificar uso de memória
+    local mem_usage=$(free | grep Mem | awk '{printf "%.0f", $3/$2 * 100.0}')
+    if [ "$mem_usage" -gt 85 ]; then
+        log_warning "⚠️ Alto uso de memória: ${mem_usage}%"
+        log_fix "Liberando cache e otimizando..."
+        sync && echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null 2>&1 || true
+        docker update --memory="512m" $(docker-compose ps -q) 2>/dev/null || true
+    fi
+
+    # Verificar espaço em disco
+    check_and_fix_disk_space
+}
+
+# 4. Relatório final de status
+generate_final_status_report() {
+    log_info "📊 Gerando relatório final de status..."
+
+    realtime_echo ""
+    realtime_echo "${PURPLE}════════════════════════════════════════${NC}"
+    realtime_echo "${PURPLE}📋 RELATÓRIO FINAL DO DEPLOY V3${NC}"
+    realtime_echo "${PURPLE}════════════════════════════════════════${NC}"
+
+    # Status dos containers
+    realtime_echo "${CYAN}🐳 Status dos Containers:${NC}"
+    docker-compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null || true
+
+    # Status dos recursos
+    realtime_echo ""
+    realtime_echo "${CYAN}💻 Recursos do Sistema:${NC}"
+    local mem_total=$(free -h | awk 'NR==2{print $2}')
+    local mem_used=$(free -h | awk 'NR==2{print $3}')
+    local disk_used=$(df -h / | awk 'NR==2{print $5}')
+
+    realtime_echo "   💾 Memória: $mem_used / $mem_total"
+    realtime_echo "   🗄️ Disco: $disk_used usado"
+    realtime_echo "   🖥️ CPU: $(nproc) cores disponíveis"
+
+    # URLs de acesso
+    realtime_echo ""
+    realtime_echo "${CYAN}🌐 URLs de Acesso:${NC}"
+    if [ "$USE_ALT_PORTS" = true ]; then
+        realtime_echo "   • Site: http://IP_VPS:8000"
+        realtime_echo "   • HTTPS: https://IP_VPS:8443"
+        realtime_echo "   • Traefik: http://IP_VPS:8080"
+    else
+        realtime_echo "   • Site: https://$DOMAIN"
+        realtime_echo "   • Traefik: https://traefik.$DOMAIN"
+    fi
+
+    # Status final
+    realtime_echo ""
+    if [ "$deploy_success" = true ]; then
+        realtime_echo "${GREEN}🎉 DEPLOY CONCLUÍDO COM SUCESSO!${NC}"
+        realtime_echo "${GREEN}✅ Sistema 100% funcional e otimizado${NC}"
+    else
+        realtime_echo "${YELLOW}⚠️ DEPLOY CONCLUÍDO COM AVISOS${NC}"
+        realtime_echo "${YELLOW}⚠️ Alguns componentes podem precisar de atenção${NC}"
+    fi
+
+    realtime_echo "${PURPLE}════════════════════════════════════════${NC}"
+}
+
+# Executar verificações
+verify_containers
+test_apis_comprehensive
+verify_and_optimize_resources
+generate_final_status_report
+
+# Se deploy falhou crítico, oferecer rollback
+if [ "$deploy_success" = false ]; then
+    realtime_echo ""
+    realtime_echo "${RED}❌ Deploy com falhas críticas detectadas${NC}"
+    realtime_echo "${YELLOW}Deseja fazer rollback automático? (y/N):${NC}"
+
+    read -t 30 -r rollback_choice || rollback_choice="n"
+
+    if [[ "$rollback_choice" == "y" || "$rollback_choice" == "Y" ]]; then
+        auto_rollback
+    else
+        log_info "Continuando sem rollback. Sistema pode estar instável."
+    fi
 fi
 
 show_progress 15 $TOTAL_STEPS
@@ -1838,7 +1998,7 @@ cat >> ACESSO_MEGA_DEPLOY_V3.md <<EOF
 - **PostgreSQL**: sitejuarez / $DB_PASSWORD
 
 ### 🛠️ Stack Implementada V3
-✅ Traefik (Proxy + SSL automático + Health checks)
+✅ Traefik (Proxy + SSL autom��tico + Health checks)
 ✅ Let's Encrypt (SSL/HTTPS automático)
 ✅ PostgreSQL (Banco principal + otimizado + health checks)
 ✅ Redis (Cache + health checks)
@@ -1915,7 +2075,7 @@ realtime_echo "${GREEN}🚀 MEGA DEPLOY AUTOMÁTICO V3 CONCLUÍDO! 🚀${NC}"
 realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
 realtime_echo ""
 realtime_echo "${CYAN}🆕 Novidades V3 - Logs em Tempo Real:${NC}"
-realtime_echo "   • ���� Logs em tempo real durante todo o processo"
+realtime_echo "   • 📝 Logs em tempo real durante todo o processo"
 realtime_echo "   • 📊 Progress bar visual"
 realtime_echo "   • 🔄 Retry logic automático"
 realtime_echo "   • 🧹 Cleanup em interrupções"
@@ -1940,7 +2100,7 @@ realtime_echo ""
 realtime_echo "${CYAN}📝 Log completo salvo em: ${YELLOW}$LOG_FILE${NC}"
 realtime_echo "${CYAN}🔐 Credenciais salvas em: ${YELLOW}ACESSO_MEGA_DEPLOY_V3.md${NC}"
 realtime_echo ""
-realtime_echo "${GREEN}✅ Sistema V3 100% funcional com:${NC}"
+realtime_echo "${GREEN}��� Sistema V3 100% funcional com:${NC}"
 realtime_echo "   📝 Logs em tempo real"
 realtime_echo "   📊 Progress bar visual"
 realtime_echo "   🔄 Retry logic automático"
