@@ -193,7 +193,7 @@ check_portainer_stacks() {
 
     # Se ainda há stacks problemáticas, aplicar correção avançada
     if [ $new_running_count -lt $total_stacks ]; then
-        log_warning "⚠️ Ainda h�� stacks problemáticas. Aplicando correção avançada..."
+        log_warning "⚠️ Ainda há stacks problemáticas. Aplicando correção avançada..."
         apply_advanced_stack_fixes
     fi
 
@@ -924,7 +924,7 @@ test_traefik_dashboard() {
     done
 
     if [ "$dashboard_accessible" = false ]; then
-        log_warning "❌ Dashboard Traefik não acessível"
+        log_warning "❌ Dashboard Traefik não acess��vel"
 
         # Verificar configuração do dashboard
         local traefik_config=$(docker inspect "$traefik_name" --format '{{.Config.Cmd}}' 2>/dev/null)
@@ -1390,6 +1390,129 @@ suggest_traefik_recreation() {
     log_success "✅ Traefik problemático desabilitado - novo Traefik será criado"
 }
 
+# Verificação final de conflitos entre Traefiks
+check_traefik_conflicts_final() {
+    log_info "🔍 Verificação final de conflitos entre Traefiks..."
+
+    # Listar todos os containers Traefik
+    local all_traefiks=$(docker ps -a --filter "name=traefik" --format "{{.Names}}" 2>/dev/null)
+    local running_traefiks=$(docker ps --filter "name=traefik" --format "{{.Names}}" 2>/dev/null)
+
+    local traefik_count=$(echo "$running_traefiks" | grep -v '^$' | wc -l)
+
+    realtime_echo "${CYAN}📊 Status dos Traefiks:${NC}"
+    realtime_echo "   • Total detectados: $(echo "$all_traefiks" | grep -v '^$' | wc -l)"
+    realtime_echo "   • Rodando: $traefik_count"
+
+    if [ $traefik_count -gt 1 ]; then
+        log_warning "���️ Múltiplos Traefiks rodando - resolvendo conflitos..."
+
+        echo "$running_traefiks" | while read traefik; do
+            if [ ! -z "$traefik" ]; then
+                # Verificar se é o Traefik novo (do nosso deploy)
+                if echo "$traefik" | grep -q "siqueira-traefik"; then
+                    log_success "✅ Mantendo Traefik novo: $traefik"
+                else
+                    log_fix "🔧 Parando Traefik antigo: $traefik"
+                    docker stop "$traefik" 2>/dev/null || true
+                    docker update --restart=no "$traefik" 2>/dev/null || true
+                fi
+            fi
+        done
+
+        sleep 10
+
+        # Verificar novamente
+        local final_running=$(docker ps --filter "name=traefik" --format "{{.Names}}" | wc -l)
+
+        if [ $final_running -eq 1 ]; then
+            log_success "✅ Conflito resolvido - apenas 1 Traefik rodando"
+        else
+            log_warning "⚠️ Ainda há $final_running Traefiks rodando"
+        fi
+    elif [ $traefik_count -eq 1 ]; then
+        log_success "✅ Apenas 1 Traefik rodando - sem conflitos"
+
+        # Verificar se é o nosso Traefik
+        if echo "$running_traefiks" | grep -q "siqueira-traefik"; then
+            log_success "✅ Traefik do deploy funcionando"
+
+            # Testar funcionalidades
+            test_final_traefik_functionality
+        else
+            log_info "ℹ️ Traefik externo rodando"
+        fi
+    else
+        log_warning "⚠️ Nenhum Traefik rodando"
+    fi
+}
+
+# Testar funcionalidade final do Traefik
+test_final_traefik_functionality() {
+    log_info "🧪 Testando funcionalidades do Traefik final..."
+
+    local tests_passed=0
+    local total_tests=4
+
+    # Teste 1: Dashboard
+    if timeout 10 curl -s http://localhost:8080/api/overview > /dev/null 2>&1; then
+        log_success "✅ Dashboard: Funcionando"
+        tests_passed=$((tests_passed + 1))
+    else
+        log_warning "❌ Dashboard: Não acessível"
+    fi
+
+    # Teste 2: Proxy HTTP
+    if timeout 10 curl -s http://localhost:80 > /dev/null 2>&1; then
+        local http_response=$(timeout 5 curl -s -o /dev/null -w "%{http_code}" http://localhost:80 2>/dev/null)
+        if [ "$http_response" != "502" ] && [ "$http_response" != "503" ] && [ "$http_response" != "504" ]; then
+            log_success "✅ Proxy HTTP: Funcionando ($http_response)"
+            tests_passed=$((tests_passed + 1))
+        else
+            log_warning "❌ Proxy HTTP: Erro Gateway ($http_response)"
+        fi
+    else
+        log_warning "❌ Proxy HTTP: Não acessível"
+    fi
+
+    # Teste 3: HTTPS (se aplicável)
+    if timeout 10 curl -sk https://localhost:443 > /dev/null 2>&1; then
+        log_success "✅ HTTPS: Funcionando"
+        tests_passed=$((tests_passed + 1))
+    else
+        log_warning "⚠️ HTTPS: Não configurado/acessível (normal se não há domínio)"
+    fi
+
+    # Teste 4: Conectividade com containers
+    if docker exec siqueira-traefik nslookup siqueira-app > /dev/null 2>&1; then
+        log_success "✅ Conectividade interna: OK"
+        tests_passed=$((tests_passed + 1))
+    else
+        log_warning "❌ Conectividade interna: Problemas"
+    fi
+
+    # Resultado final
+    local success_rate=$((tests_passed * 100 / total_tests))
+
+    realtime_echo ""
+    realtime_echo "${CYAN}📊 Resultado dos testes do Traefik:${NC}"
+    realtime_echo "   • Testes passados: $tests_passed/$total_tests"
+    realtime_echo "   • Taxa de sucesso: ${success_rate}%"
+
+    if [ $success_rate -ge 75 ]; then
+        realtime_echo "   ✅ Traefik funcionando adequadamente!"
+    elif [ $success_rate -ge 50 ]; then
+        realtime_echo "   ⚠️ Traefik com funcionalidade limitada"
+    else
+        realtime_echo "   ❌ Traefik com problemas significativos"
+
+        # Logs para diagnóstico
+        realtime_echo ""
+        realtime_echo "${YELLOW}📋 Logs recentes do Traefik para diagnóstico:${NC}"
+        docker logs --tail=10 siqueira-traefik 2>/dev/null | head -5 || true
+    fi
+}
+
 # Verificar recursos do sistema
 check_system_resources() {
     log_info "💻 Verificando recursos do sistema..."
@@ -1547,7 +1670,7 @@ WHITE='\033[1;37m'
 NC='\033[0m'
 
 clear
-realtime_echo "${PURPLE}🏠 =========================================="
+realtime_echo "${PURPLE}���� =========================================="
 realtime_echo "🚀 MEGA DEPLOY AUTOMÁTICO V3 - TEMPO REAL"
 realtime_echo "🏠 Siqueira Campos Imóveis"
 realtime_echo "🔥 APAGA TUDO E REFAZ + LOGS EM TEMPO REAL"
@@ -3253,7 +3376,7 @@ EOF
 realtime_echo ""
 realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
 realtime_echo "${GREEN}🚀 MEGA DEPLOY AUTOMÁTICO V3 CONCLUÍDO! 🚀${NC}"
-realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
+realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉��🎉🎉🎉🎉${NC}"
 realtime_echo ""
 realtime_echo "${CYAN}🆕 Novidades V3 - Logs em Tempo Real:${NC}"
 realtime_echo "   • 📝 Logs em tempo real durante todo o processo"
