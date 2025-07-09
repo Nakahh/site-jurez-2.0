@@ -4,8 +4,9 @@
 # APAGA TUDO E REFAZ DO ZERO - 100% AUTOMÁTICO + LOGS TEMPO REAL
 # Desenvolvido por Kryonix - Zero configuração manual + Melhorias V3
 
-# PROTEÇÃO GLOBAL: Continuar executando mesmo com erros
-exec 2>/dev/null || true
+echo "🚀 MEGA DEPLOY V3 - INICIANDO..."
+echo "📅 Data: $(date)"
+echo "🔧 Configurando para não fechar sozinho..."
 
 # ============= CONFIGURAÇÕES V3 MELHORADAS =============
 # Configurações para manter script rodando sem fechar sozinho
@@ -444,7 +445,7 @@ cat > package.json <<EOF
 {
   "name": "siqueira-campos-imoveis",
   "version": "3.0.0",
-  "description": "Sistema imobiliário premium com automação completa V3",
+  "description": "Sistema imobiliário premium com automa��ão completa V3",
   "type": "module",
   "scripts": {
     "dev": "node server.js",
