@@ -175,7 +175,7 @@ run_with_progress() {
     fi
 }
 
-# Função para aguardar com countdown
+# Função melhorada para aguardar com countdown e monitoramento
 wait_with_countdown() {
     local seconds=$1
     local message=$2
@@ -183,9 +183,38 @@ wait_with_countdown() {
     log_info "$message"
     for ((i=seconds; i>0; i--)); do
         printf "\r${YELLOW}Aguardando... %d segundos restantes${NC}" "$i"
+
+        # Forçar flush do output
+        printf "\033[0m" > /dev/tty 2>/dev/null || true
+
         sleep 1
     done
     echo ""
+}
+
+# Função para monitorar processos em tempo real
+monitor_processes() {
+    local service_name="$1"
+    local max_wait="${2:-60}"
+
+    log_info "🔍 Monitorando $service_name por até ${max_wait}s..."
+
+    for ((i=1; i<=max_wait; i++)); do
+        # Verificar se container existe e está rodando
+        local status=$(docker-compose ps --filter status=running --services | grep "$service_name" || echo "")
+
+        if [[ -n "$status" ]]; then
+            log_success "✅ $service_name está rodando!"
+            return 0
+        fi
+
+        printf "\r${CYAN}Aguardando $service_name... %d/%ds${NC}" "$i" "$max_wait"
+        sleep 1
+    done
+
+    echo ""
+    log_warning "⚠️ $service_name ainda não está rodando após ${max_wait}s"
+    return 1
 }
 
 # ============= CONFIGURAÇÕES FIXAS =============
@@ -585,7 +614,7 @@ app.get('/', (req, res) => {
 <body>
     <div class="container">
         <div class="logo">
-            <h1>🏠 Siqueira Campos Imóveis</h1>
+            <h1>�� Siqueira Campos Imóveis</h1>
             <p>Seu parceiro ideal no mercado imobiliário</p>
             <div class="version-badge">
                 <span class="realtime-indicator"></span>
@@ -629,7 +658,7 @@ app.get('/', (req, res) => {
                     <p><strong>Status:</strong> \${data.status}</p>
                     <p><strong>Uptime:</strong> \${Math.floor(data.uptime)} segundos</p>
                     <p><strong>Versão:</strong> \${data.version}</p>
-                    <p><strong>Última atualizaç��o:</strong> \${new Date(data.timestamp).toLocaleString()}</p>
+                    <p><strong>Última atualização:</strong> \${new Date(data.timestamp).toLocaleString()}</p>
                 \`;
 
                 console.log('✅ Status atualizado:', data);
@@ -1195,7 +1224,7 @@ EOF
 realtime_echo ""
 realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
 realtime_echo "${GREEN}🚀 MEGA DEPLOY AUTOMÁTICO V3 CONCLUÍDO! 🚀${NC}"
-realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉���🎉🎉${NC}"
+realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
 realtime_echo ""
 realtime_echo "${CYAN}🆕 Novidades V3 - Logs em Tempo Real:${NC}"
 realtime_echo "   • 📝 Logs em tempo real durante todo o processo"
