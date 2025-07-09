@@ -10,7 +10,7 @@ set -euo pipefail
 
 # Configurações globais
 export DEBIAN_FRONTEND=noninteractive
-LOG_FILE="/tmp/kryonix-install.log"
+LOG_FILE="/var/log/kryonix-install.log"
 PROJECT_DIR="/opt/site-jurez-2.0"
 KRYONIX_DIR="/opt/kryonix"
 
