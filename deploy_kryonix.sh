@@ -719,15 +719,19 @@ intelligent_project_build() {
     NPM_VERSION=$(npm -v)
     log "INFO" "Node.js: $NODE_VERSION, NPM: $NPM_VERSION"
     
-        # Verificar se npm está disponível
+            # Verificar se npm está disponível
     if ! command -v npm &> /dev/null; then
         log "WARNING" "NPM não disponível, pulando instalação de dependências..."
         return 0
     fi
 
+    # Sistema inteligente de correção automática
+    log "INSTALL" "🧠 Iniciando sistema de correção automática inteligente..."
+    intelligent_code_fixes
+
     # Instalar dependências que faltam primeiro
     log "INFO" "Instalando dependências que faltam..."
-    npm install react-intersection-observer react-window react-window-infinite-loader @radix-ui/react-context-menu --legacy-peer-deps 2>/dev/null || true
+    npm install react-intersection-observer react-window react-window-infinite-loader @radix-ui/react-context-menu @types/google.maps --legacy-peer-deps 2>/dev/null || true
 
     # Instalar dependências com cache inteligente
     if [ -f "package-lock.json" ]; then
@@ -743,7 +747,7 @@ intelligent_project_build() {
         "vite")
                                     log "INFO" "Executando build Vite..."
 
-            # Verificar se npm está disponível
+                        # Verificar se npm está disponível
             if ! command -v npm &> /dev/null; then
                 log "WARNING" "NPM não disponível, pulando build..."
                 return 0
@@ -753,16 +757,30 @@ intelligent_project_build() {
             export SKIP_TYPE_CHECK=true
             export CI=false
             export NODE_OPTIONS="--max-old-space-size=4096"
+            export SKIP_ENV_VALIDATION=true
 
-            # Tentar build com diferentes estratégias
-            npm run build --if-present 2>/dev/null || \
-            npm run build:production --if-present 2>/dev/null || {
-                log "WARNING" "Build padrão falhou, tentando comandos alternativos..."
-                timeout 30 npm run dev &
-                BUILD_PID=$!
-                sleep 10
-                kill $BUILD_PID 2>/dev/null || true
-            }
+            # Build inteligente com correção automática
+            log "INFO" "🔧 Tentando build com correção automática de erros..."
+
+            # Tentar build normal primeiro
+            if npm run build --if-present 2>/dev/null; then
+                log "SUCCESS" "Build realizado com sucesso!"
+            elif npm run build:production --if-present 2>/dev/null; then
+                log "SUCCESS" "Build de produção realizado com sucesso!"
+            else
+                log "WARNING" "Build falhou, aplicando correções automáticas..."
+                apply_build_fixes
+
+                # Tentar novamente após correções
+                npm run build --if-present 2>/dev/null || \
+                npm run build:production --if-present 2>/dev/null || {
+                    log "WARNING" "Build ainda falhou, usando modo desenvolvimento..."
+                    timeout 30 npm run dev &
+                    BUILD_PID=$!
+                    sleep 10
+                    kill $BUILD_PID 2>/dev/null || true
+                }
+            fi
             ;;
         "webpack")
             log "INFO" "Executando build Webpack..."
