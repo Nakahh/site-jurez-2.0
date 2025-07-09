@@ -144,36 +144,199 @@ check_and_fix_existing_portainer() {
     fi
 }
 
-# Verificar stacks problemáticas do Portainer
+# Verificar e corrigir stacks problemáticas do Portainer
 check_portainer_stacks() {
     local portainer_name="$1"
 
-    log_info "📋 Verificando stacks do Portainer..."
+    log_info "📋 Analisando stacks do Portainer existente..."
 
-    # Tentar acessar API do Portainer para verificar stacks
-    local portainer_url="http://localhost:9000"
+    # Detectar todas as stacks (funcionando e quebradas)
+    local all_stacks=$(docker ps -a --filter "label=com.docker.compose.project" --format "{{.Label \"com.docker.compose.project\"}}" | sort | uniq)
+    local failed_stacks=$(docker ps -a --filter "label=com.docker.compose.project" --filter "status=exited" --format "{{.Label \"com.docker.compose.project\"}}" | sort | uniq)
+    local running_stacks=$(docker ps --filter "label=com.docker.compose.project" --format "{{.Label \"com.docker.compose.project\"}}" | sort | uniq)
 
-    if timeout 5 curl -s "$portainer_url/api/status" > /dev/null 2>&1; then
-        log_info "✅ API do Portainer acessível"
+    local total_stacks=$(echo "$all_stacks" | grep -v '^$' | wc -l)
+    local failed_count=$(echo "$failed_stacks" | grep -v '^$' | wc -l)
+    local running_count=$(echo "$running_stacks" | grep -v '^$' | wc -l)
 
-        # Verificar containers de stacks que não estão rodando
-        local failed_stacks=$(docker ps -a --filter "label=com.docker.compose.project" --filter "status=exited" --format "{{.Label \"com.docker.compose.project\"}}" | sort | uniq)
+    realtime_echo "${CYAN}📊 Análise das Stacks:${NC}"
+    realtime_echo "   • Total de stacks: $total_stacks"
+    realtime_echo "   • Stacks funcionando: $running_count"
+    realtime_echo "   • Stacks com problemas: $failed_count"
 
-        if [ ! -z "$failed_stacks" ]; then
-            log_warning "⚠️ Stacks com problemas detectadas:"
-            echo "$failed_stacks" | while read stack; do
-                if [ ! -z "$stack" ]; then
-                    log_warning "   • Stack: $stack"
+    if [ $failed_count -gt 0 ]; then
+        log_warning "⚠️ Iniciando correção automática das $failed_count stacks problemáticas..."
 
-                    # Tentar correção automática da stack
-                    fix_failed_stack "$stack"
-                fi
-            done
-        else
-            log_success "✅ Todas as stacks parecem estar funcionando"
+        echo "$failed_stacks" | while read stack; do
+            if [ ! -z "$stack" ]; then
+                log_fix "🔧 Corrigindo stack: $stack"
+                fix_failed_stack "$stack"
+            fi
+        done
+
+        # Verificação pós-correção
+        log_info "🔍 Verificando resultados da correção..."
+        sleep 15
+
+        local new_running_count=$(docker ps --filter "label=com.docker.compose.project" --format "{{.Label \"com.docker.compose.project\"}}" | sort | uniq | grep -v '^$' | wc -l)
+        local fixed_stacks=$((new_running_count - running_count))
+
+        if [ $fixed_stacks -gt 0 ]; then
+            log_success "✅ $fixed_stacks stacks foram corrigidas!"
+        fi
+
+        realtime_echo "${GREEN}📈 Resultado final:${NC}"
+        realtime_echo "   • Stacks funcionando agora: $new_running_count/$total_stacks"
+
+        # Se ainda há stacks problemáticas, aplicar correção avançada
+        if [ $new_running_count -lt $total_stacks ]; then
+            log_warning "⚠️ Ainda há stacks problemáticas. Aplicando correção avançada..."
+            apply_advanced_stack_fixes
         fi
     else
-        log_warning "❌ API do Portainer não acessível"
+        log_success "✅ Todas as stacks estão funcionando corretamente!"
+    fi
+
+    # Tentar acessar API do Portainer
+    check_portainer_api_access
+}
+
+# Aplicar correções avançadas para stacks persistentemente problemáticas
+apply_advanced_stack_fixes() {
+    log_info "🚀 Aplicando correções avançadas para stacks problemáticas..."
+
+    # Estratégia 1: Recrear redes Docker
+    log_fix "🌐 Recriando redes Docker..."
+    docker network prune -f 2>/dev/null || true
+
+    # Estratégia 2: Limpar volumes órfãos
+    log_fix "💾 Limpando volumes órfãos..."
+    docker volume prune -f 2>/dev/null || true
+
+    # Estratégia 3: Resolver conflitos de porta globalmente
+    log_fix "🔌 Resolvendo conflitos de porta..."
+
+    # Parar serviços do sistema que podem conflitar
+    local system_services=(apache2 nginx mysql postgresql redis-server)
+    for service in "${system_services[@]}"; do
+        if systemctl is-active --quiet $service 2>/dev/null; then
+            log_fix "Parando $service (conflito potencial)..."
+            sudo systemctl stop $service 2>/dev/null || true
+            sudo systemctl disable $service 2>/dev/null || true
+        fi
+    done
+
+    # Estratégia 4: Reiniciar Docker daemon
+    log_fix "🐳 Reiniciando Docker daemon..."
+    sudo systemctl restart docker 2>/dev/null || true
+    sleep 15
+
+    # Estratégia 5: Tentar iniciar stacks uma por uma
+    log_fix "🔄 Reiniciando stacks individualmente..."
+    local all_stacks=$(docker ps -a --filter "label=com.docker.compose.project" --format "{{.Label \"com.docker.compose.project\"}}" | sort | uniq)
+
+    echo "$all_stacks" | while read stack; do
+        if [ ! -z "$stack" ]; then
+            log_info "Reiniciando stack: $stack"
+
+            # Parar todos os containers da stack
+            docker ps -a --filter "label=com.docker.compose.project=$stack" --format "{{.Names}}" | while read container; do
+                if [ ! -z "$container" ]; then
+                    docker stop "$container" 2>/dev/null || true
+                    docker rm "$container" 2>/dev/null || true
+                fi
+            done
+
+            sleep 5
+
+            # Tentar recriar a stack (se possível encontrar o compose)
+            recreate_stack_if_possible "$stack"
+        fi
+    done
+
+    log_success "✅ Correções avançadas aplicadas!"
+}
+
+# Tentar recriar stack se possível
+recreate_stack_if_possible() {
+    local stack_name="$1"
+
+    # Procurar por docker-compose.yml em locais comuns
+    local common_paths=(
+        "/opt/$stack_name"
+        "/var/lib/docker/volumes/portainer_data/_data/compose/$stack_name"
+        "/home/$USER/$stack_name"
+        "/root/$stack_name"
+        "/opt/stacks/$stack_name"
+    )
+
+    for path in "${common_paths[@]}"; do
+        if [ -f "$path/docker-compose.yml" ] || [ -f "$path/docker-compose.yaml" ]; then
+            log_fix "📁 Encontrado compose para $stack_name em $path"
+
+            cd "$path" 2>/dev/null || continue
+
+            # Tentar recriar a stack
+            if command -v docker-compose &> /dev/null; then
+                docker-compose down 2>/dev/null || true
+                sleep 5
+                docker-compose up -d 2>/dev/null || true
+            fi
+
+            return 0
+        fi
+    done
+
+    log_warning "⚠️ Não foi possível encontrar compose para $stack_name"
+}
+
+# Verificar acesso à API do Portainer
+check_portainer_api_access() {
+    log_info "🔌 Verificando acesso à API do Portainer..."
+
+    local portainer_ports=(9000 9001 9002 9443 9444 9445)
+    local accessible_apis=0
+
+    for port in "${portainer_ports[@]}"; do
+        if timeout 5 curl -s "http://localhost:$port/api/status" > /dev/null 2>&1; then
+            log_success "✅ API Portainer acessível na porta $port"
+            accessible_apis=$((accessible_apis + 1))
+        fi
+    done
+
+    if [ $accessible_apis -eq 0 ]; then
+        log_warning "❌ Nenhuma API do Portainer acessível"
+
+        # Tentar criar um Portainer temporário para gerenciar stacks
+        create_temporary_portainer
+    else
+        log_success "✅ $accessible_apis APIs do Portainer acessíveis"
+    fi
+}
+
+# Criar Portainer temporário para gerenciar stacks
+create_temporary_portainer() {
+    log_fix "🛠️ Criando Portainer temporário para gerenciar stacks..."
+
+    # Remover qualquer Portainer temporário anterior
+    docker stop portainer-temp 2>/dev/null || true
+    docker rm portainer-temp 2>/dev/null || true
+
+    # Criar Portainer temporário
+    docker run -d \
+        --name portainer-temp \
+        -p 9999:9000 \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        portainer/portainer-ce:latest \
+        2>/dev/null || true
+
+    sleep 10
+
+    if timeout 10 curl -s http://localhost:9999 > /dev/null 2>&1; then
+        log_success "✅ Portainer temporário criado (porta 9999)"
+        log_info "Use http://localhost:9999 para gerenciar stacks manualmente se necessário"
+    else
+        log_warning "❌ Falha ao criar Portainer temporário"
     fi
 }
 
@@ -1842,7 +2005,7 @@ auto_rollback() {
     local backup_path=$(cat /tmp/current_backup_path 2>/dev/null || echo "")
 
     if [ -d "$backup_path" ]; then
-        log_info "Restaurando configurações do backup..."
+        log_info "Restaurando configura��ões do backup..."
 
         # Parar containers atuais
         docker-compose down --remove-orphans 2>/dev/null || true
@@ -1894,7 +2057,7 @@ fi
 # Backup configurações
 echo "⚙️ Backup das configurações..."
 cp .env \$BACKUP_DIR/env_\$DATE.backup 2>/dev/null && echo "✅ .env OK" || echo "❌ .env falhou"
-cp docker-compose.yml \$BACKUP_DIR/compose_\$DATE.backup 2>/dev/null && echo "�� docker-compose OK" || echo "❌ docker-compose falhou"
+cp docker-compose.yml \$BACKUP_DIR/compose_\$DATE.backup 2>/dev/null && echo "✅ docker-compose OK" || echo "❌ docker-compose falhou"
 
 # Backup logs
 echo "📝 Backup dos logs..."
