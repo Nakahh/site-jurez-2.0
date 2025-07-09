@@ -1364,7 +1364,7 @@ EOF
 intelligent_github_webhook() {
     log "DEPLOY" "🔗 Configurando webhook inteligente do GitHub..."
     
-    # Criar servidor webhook Python avan��ado
+    # Criar servidor webhook Python avançado
     cat > "$KRYONIX_DIR/webhook-server.py" << 'EOF'
 #!/usr/bin/env python3
 import json
@@ -1682,7 +1682,7 @@ intelligent_grafana_config() {
 intelligent_health_check() {
     log "INSTALL" "🔍 Verificando saúde inteligente dos serviços..."
     
-    services=("traefik" "postgres" "redis" "adminer" "portainer" "minio" "n8n" "evolution-api" "prometheus" "grafana" "chatgpt-stack" "project-frontend" "project-backend")
+        services=("traefik" "postgres" "redis" "adminer" "portainer-siqueira" "portainer-meuboot" "minio" "n8n" "evolution-api" "prometheus" "grafana" "chatgpt-stack" "project-frontend" "project-backend")
     
     healthy_services=0
     total_services=${#services[@]}
@@ -1788,7 +1788,7 @@ EOF
     echo
     
     echo -e "${BLUE}🤖 AUTOMAÇÃO & IA INTELIGENTE:${NC}"
-    echo "  🔗 N8N Workflows (Siqueira):    https://n8n.siqueicamposimoveis.com.br"
+    echo "  ���� N8N Workflows (Siqueira):    https://n8n.siqueicamposimoveis.com.br"
     echo "  🔗 N8N Workflows (MeuBoot):     https://n8n.meuboot.site"
     echo "  🔗 N8N Webhook:                 https://webhookn8n.meuboot.site"
     echo "  🤖 ChatGPT Stack:               https://chatgpt.siqueicamposimoveis.com.br"
