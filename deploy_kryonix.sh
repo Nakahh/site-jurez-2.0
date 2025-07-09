@@ -337,8 +337,14 @@ intelligent_swarm_setup() {
         sleep 2
     fi
     
-    # Inicializar Swarm
-    docker swarm init --advertise-addr $SERVER_IP --listen-addr $SERVER_IP:2377
+        # Detectar IP local da interface principal
+    LOCAL_IP=$(ip route get 8.8.8.8 | awk '{print $7; exit}' 2>/dev/null || echo "10.0.0.121")
+    log "INFO" "IP local detectado: $LOCAL_IP"
+
+    # Inicializar Swarm com IP local
+    docker swarm init --advertise-addr $LOCAL_IP --listen-addr $LOCAL_IP:2377 2>/dev/null || \
+    docker swarm init --advertise-addr $LOCAL_IP 2>/dev/null || \
+    docker swarm init 2>/dev/null || true
     
     # Criar redes overlay inteligentes
     docker network create -d overlay --attachable --scope swarm kryonixnet 2>/dev/null || true
@@ -1664,7 +1670,7 @@ intelligent_services_deploy() {
     log "DEPLOY" "🐳 Iniciando serviços base..."
     docker-compose up -d traefik postgres redis
     
-    # Aguardar serviços base estarem prontos
+    # Aguardar servi��os base estarem prontos
     log "INFO" "⏳ Aguardando serviços base ficarem prontos..."
     sleep 30
     
