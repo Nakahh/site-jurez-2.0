@@ -330,8 +330,8 @@ EOF
 intelligent_swarm_setup() {
     log "INSTALL" "🐝 Configurando Docker Swarm com inteligência..."
     
-    # Verificar se Swarm já está ativo
-    if docker info | grep -q "Swarm: active"; then
+        # Verificar se Swarm já está ativo
+    if docker info 2>/dev/null | grep -q "Swarm: active"; then
         log "INFO" "Docker Swarm já está ativo"
         docker swarm leave --force 2>/dev/null || true
         sleep 2
@@ -1872,7 +1872,7 @@ EOF
     echo "  🔗 N8N Workflows (MeuBoot):     https://n8n.meuboot.site"
     echo "  🔗 N8N Webhook:                 https://webhookn8n.meuboot.site"
     echo "  🤖 ChatGPT Stack:               https://chatgpt.siqueicamposimoveis.com.br"
-    echo "  ��� Bot Assistant:               https://bot.siqueicamposimoveis.com.br"
+    echo "  🤖 Bot Assistant:               https://bot.siqueicamposimoveis.com.br"
     echo
     
     echo -e "${YELLOW}📱 WHATSAPP & COMUNICAÇÃO:${NC}"
@@ -1899,7 +1899,7 @@ EOF
     echo "  📁 Projeto GitHub: $GITHUB_REPO"
     echo "  📁 Diretório Local: $PROJECT_DIR"
     echo "  🔄 Auto-deploy: ATIVO (webhook + systemd)"
-    echo "  ���� Monitoramento: ATIVO (Prometheus + Grafana)"
+    echo "  📊 Monitoramento: ATIVO (Prometheus + Grafana)"
     echo "  🛡️ Segurança: ATIVA (UFW + Fail2ban + HTTPS)"
     echo
     
