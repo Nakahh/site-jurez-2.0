@@ -906,7 +906,7 @@ retry_with_backoff() {
             return 0
         else
             if [ $attempt -lt $max_attempts ]; then
-                log_warning "⚠️ Tentativa $attempt falhou. Aguardando ${delay}s..."
+                log_warning "⚠��� Tentativa $attempt falhou. Aguardando ${delay}s..."
                 sleep $delay
                 delay=$((delay * 2))  # Backoff exponencial
 
@@ -1177,8 +1177,23 @@ monitor_processes() {
 
 # ============= CONFIGURAÇÕES FIXAS =============
 DOMAIN="siqueicamposimoveis.com.br"
+DOMAIN2=""  # Será configurado automaticamente ou via input
 EMAIL="admin@siqueicamposimoveis.com.br"
 TOTAL_STEPS=15
+
+# Auto-detectar segundo domínio se existir
+detect_second_domain() {
+    # Verificar se já existe um Portainer com domínio diferente
+    local existing_domains=$(docker ps --format "table {{.Names}}\t{{.Labels}}" | grep -E "traefik.*Host" | grep -v "$DOMAIN" | head -1)
+
+    if [ ! -z "$existing_domains" ]; then
+        local detected_domain=$(echo "$existing_domains" | grep -oP 'Host\\(\`[^`]+' | head -1 | sed 's/Host\\(`//g')
+        if [ ! -z "$detected_domain" ] && [ "$detected_domain" != "$DOMAIN" ]; then
+            DOMAIN2="$detected_domain"
+            log_info "🔍 Segundo domínio detectado automaticamente: $DOMAIN2"
+        fi
+    fi
+}
 
 # Inicializar processo keep-alive
 keep_alive
@@ -2005,7 +2020,7 @@ auto_rollback() {
     local backup_path=$(cat /tmp/current_backup_path 2>/dev/null || echo "")
 
     if [ -d "$backup_path" ]; then
-        log_info "Restaurando configura��ões do backup..."
+        log_info "Restaurando configurações do backup..."
 
         # Parar containers atuais
         docker-compose down --remove-orphans 2>/dev/null || true
@@ -2027,7 +2042,7 @@ auto_rollback() {
             cat "$backup_path/postgres_backup.sql" | docker-compose exec -T postgres psql -U postgres 2>/dev/null || true
         fi
 
-        log_success "✅ Rollback concluído"
+        log_success "��� Rollback concluído"
     else
         log_warning "⚠️ Backup não encontrado. Rollback manual necessário."
     fi
@@ -2064,7 +2079,7 @@ echo "📝 Backup dos logs..."
 cp deploy*.log \$BACKUP_DIR/ 2>/dev/null && echo "✅ Logs OK" || echo "⚠️ Logs não encontrados"
 
 # Manter apenas 7 backups
-echo "🧹 Limpando backups antigos..."
+echo "�� Limpando backups antigos..."
 find \$BACKUP_DIR -type f -mtime +7 -delete 2>/dev/null
 
 echo "✅ Backup V3 \$DATE concluído!"
