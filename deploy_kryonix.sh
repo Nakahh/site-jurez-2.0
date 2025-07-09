@@ -1907,8 +1907,8 @@ intelligent_main() {
     
     # Fase 3: Segurança e Rede Inteligente
     log "DEPLOY" "🔒 FASE 3: Segurança e Rede Inteligente"
-    intelligent_firewall_setup
-    intelligent_dns_setup
+        intelligent_firewall_setup
+    # intelligent_dns_setup  # Comentado para evitar erros da API
     
     # Fase 4: Análise e Preparação do Projeto
     log "DEPLOY" "🔍 FASE 4: Análise Inteligente do Projeto"
