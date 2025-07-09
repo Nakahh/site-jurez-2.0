@@ -85,8 +85,8 @@ log() {
             echo -e "${BLUE}ℹ️  [$timestamp] $message${NC}"
             echo "[$timestamp] [INFO] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
-                "INSTALL")
-            echo -e "${PURPLE}���️  [$timestamp] $message${NC}"
+                                "INSTALL")
+            echo -e "${PURPLE}⚙️  [$timestamp] $message${NC}"
             echo "[$timestamp] [INSTALL] $message" >> "$LOG_FILE" 2>/dev/null || true
             ;;
                 "DEPLOY")
@@ -1269,7 +1269,7 @@ COPY server/package*.json ./server/ 2>/dev/null || true
 # Instalar dependências
 RUN npm ci --only=production
 
-# Copiar código fonte
+# Copiar c��digo fonte
 COPY . .
 
 # Build se necessário
