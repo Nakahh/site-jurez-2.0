@@ -1698,11 +1698,53 @@ services:
       - "traefik.http.routers.app.tls.certresolver=letsencrypt"
       - "traefik.http.services.app.loadbalancer.server.port=3000"
 
+  portainer1:
+    image: portainer/portainer-ce:latest
+    container_name: siqueira-portainer1
+    restart: unless-stopped
+    ports:
+      - "9001:9000"
+      - "9444:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer1_data:/data
+    networks:
+      - siqueira-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer1.rule=Host(\`portainer.\${DOMAIN}\`)"
+      - "traefik.http.routers.portainer1.entrypoints=websecure"
+      - "traefik.http.routers.portainer1.tls.certresolver=letsencrypt"
+      - "traefik.http.services.portainer1.loadbalancer.server.port=9000"
+
+  portainer2:
+    image: portainer/portainer-ce:latest
+    container_name: siqueira-portainer2
+    restart: unless-stopped
+    ports:
+      - "9002:9000"
+      - "9445:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer2_data:/data
+    networks:
+      - siqueira-network
+    environment:
+      - PORTAINER_OPTS=--admin-password-file=/data/admin_password
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer2.rule=Host(\`portainer.\${DOMAIN2:-portainer2.local}\`)"
+      - "traefik.http.routers.portainer2.entrypoints=websecure"
+      - "traefik.http.routers.portainer2.tls.certresolver=letsencrypt"
+      - "traefik.http.services.portainer2.loadbalancer.server.port=9000"
+
 volumes:
   postgres_data:
   redis_data:
   app_logs:
   traefik_acme:
+  portainer1_data:
+  portainer2_data:
 
 networks:
   siqueira-network:
@@ -1852,7 +1894,7 @@ fi
 # Backup configurações
 echo "⚙️ Backup das configurações..."
 cp .env \$BACKUP_DIR/env_\$DATE.backup 2>/dev/null && echo "✅ .env OK" || echo "❌ .env falhou"
-cp docker-compose.yml \$BACKUP_DIR/compose_\$DATE.backup 2>/dev/null && echo "✅ docker-compose OK" || echo "❌ docker-compose falhou"
+cp docker-compose.yml \$BACKUP_DIR/compose_\$DATE.backup 2>/dev/null && echo "�� docker-compose OK" || echo "❌ docker-compose falhou"
 
 # Backup logs
 echo "📝 Backup dos logs..."
