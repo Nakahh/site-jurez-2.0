@@ -1299,26 +1299,23 @@ USER nodeuser
 EXPOSE 3333
 
 # Script de inicialização
-COPY <<EOF /app/start.sh
-#!/bin/sh
-set -e
-
-# Executar migrações do Prisma se existir
-if [ -f "/app/prisma/schema.prisma" ]; then
-    npx prisma migrate deploy
-fi
-
-# Iniciar aplicação
-if [ -f "/app/server/index.js" ]; then
-    node server/index.js
-elif [ -f "/app/server/start.js" ]; then
-    node server/start.js
-else
-    npm start
-fi
-EOF
-
-RUN chmod +x /app/start.sh
+RUN echo '#!/bin/sh' > /app/start.sh && \
+    echo 'set -e' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# Executar migrações do Prisma se existir' >> /app/start.sh && \
+    echo 'if [ -f "/app/prisma/schema.prisma" ]; then' >> /app/start.sh && \
+    echo '    npx prisma migrate deploy' >> /app/start.sh && \
+    echo 'fi' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# Iniciar aplicação' >> /app/start.sh && \
+    echo 'if [ -f "/app/server/index.js" ]; then' >> /app/start.sh && \
+    echo '    node server/index.js' >> /app/start.sh && \
+    echo 'elif [ -f "/app/server/start.js" ]; then' >> /app/start.sh && \
+    echo '    node server/start.js' >> /app/start.sh && \
+    echo 'else' >> /app/start.sh && \
+    echo '    npm start' >> /app/start.sh && \
+    echo 'fi' >> /app/start.sh && \
+    chmod +x /app/start.sh
 
 CMD ["/app/start.sh"]
 EOF
