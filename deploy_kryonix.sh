@@ -1836,7 +1836,7 @@ EOF
     echo "  🔍 Saúde dos serviços:          docker ps --format 'table {{.Names}}\\t{{.Status}}'"
     echo "  📊 Uso de recursos:             docker stats"
     echo "  🔗 Status webhook:              systemctl status kryonix-webhook"
-    echo "  📁 Logs do sistema:             tail -f $LOG_FILE"
+        echo "  📁 Logs do sistema:             tail -f $LOG_FILE"
     echo "  🔥 Status firewall:             ufw status"
     echo
     
@@ -1848,7 +1848,7 @@ EOF
     echo -e "${BOLD}📊 ESTATÍSTICAS DO SISTEMA:${NC}"
     echo "  🐳 Containers ativos: $running_containers"
     echo "  💾 Uso de disco: $disk_usage"
-    echo "  ���� Uso de memória: $memory_usage"
+    echo "  🧠 Uso de memória: $memory_usage"
     echo "  ⏰ Deploy concluído em: $(date)"
     echo
     
