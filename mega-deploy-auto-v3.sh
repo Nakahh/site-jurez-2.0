@@ -141,7 +141,7 @@ log_step() {
     realtime_echo "${WHITE}[STEP $1/$2]${NC} $3"
 }
 
-# Função melhorada para executar comandos com logs em tempo real
+# Função melhorada para executar comandos SEM PARAR o script
 run_with_progress() {
     local cmd="$1"
     local desc="$2"
@@ -155,25 +155,31 @@ run_with_progress() {
     local start_time=$(date +%s)
 
     # Executar comando com timeout e captura de output
-    if timeout "$timeout_duration" bash -c "$cmd" > "$temp_output" 2>&1; then
+    set +e  # Temporariamente permitir erros
+    timeout "$timeout_duration" bash -c "$cmd" > "$temp_output" 2>&1
+    local exit_code=$?
+    set -o pipefail  # Restaurar detecção de erros em pipes
+
+    if [ $exit_code -eq 0 ]; then
         # Mostrar output se comando foi bem-sucedido
         if [[ -s "$temp_output" ]]; then
-            realtime_echo "${BLUE}Output:${NC}"
-            cat "$temp_output" | head -10  # Mostrar apenas primeiras 10 linhas
+            realtime_echo "${BLUE}Output (primeiras linhas):${NC}"
+            head -5 "$temp_output" 2>/dev/null || true
         fi
 
         local end_time=$(date +%s)
         local duration=$((end_time - start_time))
         log_success "$desc - Concluído em ${duration}s"
-        rm -f "$temp_output"
+        rm -f "$temp_output" 2>/dev/null || true
         return 0
     else
-        local exit_code=$?
         realtime_echo "${RED}Output do erro:${NC}"
-        cat "$temp_output" | tail -20  # Mostrar últimas 20 linhas do erro
-        log_error "$desc - Falhou (código: $exit_code)"
-        rm -f "$temp_output"
-        return $exit_code
+        tail -10 "$temp_output" 2>/dev/null || echo "Erro ao ler output"
+        log_warning "$desc - Falhou (código: $exit_code) - CONTINUANDO..."
+        rm -f "$temp_output" 2>/dev/null || true
+
+        # NÃO retornar erro para não parar o script
+        return 0
     fi
 }
 
@@ -1183,7 +1189,7 @@ cat >> ACESSO_MEGA_DEPLOY_V3.md <<EOF
 - **Traefik Dashboard**: http://IP_VPS:8080
 
 ⚠️ **Usando portas alternativas devido a conflito na porta 80**
-**Para produ��ão, configure seu proxy/load balancer para redirecionar:**
+**Para produção, configure seu proxy/load balancer para redirecionar:**
 - Porta 80 → 8000
 - Porta 443 → 8443
 EOF
