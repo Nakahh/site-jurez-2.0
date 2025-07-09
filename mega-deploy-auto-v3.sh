@@ -4,18 +4,31 @@
 # APAGA TUDO E REFAZ DO ZERO - 100% AUTOMÁTICO + LOGS TEMPO REAL
 # Desenvolvido por Kryonix - Zero configuração manual + Melhorias V3
 
-# ============= CONFIGURAÇÕES V3 =============
-set -e
-set -o pipefail
+# ============= CONFIGURAÇÕES V3 MELHORADAS =============
+# Configurações para manter script rodando e logs em tempo real
+set -euo pipefail  # Modo mais rigoroso
+IFS=$'\n\t'       # Separador seguro
 
 # Configurar logs em tempo real
 LOG_FILE="deploy-$(date +%Y%m%d_%H%M%S).log"
-exec > >(tee -a "$LOG_FILE")
-exec 2>&1
 
-# Desabilitar buffering para output imediato
+# Função para configurar logs sem fechar terminal
+setup_logging() {
+    # Criar pipe para logs
+    mkfifo pipe_log 2>/dev/null || true
+
+    # Log para arquivo E para terminal simultaneamente
+    exec 3>&1 4>&2
+    exec > >(tee -a "$LOG_FILE") 2>&1
+}
+
+# Configurar output sem buffering
 export PYTHONUNBUFFERED=1
 export DEBIAN_FRONTEND=noninteractive
+stdbuf -oL -eL echo "🚀 INICIALIZANDO MEGA DEPLOY V3..."
+
+# Configurar logging
+setup_logging
 
 # Trap para cleanup em caso de interrupção
 cleanup() {
@@ -38,12 +51,12 @@ show_progress() {
     local width=50
     local percentage=$((current * 100 / total))
     local completed=$((current * width / total))
-    
+
     printf "\r${BLUE}[INFO]${NC} Progresso: ["
     printf "%*s" "$completed" | tr ' ' '='
     printf "%*s" $((width - completed)) | tr ' ' '-'
     printf "] %d%% (%d/%d)" "$percentage" "$current" "$total"
-    
+
     if [ "$current" -eq "$total" ]; then
         echo ""
     fi
@@ -95,10 +108,10 @@ log_step() {
 run_with_progress() {
     local cmd="$1"
     local desc="$2"
-    
+
     log_info "Executando: $desc"
     realtime_echo "${CYAN}Comando: $cmd${NC}"
-    
+
     if eval "$cmd"; then
         log_success "$desc - Concluído"
         return 0
@@ -112,7 +125,7 @@ run_with_progress() {
 wait_with_countdown() {
     local seconds=$1
     local message=$2
-    
+
     log_info "$message"
     for ((i=seconds; i>0; i--)); do
         printf "\r${YELLOW}Aguardando... %d segundos restantes${NC}" "$i"
@@ -162,19 +175,19 @@ if [ ! -z "$PORT_80_CHECK" ]; then
     log_warning "Porta 80 está ocupada:"
     realtime_echo "$PORT_80_CHECK"
     log_fix "Liberando porta 80 automaticamente..."
-    
+
     # Parar Apache se existir
     if systemctl is-active --quiet apache2 2>/dev/null; then
         log_fix "Parando Apache..."
         run_with_progress "sudo systemctl stop apache2 && sudo systemctl disable apache2" "Parar Apache"
     fi
-    
+
     # Parar Nginx se existir
     if systemctl is-active --quiet nginx 2>/dev/null; then
         log_fix "Parando Nginx..."
         run_with_progress "sudo systemctl stop nginx && sudo systemctl disable nginx" "Parar Nginx"
     fi
-    
+
     # Verificar novamente
     PORT_80_CHECK_AFTER=$(sudo netstat -tlnp | grep :80 | head -1 || true)
     if [ ! -z "$PORT_80_CHECK_AFTER" ]; then
@@ -375,8 +388,8 @@ app.use((req, res, next) => {
 
 // API Routes
 app.get('/api/ping', (req, res) => {
-  const response = { 
-    message: "🏠 Siqueira Campos Imóveis V3 - Online!", 
+  const response = {
+    message: "🏠 Siqueira Campos Imóveis V3 - Online!",
     timestamp: new Date().toISOString(),
     deploy: "Mega Deploy Automático V3 - Logs Tempo Real",
     status: "success",
@@ -421,8 +434,8 @@ app.get('/', (req, res) => {
     <title>🏠 Siqueira Campos Imóveis V3</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #8B4513 0%, #A0522D 50%, #CD853F 100%);
             min-height: 100vh;
             display: flex;
@@ -430,20 +443,20 @@ app.get('/', (req, res) => {
             justify-content: center;
             color: white;
         }
-        .container { 
-            max-width: 1000px; 
-            margin: 0 auto; 
-            background: rgba(255,255,255,0.1); 
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
-            padding: 40px; 
-            border-radius: 20px; 
+            padding: 40px;
+            border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             text-align: center;
             border: 1px solid rgba(255,255,255,0.2);
         }
-        .logo h1 { 
-            font-size: 3em; 
-            margin-bottom: 10px; 
+        .logo h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             background: linear-gradient(45deg, #FFD700, #FFA500);
             -webkit-background-clip: text;
@@ -461,12 +474,12 @@ app.get('/', (req, res) => {
             font-weight: bold;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
-        .status { 
-            background: rgba(76, 175, 80, 0.2); 
-            border: 2px solid #4CAF50; 
-            border-radius: 15px; 
-            padding: 25px; 
-            margin: 30px 0; 
+        .status {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4CAF50;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
             backdrop-filter: blur(5px);
         }
         .status h3 { color: #4CAF50; margin-bottom: 15px; font-size: 1.5em; }
@@ -525,7 +538,7 @@ app.get('/', (req, res) => {
                 V3.0.0 - Logs Tempo Real
             </div>
         </div>
-        
+
         <div class="status">
             <h3>✅ Sistema Online - Mega Deploy V3!</h3>
             <p><strong>🚀 Traefik + Let's Encrypt + Docker + Logs em Tempo Real</strong></p>
@@ -543,7 +556,7 @@ app.get('/', (req, res) => {
                 <li><strong>Conectividade Check:</strong> Verificação de internet</li>
             </ul>
         </div>
-        
+
         <div id="status-info" class="tech-stack">
             <h3>📊 Status do Sistema</h3>
             <p>Carregando informações...</p>
@@ -556,7 +569,7 @@ app.get('/', (req, res) => {
             try {
                 const response = await fetch('/api/ping');
                 const data = await response.json();
-                
+
                 document.getElementById('status-info').innerHTML = \`
                     <h3>📊 Status do Sistema V3</h3>
                     <p><strong>Status:</strong> \${data.status}</p>
@@ -564,7 +577,7 @@ app.get('/', (req, res) => {
                     <p><strong>Versão:</strong> \${data.version}</p>
                     <p><strong>Última atualização:</strong> \${new Date(data.timestamp).toLocaleString()}</p>
                 \`;
-                
+
                 console.log('✅ Status atualizado:', data);
             } catch (error) {
                 console.error('❌ Erro ao atualizar status:', error);
@@ -922,11 +935,11 @@ log_info "⏳ Aguardando todos os serviços ficarem online..."
 # Aguardar com logs em tempo real
 for i in {1..12}; do
     wait_with_countdown 10 "Aguardando serviços... (${i}/12)"
-    
+
     # Verificar containers
     RUNNING_CONTAINERS=$(docker-compose ps --filter status=running --services | wc -l)
     log_info "Containers rodando: $RUNNING_CONTAINERS"
-    
+
     # Mostrar logs dos containers que falharam
     FAILED_CONTAINERS=$(docker-compose ps --filter status=exited --services)
     if [ ! -z "$FAILED_CONTAINERS" ]; then
@@ -964,7 +977,7 @@ test_api_with_retry() {
     local url=$1
     local name=$2
     local max_attempts=5
-    
+
     for attempt in $(seq 1 $max_attempts); do
         log_info "Testando $name (tentativa $attempt/$max_attempts)..."
         if timeout 10 curl -s "$url" > /dev/null 2>&1; then
@@ -977,7 +990,7 @@ test_api_with_retry() {
             fi
         fi
     done
-    
+
     log_error "❌ $name falhou após $max_attempts tentativas"
     return 1
 }
