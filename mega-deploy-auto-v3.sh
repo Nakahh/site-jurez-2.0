@@ -1499,51 +1499,155 @@ log_step 13 $TOTAL_STEPS "Aguardando serviços ficarem prontos"
 
 log_info "⏳ Aguardando todos os serviços ficarem online..."
 
-# Aguardar e monitorar com logs em tempo real melhorados
-log_info "🔄 Iniciando monitoramento detalhado dos serviços..."
+# Sistema ultra-robusto de monitoramento e auto-correção
+log_info "🔄 Iniciando monitoramento inteligente com auto-correção..."
 
-for i in {1..18}; do  # Aumentar tempo total de espera
-    wait_with_countdown 10 "Aguardando serviços... (${i}/18)"
+for i in {1..24}; do  # Tempo estendido para deploy robusto
+    wait_with_countdown 15 "Aguardando e monitorando serviços... (${i}/24)"
 
     # Verificar containers com detalhes
-    RUNNING_CONTAINERS=$(docker-compose ps --filter status=running --services | wc -l)
-    TOTAL_SERVICES=$(docker-compose config --services | wc -l)
+    RUNNING_CONTAINERS=$(docker-compose ps --filter status=running --services 2>/dev/null | wc -l)
+    TOTAL_SERVICES=$(docker-compose config --services 2>/dev/null | wc -l)
 
-    realtime_echo "${BLUE}Status: $RUNNING_CONTAINERS/$TOTAL_SERVICES containers rodando${NC}"
+    realtime_echo "${BLUE}📊 Status: $RUNNING_CONTAINERS/$TOTAL_SERVICES containers rodando${NC}"
 
-    # Mostrar status detalhado de cada container
-    realtime_echo "${CYAN}Containers ativos:${NC}"
-    docker-compose ps --format "table {{.Name}}\t{{.Status}}" 2>/dev/null | head -10 || true
+    # Mostrar status detalhado
+    realtime_echo "${CYAN}🐳 Status dos containers:${NC}"
+    docker-compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null | head -10 || true
 
-    # Verificar containers com problemas e mostrar logs
-    FAILED_CONTAINERS=$(docker-compose ps --filter status=exited --services)
+    # Auto-correção proativa para containers com problemas
+    FAILED_CONTAINERS=$(docker-compose ps --filter status=exited --services 2>/dev/null)
     if [ ! -z "$FAILED_CONTAINERS" ]; then
-        log_warning "⚠️ Containers com problemas: $FAILED_CONTAINERS"
+        log_warning "⚠️ Containers com problemas detectados: $FAILED_CONTAINERS"
+
         echo "$FAILED_CONTAINERS" | while read container; do
             if [ ! -z "$container" ]; then
+                log_fix "🔧 Auto-corrigindo $container..."
+
+                # Obter logs do erro
+                local error_logs=$(docker-compose logs --tail=10 "$container" 2>/dev/null)
+
+                # Auto-diagnóstico específico por container
+                case "$container" in
+                    *"postgres"*|*"db"*)
+                        log_fix "📊 Corrigindo PostgreSQL..."
+                        # Verificar se porta 5432 está ocupada
+                        if netstat -tlnp | grep -q ":5432"; then
+                            sudo systemctl stop postgresql 2>/dev/null || true
+                        fi
+                        docker-compose restart postgres 2>/dev/null || true
+                        ;;
+                    *"redis"*)
+                        log_fix "🔴 Corrigindo Redis..."
+                        if netstat -tlnp | grep -q ":6379"; then
+                            sudo systemctl stop redis-server 2>/dev/null || true
+                        fi
+                        docker-compose restart redis 2>/dev/null || true
+                        ;;
+                    *"app"*|*"web"*)
+                        log_fix "🌐 Corrigindo aplicação..."
+                        # Verificar se dependências estão rodando
+                        docker-compose restart postgres redis 2>/dev/null || true
+                        sleep 10
+                        docker-compose restart app 2>/dev/null || true
+                        ;;
+                    *"traefik"*)
+                        log_fix "🔀 Corrigindo Traefik..."
+                        check_and_fix_port_conflicts
+                        docker-compose restart traefik 2>/dev/null || true
+                        ;;
+                esac
+
                 log_info "Logs recentes do $container:"
-                docker-compose logs --tail=3 "$container" 2>/dev/null | head -5 || true
+                echo "$error_logs" | tail -5 || true
                 echo ""
             fi
         done
+
+        # Aguardar containers reiniciarem
+        log_info "⏳ Aguardando containers reiniciarem..."
+        sleep 15
     fi
 
-    # Verificar se serviços principais estão prontos
-    monitor_processes "app" 5
-    monitor_processes "postgres" 5
-    monitor_processes "redis" 5
+    # Monitoramento inteligente de saúde
+    health_check_containers
 
-    # Se todos os containers estão rodando, fazer verificação extra
-    if [ $RUNNING_CONTAINERS -eq $TOTAL_SERVICES ]; then
-        log_success "🎯 Todos os containers estão rodando! Verificando APIs..."
+    # Verificar progresso dos health checks
+    realtime_echo "${CYAN}🏥 Health checks:${NC}"
+    docker-compose ps --format "table {{.Name}}\t{{.Status}}" 2>/dev/null | grep -E "(healthy|unhealthy)" || echo "Aguardando health checks..."
 
-        # Testar APIs rapidamente
-        if timeout 5 curl -s http://localhost:3000/api/health > /dev/null 2>&1; then
-            log_success "🚀 API respondendo! Deploy quase pronto..."
+    # Se todos os containers estão rodando, fazer verificações avançadas
+    if [ $RUNNING_CONTAINERS -eq $TOTAL_SERVICES ] && [ $RUNNING_CONTAINERS -gt 0 ]; then
+        log_success "🎯 Todos os containers rodando! Verificando conectividade..."
+
+        # Testes de conectividade progressivos
+        local api_tests=0
+
+        # Teste 1: Health endpoint
+        if timeout 10 curl -s http://localhost:3000/api/health > /dev/null 2>&1; then
+            api_tests=$((api_tests + 1))
+            log_success "✅ API Health OK"
+        fi
+
+        # Teste 2: Ping endpoint
+        if timeout 10 curl -s http://localhost:3000/api/ping > /dev/null 2>&1; then
+            api_tests=$((api_tests + 1))
+            log_success "✅ API Ping OK"
+        fi
+
+        # Teste 3: Homepage
+        if timeout 10 curl -s http://localhost:3000/ | grep -q "Siqueira" 2>/dev/null; then
+            api_tests=$((api_tests + 1))
+            log_success "✅ Homepage OK"
+        fi
+
+        # Se pelo menos 2 testes passaram, considerar sucesso
+        if [ $api_tests -ge 2 ]; then
+            log_success "🚀 Sistema funcionando! Deploy quase concluído..."
             break
         fi
     fi
+
+    # Auto-otimização a cada 5 ciclos
+    if [ $((i % 5)) -eq 0 ]; then
+        log_info "🔧 Auto-otimização periódica..."
+        monitor_system_health
+
+        # Verificar se precisa liberar recursos
+        check_and_fix_disk_space
+    fi
 done
+
+# Função para verificar saúde dos containers
+health_check_containers() {
+    local containers=$(docker-compose ps --services 2>/dev/null)
+
+    echo "$containers" | while read container; do
+        if [ ! -z "$container" ]; then
+            local container_id=$(docker-compose ps -q "$container" 2>/dev/null)
+            if [ ! -z "$container_id" ]; then
+                local health=$(docker inspect "$container_id" --format='{{.State.Health.Status}}' 2>/dev/null || echo "no-healthcheck")
+
+                case "$health" in
+                    "healthy")
+                        realtime_echo "${GREEN}✅ $container: Saudável${NC}"
+                        ;;
+                    "unhealthy")
+                        log_warning "❌ $container: Não saudável"
+                        # Tentar reiniciar container não saudável
+                        docker-compose restart "$container" 2>/dev/null || true
+                        ;;
+                    "starting")
+                        realtime_echo "${YELLOW}⏳ $container: Iniciando...${NC}"
+                        ;;
+                    *)
+                        realtime_echo "${BLUE}ℹ️ $container: Sem health check${NC}"
+                        ;;
+                esac
+            fi
+        fi
+    done
+}
 
 show_progress 14 $TOTAL_STEPS
 
@@ -1731,7 +1835,7 @@ EOF
 
 # ============= RESULTADO FINAL V3 =============
 realtime_echo ""
-realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
+realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉���🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
 realtime_echo "${GREEN}🚀 MEGA DEPLOY AUTOMÁTICO V3 CONCLUÍDO! 🚀${NC}"
 realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
 realtime_echo ""
