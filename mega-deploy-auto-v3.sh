@@ -35,7 +35,8 @@ setup_logging
 
 # Função de cleanup melhorada para evitar fechamento abrupto
 cleanup() {
-    echo -e "\n${RED}🛑 DEPLOY INTERROMPIDO! Executando cleanup...${NC}"
+    echo ""
+    echo "🛑 DEPLOY INTERROMPIDO! Executando cleanup..."
 
     # Parar containers graciosamente
     if command -v docker-compose &> /dev/null; then
@@ -43,11 +44,11 @@ cleanup() {
         docker-compose down --remove-orphans 2>/dev/null || true
     fi
 
-    # Restaurar descritores de arquivo
-    exec 1>&3 2>&4
+    # Restaurar descritores de arquivo com segurança
+    exec 1>&3 2>&4 2>/dev/null || true
 
     echo "🧹 Cleanup concluído. Pressione ENTER para sair..."
-    read -r
+    read -r -t 30 || echo "Timeout - finalizando..."
     exit 1
 }
 
@@ -1195,7 +1196,7 @@ cat >> ACESSO_MEGA_DEPLOY_V3.md <<EOF
 ✅ PostgreSQL (Banco principal + otimizado + health checks)
 ✅ Redis (Cache + health checks)
 ✅ Express.js V3 (Servidor com monitoramento)
-✅ Docker Compose (Orquestração inteligente)
+✅ Docker Compose (Orquestra��ão inteligente)
 ✅ Logs em Tempo Real (Deploy visível)
 ✅ Retry Logic (Tentativas automáticas)
 ✅ Health Monitoring (Verificação contínua)
