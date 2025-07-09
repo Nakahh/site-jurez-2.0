@@ -139,20 +139,39 @@ log_step() {
     realtime_echo "${WHITE}[STEP $1/$2]${NC} $3"
 }
 
-# Função para executar comandos com logs em tempo real
+# Função melhorada para executar comandos com logs em tempo real
 run_with_progress() {
     local cmd="$1"
     local desc="$2"
+    local timeout_duration="${3:-300}"  # Timeout padrão de 5 minutos
 
     log_info "Executando: $desc"
     realtime_echo "${CYAN}Comando: $cmd${NC}"
 
-    if eval "$cmd"; then
-        log_success "$desc - Concluído"
+    # Criar arquivo temporário para capturar output
+    local temp_output=$(mktemp)
+    local start_time=$(date +%s)
+
+    # Executar comando com timeout e captura de output
+    if timeout "$timeout_duration" bash -c "$cmd" > "$temp_output" 2>&1; then
+        # Mostrar output se comando foi bem-sucedido
+        if [[ -s "$temp_output" ]]; then
+            realtime_echo "${BLUE}Output:${NC}"
+            cat "$temp_output" | head -10  # Mostrar apenas primeiras 10 linhas
+        fi
+
+        local end_time=$(date +%s)
+        local duration=$((end_time - start_time))
+        log_success "$desc - Concluído em ${duration}s"
+        rm -f "$temp_output"
         return 0
     else
-        log_error "$desc - Falhou"
-        return 1
+        local exit_code=$?
+        realtime_echo "${RED}Output do erro:${NC}"
+        cat "$temp_output" | tail -20  # Mostrar últimas 20 linhas do erro
+        log_error "$desc - Falhou (código: $exit_code)"
+        rm -f "$temp_output"
+        return $exit_code
     fi
 }
 
@@ -610,7 +629,7 @@ app.get('/', (req, res) => {
                     <p><strong>Status:</strong> \${data.status}</p>
                     <p><strong>Uptime:</strong> \${Math.floor(data.uptime)} segundos</p>
                     <p><strong>Versão:</strong> \${data.version}</p>
-                    <p><strong>Última atualização:</strong> \${new Date(data.timestamp).toLocaleString()}</p>
+                    <p><strong>Última atualizaç��o:</strong> \${new Date(data.timestamp).toLocaleString()}</p>
                 \`;
 
                 console.log('✅ Status atualizado:', data);
@@ -865,7 +884,7 @@ show_progress 9 $TOTAL_STEPS
 log_step 9 $TOTAL_STEPS "Criação do script de banco"
 
 cat > init.sql <<EOF
--- Configura��ões PostgreSQL para Siqueira Campos Imóveis V3
+-- Configurações PostgreSQL para Siqueira Campos Imóveis V3
 CREATE DATABASE n8n;
 GRANT ALL PRIVILEGES ON DATABASE n8n TO sitejuarez;
 
@@ -1176,7 +1195,7 @@ EOF
 realtime_echo ""
 realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
 realtime_echo "${GREEN}🚀 MEGA DEPLOY AUTOMÁTICO V3 CONCLUÍDO! 🚀${NC}"
-realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
+realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉���🎉🎉${NC}"
 realtime_echo ""
 realtime_echo "${CYAN}🆕 Novidades V3 - Logs em Tempo Real:${NC}"
 realtime_echo "   • 📝 Logs em tempo real durante todo o processo"
