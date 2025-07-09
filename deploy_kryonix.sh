@@ -238,17 +238,28 @@ intelligent_system_update() {
     # Configurar timezone
     timedatectl set-timezone America/Sao_Paulo 2>/dev/null || true
     
-        # Instalar Node.js LTS após dependências principais
+            # Resolver conflitos npm/nodejs completamente
+    log "INSTALL" "Resolvendo conflitos npm/nodejs..."
+
+    # Remover versões conflitantes
+    apt-get remove -y nodejs npm node-* 2>/dev/null || true
+    apt-get autoremove -y 2>/dev/null || true
+    apt-get autoclean 2>/dev/null || true
+
+    # Limpar cache de pacotes
+    rm -rf /etc/apt/sources.list.d/nodesource.list* 2>/dev/null || true
+
+    # Instalar Node.js LTS limpo via NodeSource
     log "INSTALL" "Instalando Node.js LTS via NodeSource..."
-    curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - 2>/dev/null || true
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - 2>/dev/null || true
+    apt-get update -y 2>/dev/null || true
     apt-get install -y nodejs 2>/dev/null || true
 
-    # Verificar se npm funciona, se não, tentar resolver
-    if ! command -v npm &> /dev/null; then
-        log "WARNING" "NPM não encontrado, tentando resolver conflitos..."
-        apt-get remove -y nodejs npm 2>/dev/null || true
-        apt-get autoremove -y 2>/dev/null || true
-        apt-get install -y nodejs npm 2>/dev/null || true
+    # Verificar instalação
+    if command -v node &> /dev/null && command -v npm &> /dev/null; then
+        log "SUCCESS" "Node.js $(node -v) e npm $(npm -v) instalados com sucesso!"
+    else
+        log "WARNING" "Problemas com Node.js/npm, continuando mesmo assim..."
     fi
 
     log "SUCCESS" "Sistema Ubuntu atualizado com sucesso!"
