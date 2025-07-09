@@ -63,10 +63,20 @@ keep_alive() {
     done &
 }
 
-# Função para output em tempo real
+# Função melhorada para output em tempo real sem buffering
 realtime_echo() {
-    echo "$1" | tee /dev/stderr
-    sleep 0.1  # Pequena pausa para garantir output
+    local message="$1"
+
+    # Output para stdout e stderr com flush forçado
+    printf "%s\n" "$message" | tee /dev/stderr
+
+    # Forçar flush dos buffers
+    exec >&3 2>&4
+    printf "%s\n" "$message"
+    exec > >(tee -a "$LOG_FILE") 2>&1
+
+    # Micro pausa para sincronização
+    sleep 0.05
 }
 
 # Função para progress bar
@@ -855,7 +865,7 @@ show_progress 9 $TOTAL_STEPS
 log_step 9 $TOTAL_STEPS "Criação do script de banco"
 
 cat > init.sql <<EOF
--- Configurações PostgreSQL para Siqueira Campos Imóveis V3
+-- Configura��ões PostgreSQL para Siqueira Campos Imóveis V3
 CREATE DATABASE n8n;
 GRANT ALL PRIVILEGES ON DATABASE n8n TO sitejuarez;
 
