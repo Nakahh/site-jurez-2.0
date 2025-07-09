@@ -1403,10 +1403,9 @@ server {
     }
 
     # Compressão
-    gzip on;
+        gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 }
-EOF
 
 EXPOSE 3000
 CMD ["nginx", "-g", "daemon off;"]
