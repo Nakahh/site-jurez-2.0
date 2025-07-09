@@ -689,8 +689,13 @@ if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
     exit 1
 fi
 
-# ============= PASSO 0: VERIFICAÇÕES E CORREÇÕES =============
-log_step 0 $TOTAL_STEPS "Verificações e correções automáticas"
+# ============= PASSO 0: SISTEMA ULTRA-ROBUSTO DE AUTO-CORREÇÃO =============
+log_step 0 $TOTAL_STEPS "Sistema ultra-robusto de auto-correção"
+
+realtime_echo "${PURPLE}🤖 INICIANDO SISTEMA DE AUTO-CORREÇÃO AVANÇADO...${NC}"
+
+# Executar sistema completo de auto-correção
+auto_fix_system
 
 log_info "🔍 Verificando usuário atual..."
 if [[ $EUID -eq 0 ]]; then
