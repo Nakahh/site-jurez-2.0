@@ -741,13 +741,24 @@ intelligent_project_build() {
     # Build baseado no tipo de projeto
     case $PROJECT_TYPE in
         "vite")
-                        log "INFO" "Executando build Vite..."
+                                    log "INFO" "Executando build Vite..."
+
+            # Verificar se npm está disponível
+            if ! command -v npm &> /dev/null; then
+                log "WARNING" "NPM não disponível, pulando build..."
+                return 0
+            fi
+
             # Configurar variáveis para tolerar erros TypeScript
             export SKIP_TYPE_CHECK=true
             export CI=false
-            npm run build 2>/dev/null || npm run build:production 2>/dev/null || {
+            export NODE_OPTIONS="--max-old-space-size=4096"
+
+            # Tentar build com diferentes estratégias
+            npm run build --if-present 2>/dev/null || \
+            npm run build:production --if-present 2>/dev/null || {
                 log "WARNING" "Build padrão falhou, tentando comandos alternativos..."
-                npm run dev &
+                timeout 30 npm run dev &
                 BUILD_PID=$!
                 sleep 10
                 kill $BUILD_PID 2>/dev/null || true
@@ -1861,7 +1872,7 @@ EOF
     echo "  🔗 N8N Workflows (MeuBoot):     https://n8n.meuboot.site"
     echo "  🔗 N8N Webhook:                 https://webhookn8n.meuboot.site"
     echo "  🤖 ChatGPT Stack:               https://chatgpt.siqueicamposimoveis.com.br"
-    echo "  🤖 Bot Assistant:               https://bot.siqueicamposimoveis.com.br"
+    echo "  ��� Bot Assistant:               https://bot.siqueicamposimoveis.com.br"
     echo
     
     echo -e "${YELLOW}📱 WHATSAPP & COMUNICAÇÃO:${NC}"
@@ -1888,7 +1899,7 @@ EOF
     echo "  📁 Projeto GitHub: $GITHUB_REPO"
     echo "  📁 Diretório Local: $PROJECT_DIR"
     echo "  🔄 Auto-deploy: ATIVO (webhook + systemd)"
-    echo "  📊 Monitoramento: ATIVO (Prometheus + Grafana)"
+    echo "  ���� Monitoramento: ATIVO (Prometheus + Grafana)"
     echo "  🛡️ Segurança: ATIVA (UFW + Fail2ban + HTTPS)"
     echo
     
