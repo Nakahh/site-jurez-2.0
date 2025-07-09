@@ -1388,7 +1388,7 @@ import time
 WEBHOOK_SECRET = "kryonix_webhook_secret_2024"
 PROJECT_DIR = "/opt/site-jurez-2.0"
 KRYONIX_DIR = "/opt/kryonix"
-LOG_FILE = "/var/log/kryonix-webhook.log"
+LOG_FILE = "/tmp/kryonix-webhook.log"
 
 # Configurar logging
 logging.basicConfig(
@@ -1848,7 +1848,7 @@ EOF
     echo -e "${BOLD}📊 ESTATÍSTICAS DO SISTEMA:${NC}"
     echo "  🐳 Containers ativos: $running_containers"
     echo "  💾 Uso de disco: $disk_usage"
-    echo "  🧠 Uso de memória: $memory_usage"
+    echo "  ���� Uso de memória: $memory_usage"
     echo "  ⏰ Deploy concluído em: $(date)"
     echo
     
