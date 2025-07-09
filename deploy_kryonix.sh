@@ -1660,7 +1660,7 @@ intelligent_services_deploy() {
 
 # Configuração inteligente dos bancos de dados
 intelligent_database_config() {
-    log "INSTALL" "���️ Configurando bancos de dados inteligentemente..."
+        log "INSTALL" "🗄️ Configurando bancos de dados inteligentemente..."
     
     # Aguardar PostgreSQL estar pronto
     log "INFO" "⏳ Aguardando PostgreSQL estar pronto..."
