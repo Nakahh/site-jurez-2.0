@@ -13,14 +13,15 @@ IFS=$'\n\t'       # Separador seguro
 # Configurar logs em tempo real
 LOG_FILE="deploy-$(date +%Y%m%d_%H%M%S).log"
 
-# Função para configurar logs sem fechar terminal
+# Função simplificada para configurar logs
 setup_logging() {
-    # Criar pipe para logs
-    mkfifo pipe_log 2>/dev/null || true
-
-    # Log para arquivo E para terminal simultaneamente
+    # Backup dos descritores originais
     exec 3>&1 4>&2
-    exec > >(tee -a "$LOG_FILE") 2>&1
+
+    # Configurar log simples
+    touch "$LOG_FILE" 2>/dev/null || LOG_FILE="/tmp/deploy-$(date +%s).log"
+
+    echo "🚀 MEGA DEPLOY V3 iniciado em $(date)" >> "$LOG_FILE"
 }
 
 # Configurar output sem buffering
@@ -1182,7 +1183,7 @@ cat >> ACESSO_MEGA_DEPLOY_V3.md <<EOF
 - **Traefik Dashboard**: http://IP_VPS:8080
 
 ⚠️ **Usando portas alternativas devido a conflito na porta 80**
-**Para produção, configure seu proxy/load balancer para redirecionar:**
+**Para produ��ão, configure seu proxy/load balancer para redirecionar:**
 - Porta 80 → 8000
 - Porta 443 → 8443
 EOF
@@ -1288,7 +1289,7 @@ realtime_echo ""
 
 if [ "$USE_ALT_PORTS" = true ]; then
     realtime_echo "${YELLOW}⚠️ Usando portas alternativas:${NC}"
-    realtime_echo "   �� HTTP: ${YELLOW}http://IP_VPS:8000${NC}"
+    realtime_echo "   • HTTP: ${YELLOW}http://IP_VPS:8000${NC}"
     realtime_echo "   • HTTPS: ${YELLOW}https://IP_VPS:8443${NC}"
     realtime_echo "   • Traefik: ${YELLOW}http://IP_VPS:8080${NC}"
     realtime_echo ""
