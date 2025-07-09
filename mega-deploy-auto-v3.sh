@@ -60,15 +60,367 @@ cleanup() {
 trap cleanup SIGINT SIGTERM 2>/dev/null || true
 trap 'echo "Script finalizado normalmente" 2>/dev/null || true' EXIT 2>/dev/null || true
 
-# Função para manter processo vivo
+# Sistema avançado de detecção e correção automática de problemas
+auto_fix_system() {
+    log_info "🔧 Iniciando sistema de auto-correção..."
+
+    # 1. Verificar e corrigir espaço em disco
+    check_and_fix_disk_space
+
+    # 2. Verificar e corrigir permissões
+    check_and_fix_permissions
+
+    # 3. Verificar e corrigir conflitos de porta
+    check_and_fix_port_conflicts
+
+    # 4. Verificar e corrigir Docker
+    check_and_fix_docker
+
+    # 5. Verificar e corrigir dependências
+    check_and_fix_dependencies
+
+    # 6. Verificar e corrigir firewall
+    check_and_fix_firewall
+
+    # 7. Verificar recursos do sistema
+    check_system_resources
+
+    log_success "✅ Sistema de auto-correção concluído!"
+}
+
+# Verificar e corrigir espaço em disco
+check_and_fix_disk_space() {
+    log_info "💾 Verificando espaço em disco..."
+
+    local available_space=$(df / | awk 'NR==2 {print $4}')
+    local available_gb=$((available_space / 1024 / 1024))
+
+    if [ $available_gb -lt 2 ]; then
+        log_warning "⚠️ Pouco espaço em disco (${available_gb}GB). Limpando..."
+
+        # Limpeza automática
+        sudo apt autoremove -y 2>/dev/null || true
+        sudo apt autoclean -y 2>/dev/null || true
+        sudo journalctl --vacuum-time=7d 2>/dev/null || true
+        docker system prune -f 2>/dev/null || true
+
+        # Verificar novamente
+        available_space=$(df / | awk 'NR==2 {print $4}')
+        available_gb=$((available_space / 1024 / 1024))
+
+        if [ $available_gb -lt 1 ]; then
+            log_error "❌ Espaço em disco insuficiente (${available_gb}GB). Continuando com risco..."
+        else
+            log_success "✅ Espaço liberado. Disponível: ${available_gb}GB"
+        fi
+    else
+        log_success "✅ Espaço em disco suficiente: ${available_gb}GB"
+    fi
+}
+
+# Verificar e corrigir permissões
+check_and_fix_permissions() {
+    log_info "🔐 Verificando permissões..."
+
+    # Verificar se usuário está no grupo docker
+    if ! groups | grep -q docker; then
+        log_fix "Adicionando usuário ao grupo docker..."
+        sudo usermod -aG docker $USER || true
+        log_warning "⚠️ Necessário logout/login para ativar grupo docker"
+    fi
+
+    # Corrigir permissões do diretório atual
+    if [ ! -w "." ]; then
+        log_fix "Corrigindo permissões do diretório..."
+        sudo chown -R $USER:$USER . 2>/dev/null || true
+    fi
+
+    # Verificar permissões do Docker socket
+    if [ -S /var/run/docker.sock ] && [ ! -w /var/run/docker.sock ]; then
+        log_fix "Corrigindo permissões do Docker socket..."
+        sudo chmod 666 /var/run/docker.sock 2>/dev/null || true
+    fi
+
+    log_success "✅ Permissões verificadas"
+}
+
+# Verificar e corrigir conflitos de porta avançado
+check_and_fix_port_conflicts() {
+    log_info "🔌 Verificando conflitos de porta avançados..."
+
+    local ports_to_check=(80 443 3000 3001 5432 6379 8080)
+    local conflicts_found=false
+
+    for port in "${ports_to_check[@]}"; do
+        local process=$(sudo netstat -tlnp 2>/dev/null | grep ":$port " | awk '{print $7}' | head -1)
+
+        if [ ! -z "$process" ]; then
+            log_warning "⚠️ Porta $port ocupada por: $process"
+            conflicts_found=true
+
+            # Auto-resolver conflitos conhecidos
+            case $port in
+                80|443)
+                    # Parar serviços web
+                    for service in apache2 nginx lighttpd; do
+                        if systemctl is-active --quiet $service 2>/dev/null; then
+                            log_fix "Parando $service..."
+                            sudo systemctl stop $service 2>/dev/null || true
+                            sudo systemctl disable $service 2>/dev/null || true
+                        fi
+                    done
+                    ;;
+                3000|3001)
+                    # Matar processos Node.js/development servers
+                    log_fix "Matando processos na porta $port..."
+                    sudo fuser -k $port/tcp 2>/dev/null || true
+                    ;;
+                5432)
+                    # PostgreSQL conflito
+                    if systemctl is-active --quiet postgresql 2>/dev/null; then
+                        log_fix "Parando PostgreSQL sistema..."
+                        sudo systemctl stop postgresql 2>/dev/null || true
+                    fi
+                    ;;
+                6379)
+                    # Redis conflito
+                    if systemctl is-active --quiet redis-server 2>/dev/null; then
+                        log_fix "Parando Redis sistema..."
+                        sudo systemctl stop redis-server 2>/dev/null || true
+                    fi
+                    ;;
+            esac
+        fi
+    done
+
+    if [ "$conflicts_found" = true ]; then
+        log_warning "Aguardando 5s para processos terminarem..."
+        sleep 5
+        USE_ALT_PORTS=true
+    else
+        log_success "✅ Todas as portas estão livres"
+        USE_ALT_PORTS=false
+    fi
+}
+
+# Verificar e corrigir Docker
+check_and_fix_docker() {
+    log_info "🐳 Verificando Docker..."
+
+    # Verificar se Docker está instalado
+    if ! command -v docker &> /dev/null; then
+        log_fix "Docker não encontrado. Instalando..."
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        sudo sh get-docker.sh
+        sudo usermod -aG docker $USER
+        rm get-docker.sh
+    fi
+
+    # Verificar se Docker está rodando
+    if ! sudo systemctl is-active --quiet docker; then
+        log_fix "Docker não está rodando. Iniciando..."
+        sudo systemctl start docker || true
+        sudo systemctl enable docker || true
+        sleep 5
+    fi
+
+    # Verificar se Docker responde
+    if ! docker ps &> /dev/null; then
+        log_fix "Docker não responde. Reiniciando serviço..."
+        sudo systemctl restart docker || true
+        sleep 10
+
+        # Se ainda não funciona, tentar repair
+        if ! docker ps &> /dev/null; then
+            log_fix "Tentando reparo do Docker..."
+            sudo systemctl stop docker || true
+            sudo rm -rf /var/lib/docker/network 2>/dev/null || true
+            sudo systemctl start docker || true
+            sleep 10
+        fi
+    fi
+
+    # Verificar Docker Compose
+    if ! command -v docker-compose &> /dev/null; then
+        log_fix "Docker Compose não encontrado. Instalando..."
+        sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+    fi
+
+    # Limpeza preventiva do Docker
+    log_info "Limpeza preventiva do Docker..."
+    docker system prune -f 2>/dev/null || true
+
+    log_success "✅ Docker verificado e corrigido"
+}
+
+# Verificar e corrigir dependências
+check_and_fix_dependencies() {
+    log_info "📦 Verificando dependências..."
+
+    local required_packages=(curl wget git unzip htop nano ufw net-tools)
+    local missing_packages=()
+
+    for package in "${required_packages[@]}"; do
+        if ! command -v $package &> /dev/null && ! dpkg -l | grep -q "^ii  $package "; then
+            missing_packages+=($package)
+        fi
+    done
+
+    if [ ${#missing_packages[@]} -gt 0 ]; then
+        log_fix "Instalando pacotes em falta: ${missing_packages[*]}"
+        sudo apt update 2>/dev/null || true
+        sudo apt install -y "${missing_packages[@]}" 2>/dev/null || true
+    fi
+
+    # Verificar se sistema está atualizado
+    local updates=$(apt list --upgradable 2>/dev/null | wc -l)
+    if [ $updates -gt 10 ]; then
+        log_warning "Sistema com muitas atualizações pendentes ($updates). Atualizando..."
+        sudo apt update && sudo apt upgrade -y 2>/dev/null || true
+    fi
+
+    log_success "✅ Dependências verificadas"
+}
+
+# Verificar e corrigir firewall
+check_and_fix_firewall() {
+    log_info "🔥 Verificando firewall..."
+
+    # Verificar se UFW está instalado
+    if ! command -v ufw &> /dev/null; then
+        log_fix "UFW não encontrado. Instalando..."
+        sudo apt install -y ufw 2>/dev/null || true
+    fi
+
+    # Verificar status do firewall
+    local ufw_status=$(sudo ufw status 2>/dev/null | head -1)
+
+    if echo "$ufw_status" | grep -q "inactive"; then
+        log_fix "Firewall inativo. Configurando..."
+        sudo ufw --force reset 2>/dev/null || true
+        sudo ufw allow 22/tcp 2>/dev/null || true
+        sudo ufw allow 80/tcp 2>/dev/null || true
+        sudo ufw allow 443/tcp 2>/dev/null || true
+        sudo ufw allow 8000/tcp 2>/dev/null || true
+        sudo ufw allow 8080/tcp 2>/dev/null || true
+        sudo ufw allow 8443/tcp 2>/dev/null || true
+        sudo ufw --force enable 2>/dev/null || true
+    fi
+
+    log_success "✅ Firewall configurado"
+}
+
+# Verificar recursos do sistema
+check_system_resources() {
+    log_info "💻 Verificando recursos do sistema..."
+
+    # Verificar RAM
+    local ram_total=$(free -m | awk 'NR==2{print $2}')
+    local ram_available=$(free -m | awk 'NR==2{print $7}')
+
+    if [ $ram_total -lt 1000 ]; then
+        log_warning "⚠️ RAM baixa: ${ram_total}MB total"
+    fi
+
+    if [ $ram_available -lt 500 ]; then
+        log_warning "⚠️ RAM disponível baixa: ${ram_available}MB"
+        log_fix "Liberando cache..."
+        sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null || true
+    fi
+
+    # Verificar CPU load
+    local cpu_load=$(uptime | awk -F'load average:' '{print $2}' | awk '{print $1}' | sed 's/,//')
+    local cpu_cores=$(nproc)
+
+    if (( $(echo "$cpu_load > $cpu_cores" | bc -l 2>/dev/null || echo 0) )); then
+        log_warning "⚠️ Alta carga de CPU: $cpu_load (cores: $cpu_cores)"
+    fi
+
+    # Verificar swap
+    local swap_used=$(free -m | awk 'NR==3{print $3}')
+    if [ $swap_used -gt 1000 ]; then
+        log_warning "⚠️ Alto uso de swap: ${swap_used}MB"
+    fi
+
+    log_success "✅ Recursos do sistema verificados"
+}
+
+# Função para manter processo vivo com monitoramento
 keep_alive() {
     while true; do
-        sleep 10
+        sleep 30
+
         # Verificar se processo ainda está rodando
         if ! ps -p $$ > /dev/null; then
             break
         fi
+
+        # Monitoramento proativo
+        monitor_system_health
     done &
+}
+
+# Monitoramento proativo da saúde do sistema
+monitor_system_health() {
+    # Verificar se Docker ainda está rodando
+    if ! docker ps &> /dev/null; then
+        log_warning "🔄 Docker parou. Reiniciando..."
+        sudo systemctl restart docker 2>/dev/null || true
+    fi
+
+    # Verificar espaço em disco crítico
+    local available_space=$(df / | awk 'NR==2 {print $4}')
+    local available_gb=$((available_space / 1024 / 1024))
+
+    if [ $available_gb -lt 1 ]; then
+        log_warning "🧹 Espaço crítico. Limpando automaticamente..."
+        docker system prune -f 2>/dev/null || true
+        sudo journalctl --vacuum-time=1d 2>/dev/null || true
+    fi
+}
+
+# Função avançada de retry com backoff exponencial
+retry_with_backoff() {
+    local cmd="$1"
+    local desc="$2"
+    local max_attempts="${3:-5}"
+    local base_delay="${4:-2}"
+
+    local attempt=1
+    local delay=$base_delay
+
+    while [ $attempt -le $max_attempts ]; do
+        log_info "Tentativa $attempt/$max_attempts: $desc"
+
+        if eval "$cmd"; then
+            log_success "✅ $desc - Sucesso na tentativa $attempt"
+            return 0
+        else
+            if [ $attempt -lt $max_attempts ]; then
+                log_warning "⚠️ Tentativa $attempt falhou. Aguardando ${delay}s..."
+                sleep $delay
+                delay=$((delay * 2))  # Backoff exponencial
+
+                # Auto-diagnóstico entre tentativas
+                case $desc in
+                    *"Docker"*|*"docker"*)
+                        log_fix "Verificando Docker entre tentativas..."
+                        check_and_fix_docker
+                        ;;
+                    *"conectividade"*|*"download"*)
+                        log_fix "Verificando conectividade..."
+                        ping -c 1 8.8.8.8 &> /dev/null || log_warning "Conectividade instável"
+                        ;;
+                esac
+            fi
+        fi
+
+        attempt=$((attempt + 1))
+    done
+
+    log_error "❌ $desc - Falhou após $max_attempts tentativas"
+    return 1
 }
 
 # Função simplificada para output em tempo real
@@ -445,7 +797,7 @@ cat > package.json <<EOF
 {
   "name": "siqueira-campos-imoveis",
   "version": "3.0.0",
-  "description": "Sistema imobiliário premium com automa��ão completa V3",
+  "description": "Sistema imobiliário premium com automação completa V3",
   "type": "module",
   "scripts": {
     "dev": "node server.js",
