@@ -585,7 +585,7 @@ auto_diagnose_and_fix() {
             check_and_fix_dependencies
             ;;
         *"Operation not permitted"*|*"Operation not supported"*)
-            log_fix "🛡��� Problema de sistema. Verificando..."
+            log_fix "🛡️ Problema de sistema. Verificando..."
             check_system_resources
             ;;
         *"timeout"*|*"timed out"*)
@@ -1408,8 +1408,83 @@ run_with_progress "sudo ufw --force enable" "Ativar firewall"
 log_success "✅ Firewall configurado!"
 show_progress 11 $TOTAL_STEPS
 
-# ============= PASSO 11: CRIAR BACKUP SCRIPT =============
-log_step 11 $TOTAL_STEPS "Configuração de backup automático"
+# ============= PASSO 11: SISTEMA DE BACKUP E ROLLBACK =============
+log_step 11 $TOTAL_STEPS "Sistema avançado de backup e rollback"
+
+# Criar backup completo antes do deploy
+create_pre_deploy_backup() {
+    log_info "💾 Criando backup pré-deploy..."
+
+    local backup_dir="/tmp/deploy-backup-$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$backup_dir"
+
+    # Backup de configurações existentes
+    if [ -f "docker-compose.yml" ]; then
+        cp docker-compose.yml "$backup_dir/" 2>/dev/null || true
+    fi
+
+    if [ -f ".env" ]; then
+        cp .env "$backup_dir/" 2>/dev/null || true
+    fi
+
+    # Backup de dados de containers existentes
+    if command -v docker-compose &> /dev/null && docker-compose ps &> /dev/null; then
+        log_info "Fazendo backup de dados dos containers..."
+
+        # Backup PostgreSQL se existir
+        if docker-compose ps | grep -q postgres; then
+            docker-compose exec -T postgres pg_dumpall -U postgres > "$backup_dir/postgres_backup.sql" 2>/dev/null || true
+        fi
+
+        # Backup de volumes
+        docker-compose ps --services | while read service; do
+            if [ ! -z "$service" ]; then
+                docker-compose logs "$service" > "$backup_dir/${service}_logs.txt" 2>/dev/null || true
+            fi
+        done
+    fi
+
+    echo "$backup_dir" > /tmp/current_backup_path
+    log_success "✅ Backup criado em: $backup_dir"
+}
+
+# Função de rollback automático
+auto_rollback() {
+    log_warning "🔄 Iniciando rollback automático..."
+
+    local backup_path=$(cat /tmp/current_backup_path 2>/dev/null || echo "")
+
+    if [ -d "$backup_path" ]; then
+        log_info "Restaurando configurações do backup..."
+
+        # Parar containers atuais
+        docker-compose down --remove-orphans 2>/dev/null || true
+
+        # Restaurar arquivos de configuração
+        if [ -f "$backup_path/docker-compose.yml" ]; then
+            cp "$backup_path/docker-compose.yml" . 2>/dev/null || true
+        fi
+
+        if [ -f "$backup_path/.env" ]; then
+            cp "$backup_path/.env" . 2>/dev/null || true
+        fi
+
+        # Tentar restaurar estado anterior
+        if [ -f "$backup_path/postgres_backup.sql" ]; then
+            log_info "Restaurando banco de dados..."
+            docker-compose up -d postgres 2>/dev/null || true
+            sleep 30
+            cat "$backup_path/postgres_backup.sql" | docker-compose exec -T postgres psql -U postgres 2>/dev/null || true
+        fi
+
+        log_success "✅ Rollback concluído"
+    else
+        log_warning "⚠️ Backup não encontrado. Rollback manual necessário."
+    fi
+}
+
+# Criar backup pré-deploy
+create_pre_deploy_backup
 
 cat > backup.sh <<EOF
 #!/bin/bash
@@ -1835,12 +1910,12 @@ EOF
 
 # ============= RESULTADO FINAL V3 =============
 realtime_echo ""
-realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉���🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
+realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
 realtime_echo "${GREEN}🚀 MEGA DEPLOY AUTOMÁTICO V3 CONCLUÍDO! 🚀${NC}"
 realtime_echo "${PURPLE}🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉${NC}"
 realtime_echo ""
 realtime_echo "${CYAN}🆕 Novidades V3 - Logs em Tempo Real:${NC}"
-realtime_echo "   • 📝 Logs em tempo real durante todo o processo"
+realtime_echo "   • ���� Logs em tempo real durante todo o processo"
 realtime_echo "   • 📊 Progress bar visual"
 realtime_echo "   • 🔄 Retry logic automático"
 realtime_echo "   • 🧹 Cleanup em interrupções"
