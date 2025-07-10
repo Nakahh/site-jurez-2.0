@@ -259,7 +259,7 @@ setup_firewall() {
     systemctl enable fail2ban
     systemctl start fail2ban
     
-    log "SUCCESS" "Firewall configurado e ativo!"
+        log "SUCCESS" "Firewall configurado com TODAS as portas necessárias!"
 }
 
 # Baixar projeto do GitHub
@@ -885,7 +885,7 @@ create_credentials_file() {
 ##############################################################################
 
 🌐 DOMÍNIOS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📱 Site Principal: https://$DOMAIN1
 🏠 Portainer Principal: https://$DOMAIN2
