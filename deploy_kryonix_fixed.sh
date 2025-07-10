@@ -54,7 +54,7 @@ log() {
         "SUCCESS") echo -e "${GREEN}✅ [$timestamp] $message${NC}" ;;
         "ERROR") echo -e "${RED}❌ [$timestamp] $message${NC}" ;;
         "WARNING") echo -e "${YELLOW}⚠️ [$timestamp] $message${NC}" ;;
-        "INFO") echo -e "${BLUE}ℹ�� [$timestamp] $message${NC}" ;;
+        "INFO") echo -e "${BLUE}ℹ️ [$timestamp] $message${NC}" ;;
         "INSTALL") echo -e "${PURPLE}⚙️ [$timestamp] $message${NC}" ;;
         "DEPLOY") echo -e "${CYAN}🚀 [$timestamp] $message${NC}" ;;
         *) echo -e "${BOLD}📋 [$timestamp] $message${NC}" ;;
@@ -254,7 +254,7 @@ setup_directories() {
 create_dockerfiles() {
     log "DEPLOY" "📦 Criando Dockerfiles..."
     
-    # Frontend Dockerfile - CORRIGIDO
+    # Frontend Dockerfile - ULTRA CORRIGIDO SEM HEREDOC
     cat > "$PROJECT_DIR/Dockerfile.frontend" << 'EOF'
 FROM node:18-alpine AS builder
 WORKDIR /app
@@ -270,33 +270,31 @@ RUN npm run build || npx vite build --outDir dist || (mkdir -p dist && cp -r cli
 FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Criar configuração nginx corretamente
-RUN cat > /etc/nginx/conf.d/default.conf << 'NGINXEOF'
-server {
-    listen 80;
-    server_name _;
-    root /usr/share/nginx/html;
-    index index.html;
-    
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-    
-    location /api {
-        proxy_pass http://kryonix-backend:3333;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-NGINXEOF
+# Criar arquivo de configuração nginx linha por linha
+RUN echo 'server {' > /etc/nginx/conf.d/default.conf
+RUN echo '    listen 80;' >> /etc/nginx/conf.d/default.conf
+RUN echo '    server_name _;' >> /etc/nginx/conf.d/default.conf
+RUN echo '    root /usr/share/nginx/html;' >> /etc/nginx/conf.d/default.conf
+RUN echo '    index index.html;' >> /etc/nginx/conf.d/default.conf
+RUN echo '' >> /etc/nginx/conf.d/default.conf
+RUN echo '    location / {' >> /etc/nginx/conf.d/default.conf
+RUN echo '        try_files $uri $uri/ /index.html;' >> /etc/nginx/conf.d/default.conf
+RUN echo '    }' >> /etc/nginx/conf.d/default.conf
+RUN echo '' >> /etc/nginx/conf.d/default.conf
+RUN echo '    location /api {' >> /etc/nginx/conf.d/default.conf
+RUN echo '        proxy_pass http://kryonix-backend:3333;' >> /etc/nginx/conf.d/default.conf
+RUN echo '        proxy_set_header Host $host;' >> /etc/nginx/conf.d/default.conf
+RUN echo '        proxy_set_header X-Real-IP $remote_addr;' >> /etc/nginx/conf.d/default.conf
+RUN echo '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' >> /etc/nginx/conf.d/default.conf
+RUN echo '        proxy_set_header X-Forwarded-Proto $scheme;' >> /etc/nginx/conf.d/default.conf
+RUN echo '    }' >> /etc/nginx/conf.d/default.conf
+RUN echo '}' >> /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 EOF
     
-    # Backend Dockerfile - CORRIGIDO
+    # Backend Dockerfile - SUPER SIMPLES
     cat > "$PROJECT_DIR/Dockerfile.backend" << 'EOF'
 FROM node:18-alpine
 WORKDIR /app
