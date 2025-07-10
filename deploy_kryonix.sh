@@ -531,7 +531,7 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgresql://kryonix_user:$POSTGRES_PASSWORD@postgres:5432/kryonix
       REDIS_URL: redis://:$REDIS_PASSWORD@redis:6379
-      JWT_SECRET: \$(openssl rand -base64 32)
+            JWT_SECRET: "kryonix-jwt-secret-2024-ultra"
       SMTP_HOST: $SMTP_HOST
       SMTP_PORT: $SMTP_PORT
       SMTP_USER: $SMTP_USER
@@ -926,7 +926,7 @@ create_credentials_file() {
 ##############################################################################
 
 🌐 DOMÍNIOS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
 
 📱 Site Principal: https://$DOMAIN1
 🏠 Portainer Principal: https://$DOMAIN2
@@ -996,7 +996,7 @@ Webhook URL: http://$SERVER_IP:9000/webhook
 Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 
 🔐 SSL:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Certificados SSL automáticos via Let's Encrypt
 ✅ Redirecionamento automático HTTP → HTTPS
 ✅ Renovação automática dos certificados
@@ -1016,7 +1016,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 🔗 Webhook: systemctl restart github-webhook
 
 ⚠️ CONFIGURAÇÃO DNS NECESSÁRIA:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Configure os seguintes registros DNS para apontar para $SERVER_IP:
 
 $DOMAIN1 → $SERVER_IP
@@ -1045,7 +1045,7 @@ adminer.$DOMAIN2 → $SERVER_IP
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 
     chmod 600 /root/KRYONIX_CREDENTIALS.txt
