@@ -164,7 +164,8 @@ export const getHistoricoChat: RequestHandler = async (req, res) => {
         acc[key].push({
           id: mensagem.id,
           conteudo: mensagem.conteudo,
-          remetente: mensagem.remetente === req.user!.userId ? "usuario" : "ia",
+          remetente:
+            mensagem.remetenteId === req.user!.userId ? "usuario" : "ia",
           timestamp: mensagem.criadoEm,
         });
         return acc;
