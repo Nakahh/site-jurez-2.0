@@ -3,7 +3,7 @@ import html2canvas from "html2canvas";
 
 interface PDFGeneratorOptions {
   title: string;
-  content: any;
+  content?: any;
   format?: "a4" | "letter";
   orientation?: "portrait" | "landscape";
   includeHeader?: boolean;
@@ -27,9 +27,9 @@ export class ModernPDFGenerator {
   private doc: jsPDF;
   private logoUrl =
     "https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=200";
-  private primaryColor: [number, number, number] = [139, 69, 19]; // Brown theme
-  private secondaryColor: [number, number, number] = [245, 158, 11]; // Amber
-  private textColor: [number, number, number] = [55, 65, 81]; // Gray-700
+  private primaryColor = [139, 69, 19] as const; // Brown theme
+  private secondaryColor = [245, 158, 11] as const; // Amber
+  private textColor = [55, 65, 81] as const; // Gray-700
 
   constructor(options: PDFGeneratorOptions) {
     this.doc = new jsPDF({
@@ -52,7 +52,11 @@ export class ModernPDFGenerator {
     try {
       // For now, we'll add a text-based logo since image loading needs to be handled differently
       this.doc.setFontSize(16);
-      this.doc.setTextColor(...this.primaryColor);
+      this.doc.setTextColor(
+        this.primaryColor[0],
+        this.primaryColor[1],
+        this.primaryColor[2],
+      );
       this.doc.setFont("helvetica", "bold");
       this.doc.text("SIQUEIRA CAMPOS", x, y);
       this.doc.setFontSize(10);
@@ -68,7 +72,11 @@ export class ModernPDFGenerator {
     this.addLogo();
 
     // Header background
-    this.doc.setFillColor(...this.primaryColor);
+    this.doc.setFillColor(
+      this.primaryColor[0],
+      this.primaryColor[1],
+      this.primaryColor[2],
+    );
     this.doc.rect(0, 0, 210, 35, "F");
 
     // White text on header
@@ -84,14 +92,22 @@ export class ModernPDFGenerator {
     }
 
     // Reset text color
-    this.doc.setTextColor(...this.textColor);
+    this.doc.setTextColor(
+      this.textColor[0],
+      this.textColor[1],
+      this.textColor[2],
+    );
   }
 
   private addFooter(pageNumber: number = 1) {
     const pageHeight = this.doc.internal.pageSize.height;
 
     // Footer line
-    this.doc.setDrawColor(...this.primaryColor);
+    this.doc.setDrawColor(
+      this.primaryColor[0],
+      this.primaryColor[1],
+      this.primaryColor[2],
+    );
     this.doc.setLineWidth(0.5);
     this.doc.line(20, pageHeight - 20, 190, pageHeight - 20);
 
@@ -124,13 +140,21 @@ export class ModernPDFGenerator {
     // Informações do relatório
     this.doc.setFontSize(12);
     this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(...this.primaryColor);
+    this.doc.setTextColor(
+      this.primaryColor[0],
+      this.primaryColor[1],
+      this.primaryColor[2],
+    );
     this.doc.text("Informações do Relatório", 20, yPosition);
 
     yPosition += 10;
     this.doc.setFontSize(10);
     this.doc.setFont("helvetica", "normal");
-    this.doc.setTextColor(...this.textColor);
+    this.doc.setTextColor(
+      this.textColor[0],
+      this.textColor[1],
+      this.textColor[2],
+    );
 
     const infoData = [
       ["Período:", data.periodo || "Dezembro 2024"],
@@ -150,7 +174,11 @@ export class ModernPDFGenerator {
     // Tabela de vendas
     this.doc.setFontSize(12);
     this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(...this.primaryColor);
+    this.doc.setTextColor(
+      this.primaryColor[0],
+      this.primaryColor[1],
+      this.primaryColor[2],
+    );
     this.doc.text("Vendas Realizadas", 20, yPosition);
 
     yPosition += 10;
@@ -160,7 +188,11 @@ export class ModernPDFGenerator {
     const columnWidths = [60, 40, 30, 30];
     let xPosition = 20;
 
-    this.doc.setFillColor(...this.secondaryColor);
+    this.doc.setFillColor(
+      this.secondaryColor[0],
+      this.secondaryColor[1],
+      this.secondaryColor[2],
+    );
     this.doc.rect(20, yPosition - 5, 160, 8, "F");
 
     this.doc.setFontSize(9);
@@ -173,7 +205,11 @@ export class ModernPDFGenerator {
     });
 
     yPosition += 10;
-    this.doc.setTextColor(...this.textColor);
+    this.doc.setTextColor(
+      this.textColor[0],
+      this.textColor[1],
+      this.textColor[2],
+    );
     this.doc.setFont("helvetica", "normal");
 
     // Dados da tabela
@@ -213,7 +249,11 @@ export class ModernPDFGenerator {
     yPosition += 10;
     this.doc.setFontSize(12);
     this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(...this.primaryColor);
+    this.doc.setTextColor(
+      this.primaryColor[0],
+      this.primaryColor[1],
+      this.primaryColor[2],
+    );
     this.doc.text("Resumo Financeiro", 20, yPosition);
 
     yPosition += 10;
@@ -225,7 +265,11 @@ export class ModernPDFGenerator {
 
     this.doc.setFontSize(10);
     this.doc.setFont("helvetica", "normal");
-    this.doc.setTextColor(...this.textColor);
+    this.doc.setTextColor(
+      this.textColor[0],
+      this.textColor[1],
+      this.textColor[2],
+    );
 
     const resumoData = [
       ["Total de vendas:", `R$ ${totalVendas.toLocaleString("pt-BR")}`],
@@ -245,13 +289,21 @@ export class ModernPDFGenerator {
       yPosition += 35;
       this.doc.setFontSize(12);
       this.doc.setFont("helvetica", "bold");
-      this.doc.setTextColor(...this.primaryColor);
+      this.doc.setTextColor(
+        this.primaryColor[0],
+        this.primaryColor[1],
+        this.primaryColor[2],
+      );
       this.doc.text("Observações", 20, yPosition);
 
       yPosition += 8;
       this.doc.setFontSize(10);
       this.doc.setFont("helvetica", "normal");
-      this.doc.setTextColor(...this.textColor);
+      this.doc.setTextColor(
+        this.textColor[0],
+        this.textColor[1],
+        this.textColor[2],
+      );
 
       const lines = this.doc.splitTextToSize(data.observacoes, 160);
       this.doc.text(lines, 20, yPosition);
@@ -268,7 +320,11 @@ export class ModernPDFGenerator {
     // Performance dos corretores
     this.doc.setFontSize(12);
     this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(...this.primaryColor);
+    this.doc.setTextColor(
+      this.primaryColor[0],
+      this.primaryColor[1],
+      this.primaryColor[2],
+    );
     this.doc.text("Performance dos Corretores", 20, yPosition);
 
     yPosition += 15;
@@ -284,7 +340,11 @@ export class ModernPDFGenerator {
     const columnWidths = [40, 25, 35, 30, 30];
     let xPosition = 20;
 
-    this.doc.setFillColor(...this.secondaryColor);
+    this.doc.setFillColor(
+      this.secondaryColor[0],
+      this.secondaryColor[1],
+      this.secondaryColor[2],
+    );
     this.doc.rect(20, yPosition - 5, 160, 8, "F");
 
     this.doc.setFontSize(9);
@@ -297,7 +357,11 @@ export class ModernPDFGenerator {
     });
 
     yPosition += 10;
-    this.doc.setTextColor(...this.textColor);
+    this.doc.setTextColor(
+      this.textColor[0],
+      this.textColor[1],
+      this.textColor[2],
+    );
     this.doc.setFont("helvetica", "normal");
 
     // Dados dos corretores
@@ -385,6 +449,7 @@ export const generateSalesReport = async (dados: any[]) => {
     title: "Relatório de Vendas",
     author: "Siqueira Campos Imóveis",
     subject: "Relatório de Vendas Mensal",
+    content: dados,
   });
 
   const reportData: ReportData = {
@@ -409,6 +474,7 @@ export const generatePerformanceReport = async (dados: any[]) => {
     title: "Relatório de Performance",
     author: "Siqueira Campos Imóveis",
     subject: "Análise de Performance dos Corretores",
+    content: dados,
   });
 
   const reportData: ReportData = {
@@ -433,6 +499,7 @@ export const generateCustomReport = async (
   const generator = new ModernPDFGenerator({
     title: title,
     author: "Siqueira Campos Imóveis",
+    content: null,
   });
 
   await generator.saveFromHTML(
