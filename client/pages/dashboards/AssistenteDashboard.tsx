@@ -213,12 +213,35 @@ export default function AssistenteDashboard() {
     const lead = leads.find((l) => l.id === leadId);
     if (lead) {
       const newStatus = prompt(
-        "Novo status (NOVO, QUALIFICADO, REUNIAO, PROPOSTA, FECHAMENTO):",
+        "Novo status (NOVO, CONTATADO, VISITOU, INTERESSADO, PERDIDO, AGENDADO):",
         lead.status,
       );
-      if (newStatus) {
+      if (
+        newStatus &&
+        [
+          "NOVO",
+          "CONTATADO",
+          "VISITOU",
+          "INTERESSADO",
+          "PERDIDO",
+          "AGENDADO",
+        ].includes(newStatus)
+      ) {
         setLeads((prev) =>
-          prev.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l)),
+          prev.map((l) =>
+            l.id === leadId
+              ? {
+                  ...l,
+                  status: newStatus as
+                    | "NOVO"
+                    | "CONTATADO"
+                    | "VISITOU"
+                    | "INTERESSADO"
+                    | "PERDIDO"
+                    | "AGENDADO",
+                }
+              : l,
+          ),
         );
         toast({
           title: "Lead atualizado",
