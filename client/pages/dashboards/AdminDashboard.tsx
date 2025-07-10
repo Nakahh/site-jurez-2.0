@@ -231,7 +231,7 @@ export default function AdminDashboard() {
           await generateSalesReport([]);
           break;
         case "performance":
-          await generatePerformanceReport();
+          await generatePerformanceReport([]);
           break;
         default:
           await generateCustomReport(reportId, `Relatório ${tipo}`);
@@ -655,7 +655,7 @@ export default function AdminDashboard() {
                       className="h-16 flex flex-col items-center justify-center space-y-2"
                       onClick={() => {
                         alert(
-                          "Backup iniciado! Você receberá uma notificação quando concluído.",
+                          "Backup iniciado! Você receberá uma notificação quando conclu��do.",
                         );
                       }}
                     >
