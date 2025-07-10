@@ -203,7 +203,7 @@ intelligent_reset() {
 
 # Atualização inteligente do sistema
 intelligent_system_update() {
-    log "INSTALL" "�� Atualizando sistema Ubuntu com inteligência..."
+    log "INSTALL" "🔄 Atualizando sistema Ubuntu com inteligência..."
     
     # Configurar locale para evitar warnings
     export LC_ALL=C.UTF-8
@@ -1396,7 +1396,7 @@ intelligent_project_build() {
         <p class="status">Deploy em progresso - Aguarde alguns instantes</p>
         <script>
             setTimeout(() => {
-                document.querySelector('.loading').textContent = 'Finalizando configuração...';
+                document.querySelector('.loading').textContent = 'Finalizando configuraç��o...';
             }, 3000);
             setTimeout(() => {
                 window.location.reload();
@@ -1537,7 +1537,7 @@ intelligent_final_deploy() {
         return 1
     }
 
-    # Deploy Traefik primeiro (�� fundamental)
+    # Deploy Traefik primeiro (é fundamental)
     log "INFO" "🔀 Iniciando Traefik..."
     if docker-compose up -d traefik 2>/dev/null; then
         check_service_health traefik
@@ -1567,37 +1567,95 @@ intelligent_final_deploy() {
         log "WARNING" "Problemas com Redis"
     fi
 
-    # Aguardar infraestrutura ficar pronta
-    log "INFO" "⏳ Aguardando infraestrutura ficar pronta (30 segundos)..."
-    sleep 30
+        # Aguardar infraestrutura base
+    log "INFO" "⏳ Verificando saúde da infraestrutura base..."
+    sleep 15
 
     log "DEPLOY" "🔄 Deploy etapa 2: Aplicação principal..."
-    docker-compose up -d project-frontend project-backend 2>/dev/null || {
-        log "WARNING" "Deploy da aplicação falhou, tentando build..."
-        docker-compose build project-frontend project-backend
-        docker-compose up -d project-frontend project-backend
-    }
+
+    # Frontend do projeto
+    log "INFO" "🌐 Iniciando Frontend..."
+    if docker-compose up -d project-frontend 2>/dev/null; then
+        check_service_health project-frontend
+    else
+        log "WARNING" "Problemas com frontend, tentando build..."
+        docker-compose build project-frontend 2>/dev/null || true
+        docker-compose up -d project-frontend 2>/dev/null
+    fi
+
+    sleep 10
+
+    # Backend do projeto
+    log "INFO" "⚙️  Iniciando Backend..."
+    if docker-compose up -d project-backend 2>/dev/null; then
+        check_service_health project-backend
+    else
+        log "WARNING" "Problemas com backend, tentando build..."
+        docker-compose build project-backend 2>/dev/null || true
+        docker-compose up -d project-backend 2>/dev/null
+    fi
 
     sleep 15
 
-    log "DEPLOY" "🔄 Deploy etapa 3: Serviços auxiliares..."
-    docker-compose up -d portainer-siqueira portainer-meuboot adminer 2>/dev/null || {
-        log "WARNING" "Deploy dos serviços auxiliares com problemas"
-    }
+    log "DEPLOY" "🔄 Deploy etapa 3: Serviços de gerenciamento..."
+
+    # Portainer Principal
+    log "INFO" "🐳 Iniciando Portainer Siqueira..."
+    docker-compose up -d portainer-siqueira 2>/dev/null && check_service_health portainer-siqueira
+
+    sleep 5
+
+    # Portainer MeuBoot
+    log "INFO" "🐳 Iniciando Portainer MeuBoot..."
+    docker-compose up -d portainer-meuboot 2>/dev/null && check_service_health portainer-meuboot
+
+    sleep 5
+
+    # Adminer
+    log "INFO" "🗄️  Iniciando Adminer..."
+    docker-compose up -d adminer 2>/dev/null && check_service_health adminer
 
     sleep 10
 
     log "DEPLOY" "🔄 Deploy etapa 4: Monitoramento e automação..."
-    docker-compose up -d prometheus grafana n8n evolution-api minio 2>/dev/null || {
-        log "WARNING" "Deploy do monitoramento com problemas"
-    }
+
+    # Prometheus
+    log "INFO" "📊 Iniciando Prometheus..."
+    docker-compose up -d prometheus 2>/dev/null && check_service_health prometheus
+
+    sleep 5
+
+    # Grafana
+    log "INFO" "📈 Iniciando Grafana..."
+    docker-compose up -d grafana 2>/dev/null && check_service_health grafana
+
+    sleep 5
+
+    # N8N
+    log "INFO" "🔄 Iniciando N8N..."
+    docker-compose up -d n8n 2>/dev/null && check_service_health n8n
+
+    sleep 5
+
+    # Evolution API
+    log "INFO" "📱 Iniciando Evolution API..."
+    docker-compose up -d evolution-api 2>/dev/null && check_service_health evolution-api
+
+    sleep 5
+
+    # MinIO
+    log "INFO" "📁 Iniciando MinIO..."
+    docker-compose up -d minio 2>/dev/null && check_service_health minio
 
     sleep 10
 
-    log "DEPLOY" "🔄 Deploy etapa 5: ChatGPT Stack..."
-    docker-compose up -d chatgpt-stack 2>/dev/null || {
-        log "WARNING" "Deploy do ChatGPT falhou - verifique OPENAI_API_KEY"
-    }
+    log "DEPLOY" "🔄 Deploy etapa 5: IA e ChatGPT..."
+    log "INFO" "🤖 Iniciando ChatGPT Stack..."
+    if docker-compose up -d chatgpt-stack 2>/dev/null; then
+        check_service_health chatgpt-stack
+    else
+        log "WARNING" "ChatGPT falhou - configure OPENAI_API_KEY depois"
+    fi
 
     # Verificar status dos serviços
     log "INFO" "🔍 Verificando status dos serviços..."
@@ -2881,7 +2939,7 @@ EOF
     memory_usage=$(free -h | grep '^Mem:' | awk '{print $3"/"$2}')
     
     echo -e "${BOLD}📊 ESTATÍSTICAS DO SISTEMA:${NC}"
-    echo "  ��� Containers ativos: $running_containers"
+    echo "  🐳 Containers ativos: $running_containers"
     echo "  💾 Uso de disco: $disk_usage"
     echo "  🧠 Uso de memória: $memory_usage"
     echo "  ⏰ Deploy concluído em: $(date)"
@@ -2947,7 +3005,7 @@ show_final_links() {
     # Armazenamento
     echo -e "${BOLD}${BLUE}📁 ARMAZENAMENTO:${NC}"
     echo -e "   🗃️  ${BOLD}MinIO Console:${NC} https://minio.siqueicamposimoveis.com.br"
-    echo -e "   📡 ${BOLD}MinIO API:${NC} https://storage.siqueicamposimoveis.com.br"
+    echo -e "   �� ${BOLD}MinIO API:${NC} https://storage.siqueicamposimoveis.com.br"
     echo -e "      👤 Usuário: kryonix_minio_admin | 🔑 Senha: $MINIO_PASSWORD"
     echo
 
@@ -3026,7 +3084,7 @@ intelligent_main() {
     create_intelligent_dockerfiles
     create_intelligent_compose
     
-        # Fase 6: Deploy dos Servi��os
+        # Fase 6: Deploy dos Serviços
     log "DEPLOY" "🚀 FASE 6: Deploy Inteligente dos Serviços"
     intelligent_final_deploy
     
