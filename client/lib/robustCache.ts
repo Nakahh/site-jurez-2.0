@@ -1,4 +1,5 @@
 // Robust caching system for performance optimization
+import { useState, useEffect } from "react";
 
 export interface CacheEntry<T = any> {
   data: T;
