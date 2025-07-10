@@ -113,7 +113,7 @@ show_banner() {
 EOF
     echo -e "${NC}"
     echo
-    log "INFO" "🧠 Sistema KRYONIX iniciando com intelig��ncia artificial..."
+    log "INFO" "🧠 Sistema KRYONIX iniciando com inteligência artificial..."
     log "INFO" "📊 Servidor: Oracle VPS (2 vCPUs, 12GB RAM, 220GB SSD)"
     log "INFO" "🌐 IP: $SERVER_IP"
     log "INFO" "📁 Projeto: $GITHUB_REPO"
@@ -248,28 +248,62 @@ intelligent_system_update() {
     # Configurar timezone
     timedatectl set-timezone America/Sao_Paulo 2>/dev/null || true
     
-            # Resolver conflitos npm/nodejs completamente
-    log "INSTALL" "Resolvendo conflitos npm/nodejs..."
+                # Resolver conflitos npm/nodejs com detecção inteligente
+    log "INSTALL" "Configurando Node.js de forma inteligente..."
 
-    # Remover versões conflitantes
+    # Verificar se Node.js já está instalado e funcionando
+    if command -v node &> /dev/null && command -v npm &> /dev/null; then
+        NODE_CURRENT=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+        if [ "$NODE_CURRENT" -ge "18" ]; then
+            log "SUCCESS" "Node.js $(node -v) e npm $(npm -v) já instalados e atualizados!"
+            return 0
+        fi
+    fi
+
+    # Remover versões conflitantes apenas se necessário
+    log "INSTALL" "Removendo versões antigas do Node.js..."
     apt-get remove -y nodejs npm node-* 2>/dev/null || true
     apt-get autoremove -y 2>/dev/null || true
-    apt-get autoclean 2>/dev/null || true
 
     # Limpar cache de pacotes
     rm -rf /etc/apt/sources.list.d/nodesource.list* 2>/dev/null || true
 
-    # Instalar Node.js LTS limpo via NodeSource
-    log "INSTALL" "Instalando Node.js LTS via NodeSource..."
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - 2>/dev/null || true
-    apt-get update -y 2>/dev/null || true
-    apt-get install -y nodejs 2>/dev/null || true
+    # Instalar Node.js LTS via multiple methods
+    log "INSTALL" "Instalando Node.js LTS (múltiplas tentativas)..."
 
-    # Verificar instalação
+    # Método 1: NodeSource
+    if curl -fsSL https://deb.nodesource.com/setup_20.x | bash - 2>/dev/null; then
+        apt-get update -y 2>/dev/null
+        apt-get install -y nodejs 2>/dev/null
+    fi
+
+    # Método 2: Snap se NodeSource falhar
+    if ! command -v node &> /dev/null; then
+        log "INFO" "Tentando instalar via snap..."
+        snap install node --classic 2>/dev/null || true
+    fi
+
+    # Método 3: Manual download se ambos falharem
+    if ! command -v node &> /dev/null; then
+        log "INFO" "Instalação manual do Node.js..."
+        cd /tmp
+        wget https://nodejs.org/dist/v20.10.0/node-v20.10.0-linux-x64.tar.xz 2>/dev/null || true
+        if [ -f "node-v20.10.0-linux-x64.tar.xz" ]; then
+            tar -xf node-v20.10.0-linux-x64.tar.xz
+            cp -r node-v20.10.0-linux-x64/* /usr/local/ 2>/dev/null || true
+            rm -rf node-v20.10.0-linux-x64*
+        fi
+    fi
+
+    # Verificar instalação final
     if command -v node &> /dev/null && command -v npm &> /dev/null; then
         log "SUCCESS" "Node.js $(node -v) e npm $(npm -v) instalados com sucesso!"
+        # Configurar npm para funcionamento otimo
+        npm config set registry https://registry.npmjs.org/ 2>/dev/null || true
+        npm config set fund false 2>/dev/null || true
+        npm config set audit-level moderate 2>/dev/null || true
     else
-        log "WARNING" "Problemas com Node.js/npm, continuando mesmo assim..."
+        log "WARNING" "Node.js/npm não puderam ser instalados - deploy continuará sem eles"
     fi
 
     log "SUCCESS" "Sistema Ubuntu atualizado com sucesso!"
@@ -2779,7 +2813,7 @@ EOF
     echo "3. ✅ Configure workflows no N8N"
     echo "4. ✅ Conecte o Evolution API ao WhatsApp Business"
     echo "5. ✅ Configure o webhook no GitHub com a URL fornecida"
-    echo "6. ��� Monitore o sistema via Grafana"
+    echo "6. ✅ Monitore o sistema via Grafana"
     echo
 }
 
