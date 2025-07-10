@@ -2818,9 +2818,9 @@ intelligent_main() {
     create_intelligent_dockerfiles
     create_intelligent_compose
     
-    # Fase 6: Deploy dos Serviços
+        # Fase 6: Deploy dos Serviços
     log "DEPLOY" "🚀 FASE 6: Deploy Inteligente dos Serviços"
-    intelligent_services_deploy
+    intelligent_final_deploy
     
     # Fase 7: Configuração Pós-Deploy
     log "DEPLOY" "🔧 FASE 7: Configuração Pós-Deploy"
