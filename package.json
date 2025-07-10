@@ -12,6 +12,7 @@
     "test:deploy": "npm run build:dev && echo 'Build OK' && curl -f http://localhost:3001/api/ping && echo 'API OK'",
     "build:server": "tsc --project tsconfig.server.json",
     "start": "npm run build && node dist/server/start.js",
+    "start:server": "tsx server/start.ts",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest",

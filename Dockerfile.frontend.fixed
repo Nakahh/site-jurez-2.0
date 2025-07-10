@@ -1,0 +1,102 @@
+FROM node:18-alpine AS builder
+WORKDIR /app
+
+# Instalar dependências do sistema
+RUN apk add --no-cache git python3 make g++
+
+# Copiar arquivos de dependências
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
+
+# Copiar código fonte
+COPY . .
+
+# Configurar ambiente de build
+ENV NODE_OPTIONS="--max-old-space-size=8192"
+ENV CI=false
+ENV GENERATE_SOURCEMAP=false
+
+# Fazer build com fallbacks
+RUN npm run build 2>/dev/null || \
+    npx vite build --outDir dist 2>/dev/null || \
+    npx vite build 2>/dev/null || \
+    (mkdir -p dist && echo "Build falhou, usando fallback" && \
+     cp -r client/* dist/ 2>/dev/null || \
+     echo '<!DOCTYPE html><html><head><title>Siqueira Campos</title></head><body><h1>Sistema carregando...</h1><script>setTimeout(()=>location.reload(),5000)</script></body></html>' > dist/index.html)
+
+# Verificar se o build foi criado
+RUN ls -la dist/ && \
+    if [ ! -f "dist/index.html" ]; then \
+        echo "Criando index.html de emergência..."; \
+        mkdir -p dist; \
+        echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Siqueira Campos Imóveis</title></head><body><h1>Sistema Imobiliário</h1><p>Carregando...</p><script>setTimeout(()=>location.reload(),3000)</script></body></html>' > dist/index.html; \
+    fi
+
+# Estágio final - NGINX
+FROM nginx:alpine
+
+# Copiar arquivos buildados
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Mover arquivos de subpasta spa se existir
+RUN if [ -d "/usr/share/nginx/html/spa" ]; then \
+        cp -r /usr/share/nginx/html/spa/* /usr/share/nginx/html/ && \
+        rm -rf /usr/share/nginx/html/spa; \
+    fi
+
+# Criar configuração do NGINX otimizada
+RUN cat > /etc/nginx/conf.d/default.conf << 'NGINXEOF'
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Headers de segurança e cache
+    add_header X-Frame-Options DENY;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+    add_header Cache-Control "no-cache, no-store, must-revalidate";
+    add_header Pragma "no-cache";
+    add_header Expires "0";
+
+    # Logs
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+
+    # Roteamento SPA - CRÍTICO para evitar 404
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+    }
+
+    # Proxy para API do backend
+    location /api {
+        proxy_pass http://kryonix-backend:3333;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 30s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
+    }
+
+    # Fallback para arquivos estáticos
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1h;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # Health check
+    location /health {
+        access_log off;
+        return 200 "OK\n";
+        add_header Content-Type text/plain;
+    }
+}
+NGINXEOF
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

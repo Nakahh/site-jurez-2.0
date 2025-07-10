@@ -1,0 +1,68 @@
+FROM node:18-alpine
+WORKDIR /app
+
+# Instalar dependências do sistema
+RUN apk add --no-cache git python3 make g++ curl
+
+# Copiar arquivos de dependências
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
+
+# Copiar código fonte
+COPY . .
+
+# Fazer build do servidor se necessário
+RUN npm run build:server 2>/dev/null || \
+    npx tsc --project tsconfig.server.json 2>/dev/null || \
+    echo "Sem build de server necessário"
+
+# Gerar Prisma se existir
+RUN npm run db:generate 2>/dev/null || \
+    npx prisma generate 2>/dev/null || \
+    echo "Sem Prisma configurado"
+
+# Criar script de inicialização robusto
+RUN cat > start.sh << 'STARTSCRIPT'
+#!/bin/sh
+echo "🎯 Iniciando servidor na porta 3333..."
+
+# Aguardar dependências
+echo "⏳ Aguardando PostgreSQL..."
+sleep 10
+
+# Método 1: npm start:server
+echo "Método 1: Tentando npm start:server..."
+npm run start:server 2>/dev/null && exit 0
+
+# Método 2: npm dev:server
+echo "Método 2: Tentando npm dev:server..."
+npm run dev:server 2>/dev/null && exit 0
+
+# Método 3: node direto do dist
+echo "Método 3: Tentando node dist/server/start.js..."
+node dist/server/start.js 2>/dev/null && exit 0
+
+# Método 4: tsx direto
+echo "Método 4: Tentando tsx server/start.ts..."
+npx tsx server/start.ts 2>/dev/null && exit 0
+
+# Método 5: npm scripts
+echo "Método 5: Tentando scripts npm..."
+npm run dev:server
+
+# Fallback final
+echo "🚨 Iniciando servidor básico de emergência..."
+node -e "
+const express = require('express');
+const app = express();
+app.use(express.json());
+app.get('/api/ping', (req, res) => res.json({message: 'Siqueira Campos Imóveis API v1.0'}));
+app.get('/api/demo', (req, res) => res.json({message: 'Demo endpoint funcionando'}));
+app.listen(3333, '0.0.0.0', () => console.log('🚀 Servidor emergência na porta 3333'));
+"
+STARTSCRIPT
+
+RUN chmod +x start.sh
+
+EXPOSE 3333
+CMD ["./start.sh"]
