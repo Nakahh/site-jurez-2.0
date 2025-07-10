@@ -39,7 +39,7 @@ import {
   CheckCircle,
   Clock,
   Mail,
-  WhatsappIcon,
+  MessageCircle,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { FavoriteButton } from "@/components/FavoriteButton";
