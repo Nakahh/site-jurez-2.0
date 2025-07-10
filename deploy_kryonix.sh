@@ -181,7 +181,20 @@ setup_project() {
     cd /opt
     rm -rf site-jurez-2.0 2>/dev/null || true
     
-    git clone "$GITHUB_REPO" "$PROJECT_DIR"
+        # Configurar git para não pedir credenciais
+    git config --global credential.helper store
+    git config --global user.email "deploy@kryonix.com"
+    git config --global user.name "Deploy Script"
+
+    # Clone automático sem interação
+    timeout 60 git clone --depth 1 --single-branch --branch "$GITHUB_BRANCH" "$GITHUB_REPO" "$PROJECT_DIR" || {
+        log "ERROR" "Falha ao clonar repositório: $GITHUB_REPO"
+        log "INFO" "Tentando novamente sem especificar branch..."
+        timeout 60 git clone --depth 1 "$GITHUB_REPO" "$PROJECT_DIR" || {
+            log "ERROR" "Falha definitiva ao clonar repositório"
+            exit 1
+        }
+    }
     cd "$PROJECT_DIR"
     git checkout "$GITHUB_BRANCH" 2>/dev/null || true
     git config pull.rebase false
@@ -666,7 +679,7 @@ const server = http.createServer((req, res) => {
         try {
             const payload = JSON.parse(body);
 
-            // Verificar se �� push na branch main
+            // Verificar se é push na branch main
             if (payload.ref === 'refs/heads/$GITHUB_BRANCH') {
                 console.log('🚀 Webhook recebido - iniciando deploy automático...');
 
