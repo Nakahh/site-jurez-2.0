@@ -113,7 +113,7 @@ show_banner() {
 EOF
     echo -e "${NC}"
     echo
-    log "INFO" "🧠 Sistema KRYONIX iniciando com inteligência artificial..."
+    log "INFO" "🧠 Sistema KRYONIX iniciando com intelig��ncia artificial..."
     log "INFO" "📊 Servidor: Oracle VPS (2 vCPUs, 12GB RAM, 220GB SSD)"
     log "INFO" "🌐 IP: $SERVER_IP"
     log "INFO" "📁 Projeto: $GITHUB_REPO"
@@ -220,20 +220,30 @@ intelligent_system_update() {
     apt-get upgrade -y
     apt-get dist-upgrade -y
     
-    # Instalar dependências essenciais
+        # Instalar dependências essenciais com retry inteligente
     log "INSTALL" "Instalando dependências essenciais..."
-    apt-get install -y \
-        curl wget git jq unzip zip \
-        software-properties-common apt-transport-https \
-        ca-certificates gnupg lsb-release \
-        python3 python3-pip python3-venv \
-        nodejs npm \
-        build-essential \
-        htop vim nano \
-        cron ufw fail2ban \
-        rsync tree \
-        net-tools dnsutils \
-        2>/dev/null || true
+
+    local packages=(
+        "curl wget git jq unzip zip"
+        "software-properties-common apt-transport-https"
+        "ca-certificates gnupg lsb-release"
+        "python3 python3-pip python3-venv"
+        "build-essential"
+        "htop vim nano"
+        "cron ufw fail2ban"
+        "rsync tree"
+        "net-tools dnsutils"
+        "docker.io docker-compose"
+    )
+
+    for package_group in "${packages[@]}"; do
+        log "INFO" "Instalando: $package_group"
+        if ! apt-get install -y $package_group 2>/dev/null; then
+            log "WARNING" "Falha ao instalar $package_group, tentando novamente..."
+            apt-get update -y
+            apt-get install -y $package_group 2>/dev/null || log "WARNING" "Falha persistente em $package_group"
+        fi
+    done
     
     # Configurar timezone
     timedatectl set-timezone America/Sao_Paulo 2>/dev/null || true
@@ -2769,7 +2779,7 @@ EOF
     echo "3. ✅ Configure workflows no N8N"
     echo "4. ✅ Conecte o Evolution API ao WhatsApp Business"
     echo "5. ✅ Configure o webhook no GitHub com a URL fornecida"
-    echo "6. ✅ Monitore o sistema via Grafana"
+    echo "6. ��� Monitore o sistema via Grafana"
     echo
 }
 
