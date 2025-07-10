@@ -42,7 +42,8 @@ const OptimizedPropertyCard = memo(
     index,
   }: OptimizedPropertyCardProps) => {
     const [imageIndex, setImageIndex] = useState(0);
-    const { targetRef, isIntersecting } = useIntersectionObserver({
+    const targetRef = useRef<HTMLDivElement>(null);
+    const { isIntersecting } = useIntersectionObserver({
       threshold: 0.1,
       rootMargin: "50px",
     });
