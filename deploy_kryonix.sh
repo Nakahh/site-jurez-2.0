@@ -905,9 +905,9 @@ EOF
         fi
     fi
 
-                        # Verificação final dos arquivos críticos
+                            # Verificação final dos arquivos críticos
     log "INFO" "🔍 Verificação final dos arquivos..."
-    for file in "${critical_files[@]}" 2>/dev/null || true; do
+    for file in "${critical_files[@]}"; do
         if [ -f "$file" ]; then
             if check_file_basic "$file" 2>/dev/null; then
                 log "SUCCESS" "   ✅ $file validado"
@@ -2832,7 +2832,7 @@ show_final_links() {
 
     # Informações técnicas
     echo -e "${BOLD}${CYAN}🔧 INFORMAÇÕES TÉCNICAS:${NC}"
-    echo -e "   🌐 ${BOLD}IP Servidor:${NC} $SERVER_IP"
+    echo -e "   ��� ${BOLD}IP Servidor:${NC} $SERVER_IP"
     echo -e "   ����️  ${BOLD}Frontend Port:${NC} $FRONTEND_PORT"
     echo -e "   ⚙️  ${BOLD}Backend Port:${NC} $BACKEND_PORT"
     echo -e "   🗄️  ${BOLD}Prisma:${NC} $HAS_PRISMA"
