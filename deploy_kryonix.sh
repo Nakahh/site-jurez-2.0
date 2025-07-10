@@ -748,31 +748,33 @@ intelligent_code_fixes() {
         fi
     done
 
-            # Função simples de verificação de arquivo
+                # Função simples de verificação de arquivo
     check_file_basic() {
         local file_path="$1"
 
+        # Se o arquivo não existe, consideramos OK
         if [ ! -f "$file_path" ]; then
             return 0
         fi
 
-        ((total_files_checked++))
+        # Incrementar contador de forma segura
+        total_files_checked=$((total_files_checked + 1))
         log "INFO" "🔍 Verificando $file_path..."
 
-        # Verificação básica de sintaxe
+        # Verificação básica - arquivo não pode estar vazio
         if [ ! -s "$file_path" ]; then
             log "WARNING" "   ⚠️  Arquivo vazio detectado"
             return 1
         fi
 
-        # Verificar estrutura básica
-        if ! grep -q -E "(export|import|function|const|let|var)" "$file_path" 2>/dev/null; then
-            log "WARNING" "   ⚠️  Estrutura inválida"
+        # Verificar se tem conteúdo básico de código
+        if grep -q -E "(export|import|function|const|let|var)" "$file_path" 2>/dev/null; then
+            log "SUCCESS" "   ✅ Arquivo válido"
+            return 0
+        else
+            log "WARNING" "   ⚠️  Estrutura inválida ou arquivo corrompido"
             return 1
         fi
-
-        log "SUCCESS" "   ✅ Arquivo válido"
-        return 0
     }
 
             # Correção específica do performance.ts
@@ -1299,7 +1301,7 @@ intelligent_project_build() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Siqueira Campos Imóveis - Sistema Carregando</title>
-    <meta name="description" content="Sistema imobiliário em carregamento">
+    <meta name="description" content="Sistema imobili��rio em carregamento">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -2734,7 +2736,7 @@ EOF
     echo
     
             echo -e "${GREEN}COMANDOS UTEIS INTELIGENTES:${NC}"
-    echo "  📊 Status geral:                docker-compose ps"
+    echo "  ���� Status geral:                docker-compose ps"
     echo "  📋 Logs em tempo real:          docker-compose logs -f"
     echo "  🔄 Restart serviços:            docker-compose restart"
     echo "  🔍 Saúde dos serviços:          docker ps --format 'table {{.Names}}\\t{{.Status}}'"
