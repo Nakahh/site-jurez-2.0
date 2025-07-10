@@ -24,7 +24,7 @@ RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'
 PURPLE='\033[0;35m'; CYAN='\033[0;36m'; BOLD='\033[1m'; NC='\033[0m'
 
 # Configurações principais
-SERVER_IP="144.22.212.82"
+SERVER_IP="167.234.235.16"
 DOMAIN1="siqueicamposimoveis.com.br"
 DOMAIN2="meuboot.site"
 GITHUB_REPO="https://github.com/Nakahh/site-jurez-2.0"
@@ -897,7 +897,7 @@ create_credentials_file() {
 🗄️ Adminer: https://adminer.$DOMAIN2
 
 🔑 CREDENCIAIS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🗄️ PostgreSQL:
    Host: postgres
    Database: kryonix
