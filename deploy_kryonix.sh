@@ -106,7 +106,7 @@ show_banner() {
     echo -e "${BOLD}${PURPLE}"
     cat << 'EOF'
 ##############################################################################
-#                           🚀 KRYONIX DEPLOY                               #
+#                           ��� KRYONIX DEPLOY                               #
 #         Sistema de Deploy Inteligente e Autônomo para VPS Oracle          #
 #                     Ubuntu 22.04 - Versão 2.0 ULTRA                      #
 ##############################################################################
@@ -775,14 +775,12 @@ intelligent_code_fixes() {
         return 0
     }
 
-    # Correção específica do performance.ts
+        # Correção específica do performance.ts
     log "INFO" "🔧 Corrigindo performance.ts..."
     if [ -f "client/lib/performance.ts" ]; then
-        verify_and_fix_file "client/lib/performance.ts" "ts"
-
-        # Se ainda tem problemas, recriar arquivo
-        if [ ! -s "client/lib/performance.ts" ] || ! grep -q "export" "client/lib/performance.ts" 2>/dev/null; then
+        if ! check_file_basic "client/lib/performance.ts"; then
             log "WARNING" "   🔄 performance.ts com problemas, recriando arquivo..."
+            ((fixes_applied++))
             cat > "client/lib/performance.ts" << 'EOF'
 import { onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
 
@@ -2537,7 +2535,7 @@ intelligent_database_config() {
     docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "SELECT 'CREATE DATABASE chatgpt_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'chatgpt_db')\\gexec" 2>/dev/null || true
     docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "SELECT 'CREATE DATABASE project_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'project_db')\\gexec" 2>/dev/null || true
     
-    # Executar migrações do projeto se existir Prisma
+    # Executar migraç��es do projeto se existir Prisma
     if [ -f "$PROJECT_DIR/prisma/schema.prisma" ]; then
         log "INFO" "🔄 Executando migra��ões do Prisma..."
         cd "$PROJECT_DIR"
