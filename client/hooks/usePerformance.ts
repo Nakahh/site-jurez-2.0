@@ -22,12 +22,12 @@ export const useDebounce = <T>(value: T, delay: number): T => {
 export const useThrottle = <T extends (...args: any[]) => any>(
   callback: T,
   delay: number,
-): T => {
+): ((...args: Parameters<T>) => void) => {
   const throttledCallback = useMemo(
     () => throttle(callback, delay),
     [callback, delay],
   );
-  return throttledCallback;
+  return throttledCallback as (...args: Parameters<T>) => void;
 };
 
 // Memoized callback with dependency optimization
