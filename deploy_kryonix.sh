@@ -566,7 +566,7 @@ intelligent_project_analysis() {
     FRONTEND_PORT="3000"
     BACKEND_PORT="3333"
     
-    # Verificar se há configuraç��o específica de portas
+    # Verificar se há configuração específica de portas
     if [ -f "vite.config.js" ]; then
         CONFIGURED_PORT=$(grep -o "port.*[0-9]\+" vite.config.js | grep -o "[0-9]\+" | head -1 2>/dev/null || echo "")
         if [ ! -z "$CONFIGURED_PORT" ]; then
@@ -679,7 +679,7 @@ EOF
 
 # Configuração inteligente do banco de dados
 intelligent_database_setup() {
-    log "INSTALL" "🗄️ Configurando bancos de dados inteligentes..."
+    log "INSTALL" "��️ Configurando bancos de dados inteligentes..."
     
         # Script de inicialização do PostgreSQL
     cat > "$KRYONIX_DIR/postgres/init/init.sql" << EOF
@@ -1449,7 +1449,7 @@ intelligent_final_deploy() {
 
     sleep 10
 
-    log "DEPLOY" "��� Deploy etapa 5: ChatGPT Stack..."
+    log "DEPLOY" "🔄 Deploy etapa 5: ChatGPT Stack..."
     docker-compose up -d chatgpt-stack 2>/dev/null || {
         log "WARNING" "Deploy do ChatGPT falhou - verifique OPENAI_API_KEY"
     }
@@ -2859,9 +2859,14 @@ intelligent_main() {
     log "DEPLOY" "🛡️ FASE 3: Seguranca e Rede Inteligente"
     intelligent_firewall_setup
 
-    # DNS setup - tentar mas não falhar se der erro
+        # DNS setup - tentar mas não falhar se der erro
     log "INFO" "Tentando configurar DNS..."
-    intelligent_dns_setup || log "WARNING" "DNS setup falhou, continuando sem DNS automático"
+    if intelligent_dns_setup; then
+        log "SUCCESS" "DNS configurado com sucesso!"
+    else
+        log "WARNING" "DNS setup falhou (credenciais ou permissões), continuando sem DNS automático"
+        log "INFO" "💡 Configure manualmente os DNS apontando para $SERVER_IP"
+    fi
     
     # Fase 4: Análise e Preparação do Projeto
     log "DEPLOY" "🔍 FASE 4: Análise Inteligente do Projeto"
