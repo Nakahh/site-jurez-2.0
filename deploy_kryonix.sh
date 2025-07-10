@@ -121,9 +121,33 @@ clean_system_completely() {
     # Limpar /tmp mas preservar backup SSH
     find /tmp -name "ssh_backup" -prune -o -type f -delete 2>/dev/null || true
 
-    # Limpar arquivos de usuário EXCETO .ssh
-    find /home/ubuntu -maxdepth 1 -name ".*" -not -name ".ssh" -delete 2>/dev/null || true
-    find /root -maxdepth 1 -name ".*" -not -name ".ssh" -delete 2>/dev/null || true
+        # Limpar arquivos de usuário PRESERVANDO arquivos essenciais
+    log "INFO" "🛡️ Preservando arquivos essenciais: .ssh, .bashrc, .profile, .bash_logout, .cache"
+
+    # Backup dos arquivos essenciais do ubuntu
+    mkdir -p /tmp/user_backup 2>/dev/null || true
+    cp /home/ubuntu/.bashrc /tmp/user_backup/ 2>/dev/null || true
+    cp /home/ubuntu/.profile /tmp/user_backup/ 2>/dev/null || true
+    cp /home/ubuntu/.bash_logout /tmp/user_backup/ 2>/dev/null || true
+    cp -r /home/ubuntu/.cache /tmp/user_backup/ 2>/dev/null || true
+
+    # Remover TODOS os arquivos ocultos EXCETO os que queremos preservar
+    find /home/ubuntu -maxdepth 1 -name ".*" \
+        -not -name ".ssh" \
+        -not -name ".bashrc" \
+        -not -name ".profile" \
+        -not -name ".bash_logout" \
+        -not -name ".cache" \
+        -not -name "." \
+        -not -name ".." \
+        -delete 2>/dev/null || true
+
+    # Remover arquivos não-ocultos que não são essenciais
+    find /home/ubuntu -maxdepth 1 -type f -not -name ".*" -delete 2>/dev/null || true
+    find /home/ubuntu -maxdepth 1 -type d -not -name ".*" -not -name "ubuntu" -exec rm -rf {} + 2>/dev/null || true
+
+    # Para root, preservar apenas .ssh
+    find /root -maxdepth 1 -name ".*" -not -name ".ssh" -not -name "." -not -name ".." -delete 2>/dev/null || true
 
     # Restaurar chaves SSH se foram removidas
     if [[ ! -d "/home/ubuntu/.ssh" ]] && [[ -d "/tmp/ssh_backup/ubuntu_ssh" ]]; then
