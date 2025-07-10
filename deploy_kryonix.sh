@@ -259,35 +259,39 @@ setup_project() {
 create_dockerfiles() {
     log "DEPLOY" "📦 Criando Dockerfiles otimizados..."
     
-    # Frontend Dockerfile
+        # Frontend Dockerfile (SEM NGINX - Traefik faz proxy)
     cat > "$PROJECT_DIR/Dockerfile.frontend" << 'EOF'
-# Build stage
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-# Instalar dependências de sistema
-RUN apk add --no-cache git python3 make g++ libc6-compat
-
-# Copiar arquivos de dependências
+# Instalar dependências
+RUN apk add --no-cache git python3 make g++
 COPY package*.json ./
-RUN npm ci --legacy-peer-deps --only=production
-
-# Copiar código fonte
-COPY . .
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
 # Build da aplicação
+COPY . .
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV CI=false
 ENV GENERATE_SOURCEMAP=false
 RUN npm run build || npx vite build --outDir dist || mkdir -p dist
 
-# Production stage
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Production stage - Serve direto (sem nginx)
+FROM node:18-alpine
+WORKDIR /app
 
-# Configuração Nginx otimizada
-RUN rm /etc/nginx/conf.d/default.conf
-COPY <<EOF /etc/nginx/conf.d/default.conf
+# Instalar serve para servir arquivos estáticos
+RUN npm install -g serve
+
+# Copiar build
+COPY --from=builder /app/dist ./dist
+
+# Expor porta 3000
+EXPOSE 3000
+
+# Servir arquivos estáticos com SPA fallback
+CMD ["serve", "-s", "dist", "-l", "3000"]
+EOF
 server {
     listen 80;
     server_name _;
