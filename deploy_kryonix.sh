@@ -109,7 +109,7 @@ clean_system_completely() {
         rm -rf /var/lib/docker /etc/docker 2>/dev/null || true
     fi
     
-    # Remover aplicaç��es instaladas
+    # Remover aplicações instaladas
     apt remove -y --purge nginx apache2 mysql-server postgresql redis-server nodejs npm 2>/dev/null || true
     apt autoremove -y --purge 2>/dev/null || true
     
@@ -449,10 +449,10 @@ services:
       - --certificatesresolvers.letsencrypt.acme.storage=/data/acme.json
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
-      - --entrypoints.web.http.redirections.entrypoint.permanent=true
-        labels:
+            - --entrypoints.web.http.redirections.entrypoint.permanent=true
+    labels:
       - "traefik.enable=true"
-                  - "traefik.http.routers.traefik.rule=Host(\`traefik.$DOMAIN1\`)"
+      - "traefik.http.routers.traefik.rule=Host(\`traefik.$DOMAIN1\`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.service=api@internal"
@@ -932,7 +932,7 @@ create_credentials_file() {
 🏠 Portainer Principal: https://$DOMAIN2
 
 📊 SERVIÇOS - DOMÍNIO 1 ($DOMAIN1):
-━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔀 Traefik Dashboard: https://traefik.$DOMAIN1
 📊 Portainer: https://portainer.$DOMAIN1
 🤖 N8N: https://n8n.$DOMAIN1
@@ -944,7 +944,7 @@ create_credentials_file() {
 🗄️ Adminer: https://adminer.$DOMAIN1
 
 📊 SERVIÇOS - DOMÍNIO 2 ($DOMAIN2):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 Portainer: https://portainer.$DOMAIN2 (mesma stack do domínio 1)
 🤖 N8N: https://n8n.$DOMAIN2
 📱 Evolution API: https://evolution.$DOMAIN2
@@ -955,7 +955,7 @@ create_credentials_file() {
 🗄️ Adminer: https://adminer.$DOMAIN2
 
 🔑 CREDENCIAIS:
-━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━
 🗄️ PostgreSQL:
    Host: postgres
    Database: kryonix
@@ -997,7 +997,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 
 🔐 SSL:
 ━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-��� Certificados SSL automáticos via Let's Encrypt
+✅ Certificados SSL automáticos via Let's Encrypt
 ✅ Redirecionamento automático HTTP → HTTPS
 ✅ Renovação automática dos certificados
 
@@ -1009,7 +1009,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 🔗 Webhook: journalctl -u github-webhook -f
 
 💡 COMANDOS ÚTEIS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔄 Restart: cd /opt/site-jurez-2.0 && docker-compose restart
 📊 Status: docker ps
 🗑️ Limpar: docker system prune -af
