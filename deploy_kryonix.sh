@@ -402,7 +402,7 @@ EOF
 create_docker_compose() {
     log "DEPLOY" "🐙 Criando Docker Compose completo..."
     
-    cat > "$PROJECT_DIR/docker-compose.yml" << EOF
+        cat > "$PROJECT_DIR/docker-compose.yml" << 'DOCKER_COMPOSE_EOF'
 version: '3.8'
 
 networks:
@@ -753,7 +753,7 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
 
-log "🚀 Iniciando auto-deploy..."
+log "��� Iniciando auto-deploy..."
 
 cd "$PROJECT_DIR"
 
