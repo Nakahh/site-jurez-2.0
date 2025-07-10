@@ -132,7 +132,7 @@ install_nodejs() {
     log "DEPLOY" "📦 Instalando Node.js 18 LTS..."
     curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
     apt-get install -y nodejs
-    npm install -g npm@latest
+    # Node.js 18 vem com npm compatível, não fazer upgrade
     log "SUCCESS" "Node.js $(node -v) e npm $(npm -v) instalados!"
 }
 
