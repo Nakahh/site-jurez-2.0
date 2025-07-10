@@ -228,7 +228,7 @@ export default function AdminDashboard() {
 
       switch (tipo.toLowerCase()) {
         case "vendas":
-          await generateSalesReport();
+          await generateSalesReport([]);
           break;
         case "performance":
           await generatePerformanceReport();
@@ -511,7 +511,7 @@ export default function AdminDashboard() {
         <TabsContent value="overview" className="space-y-6">
           {realData && (
             <>
-              {/* Cards de Estat��sticas - Dados Reais */}
+              {/* Cards de Estatísticas - Dados Reais */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 <StatsCard
                   title="Faturamento Mensal"
