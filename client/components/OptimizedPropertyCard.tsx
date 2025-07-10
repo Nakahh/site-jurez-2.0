@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import OptimizedImage from "./OptimizedImage";
 import { useIntersectionObserver } from "@/hooks/usePerformance";
 import { cn } from "@/lib/utils";
+import { useRef } from "react";
 
 interface Property {
   id: string;
@@ -41,7 +42,8 @@ const OptimizedPropertyCard = memo(
     index,
   }: OptimizedPropertyCardProps) => {
     const [imageIndex, setImageIndex] = useState(0);
-    const { targetRef, isIntersecting } = useIntersectionObserver({
+    const targetRef = useRef<HTMLDivElement>(null);
+    const { isIntersecting } = useIntersectionObserver({
       threshold: 0.1,
       rootMargin: "50px",
     });

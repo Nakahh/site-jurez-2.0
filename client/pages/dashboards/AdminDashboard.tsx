@@ -70,6 +70,7 @@ export default function AdminDashboard() {
   const [showNewTransactionModal, setShowNewTransactionModal] = useState(false);
   const [showNewPropertyModal, setShowNewPropertyModal] = useState(false);
   const [showNewUserModal, setShowNewUserModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedPropertyImages, setSelectedPropertyImages] = useState<
     string[]
   >([]);
@@ -142,7 +143,7 @@ export default function AdminDashboard() {
   const handleExport = async () => {
     try {
       const { generateSalesReport } = await import("@/utils/pdfGenerator");
-      await generateSalesReport();
+      await generateSalesReport([]);
 
       // Simular download do arquivo
       const blob = new Blob(
@@ -228,10 +229,10 @@ export default function AdminDashboard() {
 
       switch (tipo.toLowerCase()) {
         case "vendas":
-          await generateSalesReport();
+          await generateSalesReport([]);
           break;
         case "performance":
-          await generatePerformanceReport();
+          await generatePerformanceReport([]);
           break;
         default:
           await generateCustomReport(reportId, `Relatório ${tipo}`);
@@ -1594,7 +1595,7 @@ export default function AdminDashboard() {
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            setSelectedProperty(usuario);
+                            setSelectedUser(usuario);
                             setShowSettingsModal(true);
                           }}
                           className="w-full sm:w-auto"
@@ -1653,6 +1654,7 @@ export default function AdminDashboard() {
                 icon: BarChart3,
                 color: "bg-blue-100 text-blue-600",
                 stats: "45 vendas este mês",
+                tipo: "vendas",
               },
               {
                 titulo: "Performance de Corretores",
@@ -1660,6 +1662,7 @@ export default function AdminDashboard() {
                 icon: Users,
                 color: "bg-green-100 text-green-600",
                 stats: "8 corretores ativos",
+                tipo: "performance",
               },
               {
                 titulo: "Análise Financeira",
@@ -1667,6 +1670,7 @@ export default function AdminDashboard() {
                 icon: DollarSign,
                 color: "bg-yellow-100 text-yellow-600",
                 stats: formatCurrency(380000) + " faturamento",
+                tipo: "financeira",
               },
               {
                 titulo: "Leads e Conversões",
@@ -1674,6 +1678,7 @@ export default function AdminDashboard() {
                 icon: TrendingUp,
                 color: "bg-purple-100 text-purple-600",
                 stats: "23% taxa de conversão",
+                tipo: "leads",
               },
               {
                 titulo: "Análise de Mercado",
@@ -1681,6 +1686,7 @@ export default function AdminDashboard() {
                 icon: PieChart,
                 color: "bg-orange-100 text-orange-600",
                 stats: "156 imóveis cadastrados",
+                tipo: "mercado",
               },
               {
                 titulo: "Relatório de Visitas",
@@ -1688,6 +1694,7 @@ export default function AdminDashboard() {
                 icon: Calendar,
                 color: "bg-indigo-100 text-indigo-600",
                 stats: "12 visitas agendadas",
+                tipo: "visitas",
               },
             ].map((relatorio, index) => (
               <Card
@@ -2381,7 +2388,7 @@ export default function AdminDashboard() {
                         type="text"
                         className="w-full p-3 border rounded-md"
                         placeholder="74223-030"
-                        maxLength="9"
+                        maxLength={9}
                       />
                     </div>
                   </div>
@@ -2403,7 +2410,7 @@ export default function AdminDashboard() {
                         className="w-full p-3 border rounded-md"
                         placeholder="GO"
                         defaultValue="GO"
-                        maxLength="2"
+                        maxLength={2}
                       />
                     </div>
                   </div>

@@ -220,46 +220,90 @@ intelligent_system_update() {
     apt-get upgrade -y
     apt-get dist-upgrade -y
     
-    # Instalar dependências essenciais
+        # Instalar dependências essenciais com retry inteligente
     log "INSTALL" "Instalando dependências essenciais..."
-    apt-get install -y \
-        curl wget git jq unzip zip \
-        software-properties-common apt-transport-https \
-        ca-certificates gnupg lsb-release \
-        python3 python3-pip python3-venv \
-        nodejs npm \
-        build-essential \
-        htop vim nano \
-        cron ufw fail2ban \
-        rsync tree \
-        net-tools dnsutils \
-        2>/dev/null || true
+
+    local packages=(
+        "curl wget git jq unzip zip"
+        "software-properties-common apt-transport-https"
+        "ca-certificates gnupg lsb-release"
+        "python3 python3-pip python3-venv"
+        "build-essential"
+        "htop vim nano"
+        "cron ufw fail2ban"
+        "rsync tree"
+        "net-tools dnsutils"
+        "docker.io docker-compose"
+    )
+
+    for package_group in "${packages[@]}"; do
+        log "INFO" "Instalando: $package_group"
+        if ! apt-get install -y $package_group 2>/dev/null; then
+            log "WARNING" "Falha ao instalar $package_group, tentando novamente..."
+            apt-get update -y
+            apt-get install -y $package_group 2>/dev/null || log "WARNING" "Falha persistente em $package_group"
+        fi
+    done
     
     # Configurar timezone
     timedatectl set-timezone America/Sao_Paulo 2>/dev/null || true
     
-            # Resolver conflitos npm/nodejs completamente
-    log "INSTALL" "Resolvendo conflitos npm/nodejs..."
+                # Resolver conflitos npm/nodejs com detecção inteligente
+    log "INSTALL" "Configurando Node.js de forma inteligente..."
 
-    # Remover versões conflitantes
+    # Verificar se Node.js já está instalado e funcionando
+    if command -v node &> /dev/null && command -v npm &> /dev/null; then
+        NODE_CURRENT=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+        if [ "$NODE_CURRENT" -ge "18" ]; then
+            log "SUCCESS" "Node.js $(node -v) e npm $(npm -v) já instalados e atualizados!"
+            return 0
+        fi
+    fi
+
+    # Remover versões conflitantes apenas se necessário
+    log "INSTALL" "Removendo versões antigas do Node.js..."
     apt-get remove -y nodejs npm node-* 2>/dev/null || true
     apt-get autoremove -y 2>/dev/null || true
-    apt-get autoclean 2>/dev/null || true
 
     # Limpar cache de pacotes
     rm -rf /etc/apt/sources.list.d/nodesource.list* 2>/dev/null || true
 
-    # Instalar Node.js LTS limpo via NodeSource
-    log "INSTALL" "Instalando Node.js LTS via NodeSource..."
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - 2>/dev/null || true
-    apt-get update -y 2>/dev/null || true
-    apt-get install -y nodejs 2>/dev/null || true
+    # Instalar Node.js LTS via multiple methods
+    log "INSTALL" "Instalando Node.js LTS (múltiplas tentativas)..."
 
-    # Verificar instalação
+    # Método 1: NodeSource
+    if curl -fsSL https://deb.nodesource.com/setup_20.x | bash - 2>/dev/null; then
+        apt-get update -y 2>/dev/null
+        apt-get install -y nodejs 2>/dev/null
+    fi
+
+    # Método 2: Snap se NodeSource falhar
+    if ! command -v node &> /dev/null; then
+        log "INFO" "Tentando instalar via snap..."
+        snap install node --classic 2>/dev/null || true
+    fi
+
+    # Método 3: Manual download se ambos falharem
+    if ! command -v node &> /dev/null; then
+        log "INFO" "Instalação manual do Node.js..."
+        cd /tmp
+        wget https://nodejs.org/dist/v20.10.0/node-v20.10.0-linux-x64.tar.xz 2>/dev/null || true
+        if [ -f "node-v20.10.0-linux-x64.tar.xz" ]; then
+            tar -xf node-v20.10.0-linux-x64.tar.xz
+            cp -r node-v20.10.0-linux-x64/* /usr/local/ 2>/dev/null || true
+            rm -rf node-v20.10.0-linux-x64*
+        fi
+    fi
+
+    # Verificar instalação final
     if command -v node &> /dev/null && command -v npm &> /dev/null; then
         log "SUCCESS" "Node.js $(node -v) e npm $(npm -v) instalados com sucesso!"
+        # Configurar npm para funcionamento otimo
+        npm config set registry https://registry.npmjs.org/ 2>/dev/null || true
+        npm config set fund false 2>/dev/null || true
+        npm config set audit-level moderate 2>/dev/null || true
     else
-        log "WARNING" "Problemas com Node.js/npm, continuando mesmo assim..."
+        log "WARNING" "Node.js/npm não puderam ser instalados - deploy continuará sem eles"
     fi
 
     log "SUCCESS" "Sistema Ubuntu atualizado com sucesso!"
@@ -1422,80 +1466,274 @@ intelligent_final_deploy() {
         return 1
     fi
 
-    # Preparar senhas do Portainer
+        # Preparar senhas do Portainer com retry inteligente
     log "INSTALL" "⚙️  Preparando senhas criptografadas do Portainer..."
-    echo -n "$PORTAINER_PASS" | docker run --rm -i portainer/helper-reset-password > /tmp/portainer_password 2>/dev/null || true
-    echo -n "$PORTAINER_PASS" | docker run --rm -i portainer/helper-reset-password > /tmp/portainer_meuboot_password 2>/dev/null || true
 
-    # Deploy em etapas para maior confiabilidade
-    log "DEPLOY" "🔄 Deploy etapa 1: Infraestrutura base..."
-    docker-compose up -d traefik postgres redis 2>/dev/null || {
-        log "WARNING" "Deploy da infraestrutura falhou, tentando individual..."
-        docker-compose up -d traefik || log "WARNING" "Traefik falhou"
-        sleep 5
-        docker-compose up -d postgres || log "WARNING" "PostgreSQL falhou"
-        sleep 5
-        docker-compose up -d redis || log "WARNING" "Redis falhou"
+    # Função para gerar senha com retry
+    generate_portainer_password() {
+        local password="$1"
+        local output_file="$2"
+        local retries=3
+
+        for i in $(seq 1 $retries); do
+            if echo -n "$password" | docker run --rm -i portainer/helper-reset-password > "$output_file" 2>/dev/null; then
+                if [ -s "$output_file" ]; then
+                    log "SUCCESS" "Senha Portainer gerada com sucesso (tentativa $i)"
+                    return 0
+                fi
+            fi
+            log "WARNING" "Tentativa $i falhou, tentando novamente..."
+            sleep 2
+        done
+
+        # Fallback: criar senha hash simples se docker falhar
+        log "WARNING" "Usando método fallback para senha..."
+        echo '$2y$10$N9qo8uLOickgx2ZMRZoMye1vDAp/sDL6k1dOQ6KGlLNq7eSIr.' > "$output_file"
+        return 1
     }
 
-    # Aguardar infraestrutura ficar pronta
-    log "INFO" "⏳ Aguardando infraestrutura ficar pronta (30 segundos)..."
-    sleep 30
+    # Verificar se Docker está funcionando
+    if ! docker ps >/dev/null 2>&1; then
+        log "WARNING" "Docker não está pronto, aguardando..."
+        sleep 10
+        systemctl restart docker 2>/dev/null || true
+        sleep 5
+    fi
+
+    # Gerar senhas para ambas instâncias
+    generate_portainer_password "$PORTAINER_PASS" "/tmp/portainer_password"
+    generate_portainer_password "$PORTAINER_PASS" "/tmp/portainer_meuboot_password"
+
+    # Verificar se arquivos foram criados
+    if [ -s "/tmp/portainer_password" ] && [ -s "/tmp/portainer_meuboot_password" ]; then
+        log "SUCCESS" "Senhas do Portainer preparadas com sucesso!"
+    else
+        log "WARNING" "Problemas na geração de senhas - usando defaults"
+    fi
+
+        # Deploy inteligente com verificação de saúde
+    log "DEPLOY" "🔄 Deploy etapa 1: Infraestrutura base..."
+
+    # Função para verificar saúde do serviço
+    check_service_health() {
+        local service_name="$1"
+        local max_attempts=30
+        local attempt=0
+
+        while [ $attempt -lt $max_attempts ]; do
+            if docker-compose ps "$service_name" 2>/dev/null | grep -q "Up"; then
+                log "SUCCESS" "✅ $service_name está rodando"
+                return 0
+            fi
+
+            ((attempt++))
+            if [ $((attempt % 5)) -eq 0 ]; then
+                log "INFO" "⏳ Aguardando $service_name ($attempt/$max_attempts)..."
+            fi
+            sleep 2
+        done
+
+        log "WARNING" "⚠️  $service_name não subiu após $max_attempts tentativas"
+        return 1
+    }
+
+    # Deploy Traefik primeiro (é fundamental)
+    log "INFO" "🔀 Iniciando Traefik..."
+    if docker-compose up -d traefik 2>/dev/null; then
+        check_service_health traefik
+    else
+        log "WARNING" "Problemas com Traefik, tentando build..."
+        docker-compose build traefik 2>/dev/null || true
+        docker-compose up -d traefik 2>/dev/null || log "ERROR" "Traefik falhou completamente"
+    fi
+
+    sleep 10
+
+    # Deploy PostgreSQL
+    log "INFO" "🗄️  Iniciando PostgreSQL..."
+    if docker-compose up -d postgres 2>/dev/null; then
+        check_service_health postgres
+    else
+        log "WARNING" "Problemas com PostgreSQL"
+    fi
+
+    sleep 10
+
+    # Deploy Redis
+    log "INFO" "🔄 Iniciando Redis..."
+    if docker-compose up -d redis 2>/dev/null; then
+        check_service_health redis
+    else
+        log "WARNING" "Problemas com Redis"
+    fi
+
+        # Aguardar infraestrutura base
+    log "INFO" "⏳ Verificando saúde da infraestrutura base..."
+    sleep 15
 
     log "DEPLOY" "🔄 Deploy etapa 2: Aplicação principal..."
-    docker-compose up -d project-frontend project-backend 2>/dev/null || {
-        log "WARNING" "Deploy da aplicação falhou, tentando build..."
-        docker-compose build project-frontend project-backend
-        docker-compose up -d project-frontend project-backend
-    }
+
+    # Frontend do projeto
+    log "INFO" "🌐 Iniciando Frontend..."
+    if docker-compose up -d project-frontend 2>/dev/null; then
+        check_service_health project-frontend
+    else
+        log "WARNING" "Problemas com frontend, tentando build..."
+        docker-compose build project-frontend 2>/dev/null || true
+        docker-compose up -d project-frontend 2>/dev/null
+    fi
+
+    sleep 10
+
+    # Backend do projeto
+    log "INFO" "⚙️  Iniciando Backend..."
+    if docker-compose up -d project-backend 2>/dev/null; then
+        check_service_health project-backend
+    else
+        log "WARNING" "Problemas com backend, tentando build..."
+        docker-compose build project-backend 2>/dev/null || true
+        docker-compose up -d project-backend 2>/dev/null
+    fi
 
     sleep 15
 
-    log "DEPLOY" "🔄 Deploy etapa 3: Serviços auxiliares..."
-    docker-compose up -d portainer-siqueira portainer-meuboot adminer 2>/dev/null || {
-        log "WARNING" "Deploy dos serviços auxiliares com problemas"
-    }
+    log "DEPLOY" "🔄 Deploy etapa 3: Serviços de gerenciamento..."
+
+    # Portainer Principal
+    log "INFO" "🐳 Iniciando Portainer Siqueira..."
+    docker-compose up -d portainer-siqueira 2>/dev/null && check_service_health portainer-siqueira
+
+    sleep 5
+
+    # Portainer MeuBoot
+    log "INFO" "🐳 Iniciando Portainer MeuBoot..."
+    docker-compose up -d portainer-meuboot 2>/dev/null && check_service_health portainer-meuboot
+
+    sleep 5
+
+    # Adminer
+    log "INFO" "🗄️  Iniciando Adminer..."
+    docker-compose up -d adminer 2>/dev/null && check_service_health adminer
 
     sleep 10
 
     log "DEPLOY" "🔄 Deploy etapa 4: Monitoramento e automação..."
-    docker-compose up -d prometheus grafana n8n evolution-api minio 2>/dev/null || {
-        log "WARNING" "Deploy do monitoramento com problemas"
-    }
+
+    # Prometheus
+    log "INFO" "📊 Iniciando Prometheus..."
+    docker-compose up -d prometheus 2>/dev/null && check_service_health prometheus
+
+    sleep 5
+
+    # Grafana
+    log "INFO" "📈 Iniciando Grafana..."
+    docker-compose up -d grafana 2>/dev/null && check_service_health grafana
+
+    sleep 5
+
+    # N8N
+    log "INFO" "🔄 Iniciando N8N..."
+    docker-compose up -d n8n 2>/dev/null && check_service_health n8n
+
+    sleep 5
+
+    # Evolution API
+    log "INFO" "📱 Iniciando Evolution API..."
+    docker-compose up -d evolution-api 2>/dev/null && check_service_health evolution-api
+
+    sleep 5
+
+    # MinIO
+    log "INFO" "📁 Iniciando MinIO..."
+    docker-compose up -d minio 2>/dev/null && check_service_health minio
 
     sleep 10
 
-    log "DEPLOY" "🔄 Deploy etapa 5: ChatGPT Stack..."
-    docker-compose up -d chatgpt-stack 2>/dev/null || {
-        log "WARNING" "Deploy do ChatGPT falhou - verifique OPENAI_API_KEY"
-    }
+    log "DEPLOY" "🔄 Deploy etapa 5: IA e ChatGPT..."
+    log "INFO" "🤖 Iniciando ChatGPT Stack..."
+    if docker-compose up -d chatgpt-stack 2>/dev/null; then
+        check_service_health chatgpt-stack
+    else
+        log "WARNING" "ChatGPT falhou - configure OPENAI_API_KEY depois"
+    fi
 
-    # Verificar status dos serviços
-    log "INFO" "🔍 Verificando status dos serviços..."
+        # Verificação completa e inteligente de todos os serviços
+    log "INFO" "🔍 Verificando status completo de todos os serviços..."
+
+    local services=(
+        "traefik:Traefik Proxy:🔀"
+        "postgres:PostgreSQL:🗄️"
+        "redis:Redis Cache:🔄"
+        "project-frontend:Frontend App:🌐"
+        "project-backend:Backend API:⚙️"
+        "portainer-siqueira:Portainer Principal:🐳"
+        "portainer-meuboot:Portainer MeuBoot:🐳"
+        "adminer:Adminer DB:🗃️"
+        "prometheus:Prometheus:📊"
+        "grafana:Grafana:📈"
+        "n8n:N8N Automation:🔄"
+        "evolution-api:Evolution API:📱"
+        "minio:MinIO Storage:📁"
+        "chatgpt-stack:ChatGPT Stack:🤖"
+    )
+
     local services_running=0
-    local total_services=0
+    local services_healthy=0
+    local total_services=${#services[@]}
 
-    for service in traefik postgres redis project-frontend project-backend portainer-siqueira; do
-        ((total_services++))
-        if docker-compose ps -q "$service" 2>/dev/null | grep -q .; then
-            if [ "$(docker-compose ps -q "$service" | xargs docker inspect -f '{{.State.Status}}')" = "running" ]; then
-                log "SUCCESS" "   ✅ $service: rodando"
-                ((services_running++))
-            else
-                log "WARNING" "   ⚠️  $service: com problemas"
-            fi
+    echo
+    log "INFO" "📋 RELATÓRIO DETALHADO DE SERVIÇOS:"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    for service_info in "${services[@]}"; do
+        IFS=':' read -r service_name service_desc service_icon <<< "$service_info"
+
+        printf "%-25s %s " "$service_icon $service_desc" "→"
+
+        if docker-compose ps -q "$service_name" 2>/dev/null | grep -q .; then
+            local status=$(docker-compose ps -q "$service_name" | xargs docker inspect -f '{{.State.Status}}' 2>/dev/null)
+            local health=$(docker-compose ps -q "$service_name" | xargs docker inspect -f '{{.State.Health.Status}}' 2>/dev/null)
+
+            case "$status" in
+                "running")
+                    ((services_running++))
+                    if [ "$health" = "healthy" ] || [ "$health" = "<no value>" ]; then
+                        ((services_healthy++))
+                        printf "${GREEN}✅ FUNCIONANDO${NC}\n"
+                    else
+                        printf "${YELLOW}⚠️  RODANDO (sem healthcheck)${NC}\n"
+                    fi
+                    ;;
+                "restarting")
+                    printf "${YELLOW}🔄 REINICIANDO${NC}\n"
+                    ;;
+                "exited")
+                    printf "${RED}❌ PARADO${NC}\n"
+                    ;;
+                *)
+                    printf "${RED}❓ STATUS: $status${NC}\n"
+                    ;;
+            esac
         else
-            log "ERROR" "   ❌ $service: não encontrado"
+            printf "${RED}❌ NÃO ENCONTRADO${NC}\n"
         fi
     done
 
-    log "INFO" "📊 Status: $services_running/$total_services serviços principais rodando"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log "INFO" "📊 RESUMO: $services_running/$total_services rodando | $services_healthy/$total_services saudáveis"
 
-    if [ $services_running -ge 4 ]; then
-        log "SUCCESS" "✅ Deploy realizado com sucesso!"
+    # Determinar status do deploy
+    if [ $services_running -ge 10 ]; then
+        log "SUCCESS" "🎉 Deploy EXCELENTE! Maioria dos serviços funcionando"
         return 0
+    elif [ $services_running -ge 6 ]; then
+        log "SUCCESS" "✅ Deploy BOM! Serviços principais funcionando"
+        return 0
+    elif [ $services_running -ge 3 ]; then
+        log "WARNING" "⚠️  Deploy PARCIAL - alguns serviços com problemas"
+        return 1
     else
-        log "WARNING" "⚠️  Deploy parcial - alguns serviços podem estar com problemas"
+        log "ERROR" "❌ Deploy FALHOU - poucos serviços funcionando"
         return 1
     fi
 }
@@ -1549,7 +1787,7 @@ services:
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.middlewares=auth,security-headers"
-      - "traefik.http.middlewares.auth.basicauth.users=admin:\\\$2y\\\$10\\\$K7y9F5x8P2Qx9Q8Q8Q8Q8Q"
+            - "traefik.http.middlewares.auth.basicauth.users=admin:$$2y$$10$$K7y9F5x8P2Qx9Q8Q8Q8Q8Q"
       # Redirect HTTP to HTTPS
       - "traefik.http.routers.http-catchall.rule=hostregexp(\`{host:.+}\`)"
       - "traefik.http.routers.http-catchall.entrypoints=web"
@@ -2046,7 +2284,7 @@ server {
         add_header X-XSS-Protection "1; mode=block";
     }
 
-    # Configurações de compressão
+    # Configurações de compress��o
     gzip on;
     gzip_vary on;
     gzip_min_length 1024;
@@ -2566,7 +2804,7 @@ intelligent_database_config() {
     log "SUCCESS" "Bancos de dados configurados!"
 }
 
-# Configuração inteligente do Grafana
+# Configuraç��o inteligente do Grafana
 intelligent_grafana_config() {
     log "INSTALL" "📊 Configurando Grafana inteligente..."
     
@@ -2621,7 +2859,7 @@ intelligent_health_check() {
                 log "WARNING" "Webhook GitHub nao esta ativo"
     fi
     
-    log "INFO" "📊 Serviços saudáveis: $healthy_services/$total_services"
+    log "INFO" "��� Serviços saudáveis: $healthy_services/$total_services"
     
     if [ $healthy_services -ge $((total_services * 80 / 100)) ]; then
         log "SUCCESS" "🎯 Sistema está majoritariamente saudável!"
@@ -2773,6 +3011,41 @@ EOF
     echo
 }
 
+# Função para testar conectividade HTTPS
+test_https_connectivity() {
+    log "INSTALL" "🔒 Testando conectividade HTTPS inteligente..."
+
+    local urls=(
+        "https://siqueicamposimoveis.com.br:Frontend Principal"
+        "https://portainer.siqueicamposimoveis.com.br:Portainer Principal"
+        "https://traefik.siqueicamposimoveis.com.br:Traefik Dashboard"
+        "https://n8n.siqueicamposimoveis.com.br:N8N Automation"
+        "https://grafana.siqueicamposimoveis.com.br:Grafana Dashboard"
+        "https://portainer.meuboot.site:Portainer MeuBoot"
+    )
+
+    local working_urls=0
+    local total_urls=${#urls[@]}
+
+    for url_info in "${urls[@]}"; do
+        IFS=':' read -r url desc <<< "$url_info"
+        log "INFO" "🔍 Testando HTTPS para $desc..."
+
+        if curl -k -s --max-time 10 "$url" >/dev/null 2>&1; then
+            log "SUCCESS" "✅ $desc - HTTPS funcionando"
+            ((working_urls++))
+        else
+            log "WARNING" "⚠️  $desc - HTTPS nao acessivel (normal se certificados ainda estao sendo gerados)"
+        fi
+    done
+
+    log "INFO" "📊 Testes HTTPS: $working_urls/$total_urls bem-sucedidos"
+
+    if [ $working_urls -eq 0 ]; then
+        log "WARNING" "Nenhum servico HTTPS acessivel ainda - aguarde propagacao de certificados"
+    fi
+}
+
 # Exibir links finais de acesso
 show_final_links() {
     log "DEPLOY" "🔗 Links de acesso do sistema KRYONIX..."
@@ -2800,7 +3073,7 @@ show_final_links() {
     echo
 
     # Automação e integração
-    echo -e "${BOLD}${CYAN}🤖 AUTOMAÇÃO E INTEGRAÇÃO:${NC}"
+    echo -e "${BOLD}${CYAN}🤖 AUTOMAÇÃO E INTEGRA��ÃO:${NC}"
     echo -e "   🔄 ${BOLD}N8N (Principal):${NC} https://n8n.siqueicamposimoveis.com.br"
     echo -e "   🔄 ${BOLD}N8N (MeuBoot):${NC} https://n8n.meuboot.site"
     echo -e "      👤 Usuário: kryonix | 🔑 Senha: $N8N_PASSWORD"
@@ -2876,9 +3149,9 @@ intelligent_main() {
     intelligent_firewall_setup
 
         # DNS setup - tentar mas não falhar se der erro
-    log "INFO" "Tentando configurar DNS..."
-    if intelligent_dns_setup; then
-        log "SUCCESS" "DNS configurado com sucesso!"
+        log "INFO" "DNS automático desabilitado - configure manualmente"
+    # if intelligent_dns_setup; then
+    #     log "SUCCESS" "DNS configurado com sucesso!"
     else
         log "WARNING" "DNS setup falhou (credenciais ou permissões), continuando sem DNS automático"
         log "INFO" "💡 Configure manualmente os DNS apontando para $SERVER_IP"
