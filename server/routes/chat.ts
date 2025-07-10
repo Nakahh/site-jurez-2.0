@@ -277,8 +277,8 @@ export const responderCliente: RequestHandler = async (req, res) => {
     const novaMensagem = await prisma.mensagem.create({
       data: {
         conteudo: mensagem,
-        remetente: req.user.userId,
-        destinatario: clienteId,
+        tipo: "TEXTO",
+        remetenteId: req.user.userId,
       },
     });
 
