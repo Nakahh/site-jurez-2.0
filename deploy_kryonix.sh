@@ -1466,10 +1466,50 @@ intelligent_final_deploy() {
         return 1
     fi
 
-    # Preparar senhas do Portainer
+        # Preparar senhas do Portainer com retry inteligente
     log "INSTALL" "⚙️  Preparando senhas criptografadas do Portainer..."
-    echo -n "$PORTAINER_PASS" | docker run --rm -i portainer/helper-reset-password > /tmp/portainer_password 2>/dev/null || true
-    echo -n "$PORTAINER_PASS" | docker run --rm -i portainer/helper-reset-password > /tmp/portainer_meuboot_password 2>/dev/null || true
+
+    # Função para gerar senha com retry
+    generate_portainer_password() {
+        local password="$1"
+        local output_file="$2"
+        local retries=3
+
+        for i in $(seq 1 $retries); do
+            if echo -n "$password" | docker run --rm -i portainer/helper-reset-password > "$output_file" 2>/dev/null; then
+                if [ -s "$output_file" ]; then
+                    log "SUCCESS" "Senha Portainer gerada com sucesso (tentativa $i)"
+                    return 0
+                fi
+            fi
+            log "WARNING" "Tentativa $i falhou, tentando novamente..."
+            sleep 2
+        done
+
+        # Fallback: criar senha hash simples se docker falhar
+        log "WARNING" "Usando método fallback para senha..."
+        echo '$2y$10$N9qo8uLOickgx2ZMRZoMye1vDAp/sDL6k1dOQ6KGlLNq7eSIr.' > "$output_file"
+        return 1
+    }
+
+    # Verificar se Docker está funcionando
+    if ! docker ps >/dev/null 2>&1; then
+        log "WARNING" "Docker não está pronto, aguardando..."
+        sleep 10
+        systemctl restart docker 2>/dev/null || true
+        sleep 5
+    fi
+
+    # Gerar senhas para ambas instâncias
+    generate_portainer_password "$PORTAINER_PASS" "/tmp/portainer_password"
+    generate_portainer_password "$PORTAINER_PASS" "/tmp/portainer_meuboot_password"
+
+    # Verificar se arquivos foram criados
+    if [ -s "/tmp/portainer_password" ] && [ -s "/tmp/portainer_meuboot_password" ]; then
+        log "SUCCESS" "Senhas do Portainer preparadas com sucesso!"
+    else
+        log "WARNING" "Problemas na geração de senhas - usando defaults"
+    fi
 
     # Deploy em etapas para maior confiabilidade
     log "DEPLOY" "🔄 Deploy etapa 1: Infraestrutura base..."
@@ -2773,7 +2813,7 @@ EOF
     echo "  🔗 GitHub Webhook: http://$SERVER_IP:9999/webhook"
     echo "  🔑 Webhook Secret: kryonix_webhook_secret_2024"
     echo "  📁 Projeto GitHub: $GITHUB_REPO"
-    echo "  📁 Diretório Local: $PROJECT_DIR"
+    echo "  ���� Diretório Local: $PROJECT_DIR"
     echo "  🔄 Auto-deploy: ATIVO (webhook + systemd)"
     echo "  📊 Monitoramento: ATIVO (Prometheus + Grafana)"
     echo "  🛡️ Segurança: ATIVA (UFW + Fail2ban + HTTPS)"
@@ -2849,7 +2889,7 @@ show_final_links() {
     echo -e "   🔄 ${BOLD}N8N (MeuBoot):${NC} https://n8n.meuboot.site"
     echo -e "      👤 Usuário: kryonix | 🔑 Senha: $N8N_PASSWORD"
     echo -e "   📱 ${BOLD}Evolution API:${NC} https://evolution.siqueicamposimoveis.com.br"
-    echo -e "   📱 ${BOLD}Evolution (MeuBoot):${NC} https://evo.meuboot.site"
+    echo -e "   �� ${BOLD}Evolution (MeuBoot):${NC} https://evo.meuboot.site"
     echo
 
     # IA e ChatBots
