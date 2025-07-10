@@ -271,8 +271,11 @@ ENV GENERATE_SOURCEMAP=false
 RUN npm run build || npx vite build --outDir dist || (mkdir -p dist && cp -r client/* dist/ 2>/dev/null || true)
 
 FROM nginx:alpine
-RUN mkdir -p /usr/share/nginx/html
-COPY --from=builder /app/dist/spa /usr/share/nginx/html/ 2>/dev/null || COPY --from=builder /app/dist /usr/share/nginx/html/ || echo "Build output copied"
+COPY --from=builder /app/dist /usr/share/nginx/html
+RUN if [ -d "/usr/share/nginx/html/spa" ]; then \
+        mv /usr/share/nginx/html/spa/* /usr/share/nginx/html/ && \
+        rmdir /usr/share/nginx/html/spa; \
+    fi
 
 # Criar arquivo de configuração nginx linha por linha
 RUN echo 'server {' > /etc/nginx/conf.d/default.conf
