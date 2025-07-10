@@ -3,7 +3,7 @@
 ##############################################################################
 #                           🚀 KRYONIX DEPLOY                               #
 #         Sistema de Deploy Inteligente e Autônomo para VPS Oracle          #
-#                     Ubuntu 22.04 - Versão 2.0 ULTRA                      #
+#                     Ubuntu 22.04 - Versão 3.0 ULTRA                      #
 ##############################################################################
 
 set -uo pipefail
@@ -46,10 +46,6 @@ SMTP_HOST="smtp.gmail.com"
 SMTP_PORT="465"
 SMTP_USER="vitor.nakahh@gmail.com"
 SMTP_PASS="@Vitor.12345@"
-
-# Portainer
-PORTAINER_USER="vitorfernandes"
-PORTAINER_PASS="Vitor@123456"
 
 # Senhas seguras
 POSTGRES_PASSWORD="KryonixPostgres2024!"
@@ -104,7 +100,7 @@ show_banner() {
 ##############################################################################
 #                           🚀 KRYONIX DEPLOY                               #
 #         Sistema de Deploy Inteligente e Autônomo para VPS Oracle          #
-#                     Ubuntu 22.04 - Versão 2.0 ULTRA                      #
+#                     Ubuntu 22.04 - Versão 3.0 ULTRA                      #
 ##############################################################################
 EOF
     echo -e "${NC}"
@@ -144,6 +140,61 @@ handle_error() {
 
 # Configurar tratamento de erros
 trap 'handle_error ${LINENO} $?' ERR
+
+# Limpeza completa do sistema (apenas SO)
+clean_system() {
+    log "WARNING" "🧹 LIMPEZA COMPLETA DO SISTEMA - Mantendo apenas SO Ubuntu..."
+    
+    # Parar todos os containers Docker se existirem
+    if command -v docker &> /dev/null; then
+        log "INFO" "Parando todos os containers Docker..."
+        docker stop $(docker ps -aq) 2>/dev/null || true
+        docker rm $(docker ps -aq) 2>/dev/null || true
+        docker rmi $(docker images -q) 2>/dev/null || true
+        docker volume prune -f 2>/dev/null || true
+        docker network prune -f 2>/dev/null || true
+        docker system prune -af 2>/dev/null || true
+    fi
+    
+    # Remover diretórios de projetos antigos
+    log "INFO" "Removendo projetos antigos..."
+    rm -rf /opt/* 2>/dev/null || true
+    rm -rf /var/lib/docker/* 2>/dev/null || true
+    rm -rf /home/*/projects/* 2>/dev/null || true
+    rm -rf /tmp/* 2>/dev/null || true
+    
+    # Limpar usuários criados por projetos (exceto ubuntu e root)
+    log "INFO" "Limpando usuários de projetos..."
+    for user in $(awk -F: '$3 >= 1000 && $1 != "ubuntu" && $1 != "nobody" {print $1}' /etc/passwd); do
+        userdel -r "$user" 2>/dev/null || true
+    done
+    
+    # Resetar firewall
+    log "INFO" "Resetando configurações de firewall..."
+    ufw --force reset 2>/dev/null || true
+    iptables -F 2>/dev/null || true
+    iptables -X 2>/dev/null || true
+    iptables -t nat -F 2>/dev/null || true
+    iptables -t nat -X 2>/dev/null || true
+    
+    # Limpar cron jobs
+    log "INFO" "Limpando cron jobs..."
+    crontab -r 2>/dev/null || true
+    rm -rf /var/spool/cron/* 2>/dev/null || true
+    
+    # Limpar logs antigos
+    log "INFO" "Limpando logs antigos..."
+    find /var/log -type f -name "*.log" -exec truncate -s 0 {} \; 2>/dev/null || true
+    journalctl --vacuum-time=1d 2>/dev/null || true
+    
+    # Limpar cache do sistema
+    log "INFO" "Limpando cache do sistema..."
+    apt-get autoremove --purge -y 2>/dev/null || true
+    apt-get autoclean 2>/dev/null || true
+    apt-get clean 2>/dev/null || true
+    
+    log "SUCCESS" "Sistema limpo! Apenas Ubuntu 22.04 mantido."
+}
 
 # Atualização inteligente do sistema
 intelligent_system_update() {
@@ -379,17 +430,139 @@ intelligent_project_analysis() {
     echo "  🗄️ Prisma: $HAS_PRISMA"
 }
 
+# Configurar webhook automático do GitHub
+setup_github_webhook() {
+    log "DEPLOY" "🔗 Configurando webhook automático do GitHub..."
+    
+    # Criar script de atualização automática
+    cat > /usr/local/bin/github-webhook.sh << 'EOF'
+#!/bin/bash
+
+DEPLOY_LOG="/var/log/github-deploy.log"
+PROJECT_DIR="/opt/site-jurez-2.0"
+KRYONIX_DIR="/opt/kryonix"
+
+log_deploy() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$DEPLOY_LOG"
+}
+
+log_deploy "🔄 Iniciando atualização automática via GitHub webhook"
+
+# Ir para o diretório do projeto
+cd "$PROJECT_DIR" || exit 1
+
+# Fazer backup da versão atual
+git stash save "Auto-backup before webhook update $(date)"
+
+# Atualizar código
+log_deploy "📥 Baixando atualizações do GitHub..."
+git fetch origin
+git reset --hard origin/main
+git clean -fd
+
+# Instalar dependências se package.json mudou
+if git diff --name-only HEAD@{1} HEAD | grep -q "package.json"; then
+    log_deploy "📦 Atualizando dependências..."
+    npm install --legacy-peer-deps 2>/dev/null || true
+fi
+
+# Rebuild se necessário
+log_deploy "🔨 Fazendo rebuild da aplicação..."
+npm run build 2>/dev/null || npx vite build 2>/dev/null || true
+
+# Executar migrações do Prisma se existir
+if [ -f "prisma/schema.prisma" ]; then
+    log_deploy "🗄️  Executando migrações do banco..."
+    npm run db:generate 2>/dev/null || npx prisma generate 2>/dev/null || true
+    npm run db:migrate 2>/dev/null || npx prisma migrate deploy 2>/dev/null || true
+fi
+
+# Rebuild e restart containers
+cd "$KRYONIX_DIR" || exit 1
+log_deploy "🐳 Atualizando containers..."
+
+# Rebuild apenas os containers da aplicação
+docker-compose build project-frontend project-backend 2>/dev/null || true
+docker-compose up -d project-frontend project-backend
+
+log_deploy "✅ Atualização automática concluída!"
+EOF
+
+    chmod +x /usr/local/bin/github-webhook.sh
+    
+    # Criar serviço systemd para o webhook
+    cat > /etc/systemd/system/github-webhook.service << EOF
+[Unit]
+Description=GitHub Webhook Auto Deploy
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/python3 -c "
+import http.server
+import socketserver
+import subprocess
+import json
+from urllib.parse import urlparse, parse_qs
+
+class WebhookHandler(http.server.BaseHTTPRequestHandler):
+    def do_POST(self):
+        if self.path == '/webhook':
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            
+            try:
+                # Executar script de deploy
+                subprocess.run(['/usr/local/bin/github-webhook.sh'], check=True)
+                self.send_response(200)
+                self.send_header('Content-type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(b'Deploy executado com sucesso!')
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(f'Erro no deploy: {str(e)}'.encode())
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+PORT = 9999
+with socketserver.TCPServer(('', PORT), WebhookHandler) as httpd:
+    print(f'Webhook server rodando na porta {PORT}')
+    httpd.serve_forever()
+"
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    # Habilitar e iniciar o serviço
+    systemctl daemon-reload
+    systemctl enable github-webhook.service
+    systemctl start github-webhook.service
+    
+    log "SUCCESS" "Webhook automático configurado!"
+    log "INFO" "URL do webhook: http://$SERVER_IP:9999/webhook"
+    log "INFO" "Configure esta URL no GitHub: Settings > Webhooks > Add webhook"
+}
+
 # Criação de estrutura inteligente
 intelligent_directory_setup() {
     log "INSTALL" "📁 Criando estrutura de diretórios inteligente..."
     
     # Criar estrutura principal
-    mkdir -p "$KRYONIX_DIR"/{traefik,portainer-siqueira,portainer-meuboot,postgres,redis,n8n,evolution,minio,grafana,prometheus,project}
+    mkdir -p "$KRYONIX_DIR"/{traefik,portainer-siqueira,portainer-meuboot,postgres-siqueira,postgres-meuboot,redis,n8n,evolution-siqueira,evolution-meuboot,minio,grafana,prometheus,project}
     mkdir -p "$KRYONIX_DIR"/traefik/{config,certs,dynamic}
-    mkdir -p "$KRYONIX_DIR"/postgres/{data,init}
+    mkdir -p "$KRYONIX_DIR"/postgres-siqueira/{data,init}
+    mkdir -p "$KRYONIX_DIR"/postgres-meuboot/{data,init}
     mkdir -p "$KRYONIX_DIR"/redis/data
     mkdir -p "$KRYONIX_DIR"/n8n/data
-    mkdir -p "$KRYONIX_DIR"/evolution/data
+    mkdir -p "$KRYONIX_DIR"/evolution-siqueira/{data,config}
+    mkdir -p "$KRYONIX_DIR"/evolution-meuboot/{data,config}
     mkdir -p "$KRYONIX_DIR"/minio/{data,config}
     mkdir -p "$KRYONIX_DIR"/grafana/{data,config,dashboards}
     mkdir -p "$KRYONIX_DIR"/prometheus/{data,config}
@@ -397,10 +570,11 @@ intelligent_directory_setup() {
     
     # Definir permissões corretas
     chown -R 1001:1001 "$KRYONIX_DIR"/n8n 2>/dev/null || true
-    chown -R 999:999 "$KRYONIX_DIR"/postgres 2>/dev/null || true
+    chown -R 999:999 "$KRYONIX_DIR"/postgres-* 2>/dev/null || true
     chown -R 472:472 "$KRYONIX_DIR"/grafana 2>/dev/null || true
     chown -R 65534:65534 "$KRYONIX_DIR"/prometheus 2>/dev/null || true
     chown -R 1001:1001 "$KRYONIX_DIR"/minio 2>/dev/null || true
+    chown -R 1000:1000 "$KRYONIX_DIR"/evolution-* 2>/dev/null || true
     
     log "SUCCESS" "Estrutura de diretórios criada!"
 }
@@ -506,20 +680,38 @@ services:
       - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
 
-  # PostgreSQL
-  postgres:
+  # PostgreSQL Siqueira
+  postgres-siqueira:
     image: postgres:15-alpine
-    container_name: kryonix-postgres
+    container_name: kryonix-postgres-siqueira
     restart: unless-stopped
     environment:
-      POSTGRES_DB: kryonix_main
-      POSTGRES_USER: kryonix_user
+      POSTGRES_DB: siqueira_main
+      POSTGRES_USER: siqueira_user
       POSTGRES_PASSWORD: $POSTGRES_PASSWORD
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - "$KRYONIX_DIR/postgres/data:/var/lib/postgresql/data"
+      - "$KRYONIX_DIR/postgres-siqueira/data:/var/lib/postgresql/data"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U kryonix_user -d kryonix_main"]
+      test: ["CMD-SHELL", "pg_isready -U siqueira_user -d siqueira_main"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # PostgreSQL MeuBoot  
+  postgres-meuboot:
+    image: postgres:15-alpine
+    container_name: kryonix-postgres-meuboot
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: meuboot_main
+      POSTGRES_USER: meuboot_user
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - "$KRYONIX_DIR/postgres-meuboot/data:/var/lib/postgresql/data"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meuboot_user -d meuboot_main"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -559,7 +751,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://kryonix_user:$POSTGRES_PASSWORD@postgres:5432/kryonix_main
+      DATABASE_URL: postgresql://siqueira_user:$POSTGRES_PASSWORD@postgres-siqueira:5432/siqueira_main
       REDIS_URL: redis://:$REDIS_PASSWORD@redis:6379
       PORT: $BACKEND_PORT
     labels:
@@ -569,19 +761,17 @@ services:
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=$BACKEND_PORT"
     depends_on:
-      - postgres
+      - postgres-siqueira
       - redis
 
-  # Portainer Siqueira
+  # Portainer Siqueira (SEM CONFIGURAÇÃO AUTOMÁTICA)
   portainer-siqueira:
     image: portainer/portainer-ee:latest
     container_name: kryonix-portainer-siqueira
     restart: unless-stopped
-    command: -H unix:///var/run/docker.sock --admin-password-file /tmp/portainer_password
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "$KRYONIX_DIR/portainer-siqueira:/data"
-      - "/tmp/portainer_password:/tmp/portainer_password:ro"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.portainer-siqueira.rule=Host(\`portainer.siqueicamposimoveis.com.br\`)"
@@ -589,16 +779,14 @@ services:
       - "traefik.http.routers.portainer-siqueira.tls.certresolver=letsencrypt"
       - "traefik.http.services.portainer-siqueira.loadbalancer.server.port=9000"
 
-  # Portainer MeuBoot
+  # Portainer MeuBoot (SEM CONFIGURAÇÃO AUTOMÁTICA)
   portainer-meuboot:
     image: portainer/portainer-ee:latest
     container_name: kryonix-portainer-meuboot
     restart: unless-stopped
-    command: -H unix:///var/run/docker.sock --admin-password-file /tmp/portainer_meuboot_password
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "$KRYONIX_DIR/portainer-meuboot:/data"
-      - "/tmp/portainer_meuboot_password:/tmp/portainer_meuboot_password:ro"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.portainer-meuboot.rule=Host(\`portainer.meuboot.site\`)"
@@ -606,13 +794,59 @@ services:
       - "traefik.http.routers.portainer-meuboot.tls.certresolver=letsencrypt"
       - "traefik.http.services.portainer-meuboot.loadbalancer.server.port=9000"
 
+  # Evolution API Siqueira
+  evolution-siqueira:
+    image: davidsongomes/evolution-api:latest
+    container_name: kryonix-evolution-siqueira
+    restart: unless-stopped
+    environment:
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://siqueira_user:$POSTGRES_PASSWORD@postgres-siqueira:5432/siqueira_main?schema=evolution
+      REDIS_URI: redis://:$REDIS_PASSWORD@redis:6379/1
+      SERVER_URL: https://evo-siqueira.siqueicamposimoveis.com.br
+      WEBHOOK_GLOBAL_URL: https://evo-siqueira.siqueicamposimoveis.com.br/webhook
+    volumes:
+      - "$KRYONIX_DIR/evolution-siqueira/data:/evolution/instances"
+    depends_on:
+      - postgres-siqueira
+      - redis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.evolution-siqueira.rule=Host(\`evo-siqueira.siqueicamposimoveis.com.br\`)"
+      - "traefik.http.routers.evolution-siqueira.entrypoints=websecure"
+      - "traefik.http.routers.evolution-siqueira.tls.certresolver=letsencrypt"
+      - "traefik.http.services.evolution-siqueira.loadbalancer.server.port=8080"
+
+  # Evolution API MeuBoot
+  evolution-meuboot:
+    image: davidsongomes/evolution-api:latest
+    container_name: kryonix-evolution-meuboot
+    restart: unless-stopped
+    environment:
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://meuboot_user:$POSTGRES_PASSWORD@postgres-meuboot:5432/meuboot_main?schema=evolution
+      REDIS_URI: redis://:$REDIS_PASSWORD@redis:6379/2
+      SERVER_URL: https://evo.meuboot.site
+      WEBHOOK_GLOBAL_URL: https://evo.meuboot.site/webhook
+    volumes:
+      - "$KRYONIX_DIR/evolution-meuboot/data:/evolution/instances"
+    depends_on:
+      - postgres-meuboot
+      - redis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.evolution-meuboot.rule=Host(\`evo.meuboot.site\`)"
+      - "traefik.http.routers.evolution-meuboot.entrypoints=websecure"
+      - "traefik.http.routers.evolution-meuboot.tls.certresolver=letsencrypt"
+      - "traefik.http.services.evolution-meuboot.loadbalancer.server.port=8080"
+
   # Adminer
   adminer:
     image: adminer:4.8.1
     container_name: kryonix-adminer
     restart: unless-stopped
     environment:
-      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DEFAULT_SERVER: postgres-siqueira
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.adminer.rule=Host(\`adminer.siqueicamposimoveis.com.br\`)"
@@ -634,15 +868,15 @@ services:
       WEBHOOK_URL: https://n8n.siqueicamposimoveis.com.br/
       GENERIC_TIMEZONE: America/Sao_Paulo
       DB_TYPE: postgresdb
-      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_HOST: postgres-siqueira
       DB_POSTGRESDB_PORT: 5432
-      DB_POSTGRESDB_DATABASE: kryonix_main
-      DB_POSTGRESDB_USER: kryonix_user
+      DB_POSTGRESDB_DATABASE: siqueira_main
+      DB_POSTGRESDB_USER: siqueira_user
       DB_POSTGRESDB_PASSWORD: $POSTGRES_PASSWORD
     volumes:
       - "$KRYONIX_DIR/n8n/data:/home/node/.n8n"
     depends_on:
-      - postgres
+      - postgres-siqueira
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.n8n.rule=Host(\`n8n.siqueicamposimoveis.com.br\`) || Host(\`n8n.meuboot.site\`)"
@@ -687,6 +921,12 @@ services:
       - "traefik.http.routers.minio-console.tls.certresolver=letsencrypt"
       - "traefik.http.routers.minio-console.service=minio-console"
       - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
+      # MinIO API
+      - "traefik.http.routers.minio-api.rule=Host(\`storage.siqueicamposimoveis.com.br\`)"
+      - "traefik.http.routers.minio-api.entrypoints=websecure"
+      - "traefik.http.routers.minio-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.minio-api.service=minio-api"
+      - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
 
 EOF
     
@@ -827,9 +1067,6 @@ intelligent_final_deploy() {
         return 1
     }
 
-    # Preparar senhas do Portainer
-    log "INSTALL" "⚙️  Preparando senhas criptografadas do Portainer..."
-    
     # Verificar se Docker está funcionando
     if ! docker ps >/dev/null 2>&1; then
         log "WARNING" "Docker não está pronto, aguardando..."
@@ -837,15 +1074,6 @@ intelligent_final_deploy() {
         systemctl restart docker 2>/dev/null || true
         sleep 5
     fi
-    
-    # Gerar senhas para Portainer
-    echo -n "$PORTAINER_PASS" | docker run --rm -i portainer/helper-reset-password > /tmp/portainer_password 2>/dev/null || {
-        echo '$2y$10$N9qo8uLOickgx2ZMRZoMye1vDAp/sDL6k1dOQ6KGlLNq7eSIr.' > /tmp/portainer_password
-    }
-    
-    echo -n "$PORTAINER_PASS" | docker run --rm -i portainer/helper-reset-password > /tmp/portainer_meuboot_password 2>/dev/null || {
-        echo '$2y$10$N9qo8uLOickgx2ZMRZoMye1vDAp/sDL6k1dOQ6KGlLNq7eSIr.' > /tmp/portainer_meuboot_password
-    }
 
     # Deploy inteligente em etapas
     log "DEPLOY" "🔄 Deploy etapa 1: Infraestrutura base..."
@@ -856,9 +1084,13 @@ intelligent_final_deploy() {
     sleep 15
     
     # PostgreSQL
-    log "INFO" "🗄️  Iniciando PostgreSQL..."
-    docker-compose up -d postgres
-    sleep 15
+    log "INFO" "🗄️  Iniciando PostgreSQL Siqueira..."
+    docker-compose up -d postgres-siqueira
+    sleep 10
+    
+    log "INFO" "🗄️  Iniciando PostgreSQL MeuBoot..."
+    docker-compose up -d postgres-meuboot
+    sleep 10
     
     # Redis
     log "INFO" "🔄 Iniciando Redis..."
@@ -881,9 +1113,18 @@ intelligent_final_deploy() {
 
     log "DEPLOY" "🔄 Deploy etapa 3: Serviços auxiliares..."
     
-    # Portainer
-    log "INFO" "🐳 Iniciando Portainer..."
+    # Portainer (SEM CONFIGURAÇÃO AUTOMÁTICA)
+    log "INFO" "🐳 Iniciando Portainer (configuração manual necessária)..."
     docker-compose up -d portainer-siqueira portainer-meuboot
+    sleep 10
+    
+    # Evolution API
+    log "INFO" "📱 Iniciando Evolution API Siqueira..."
+    docker-compose up -d evolution-siqueira
+    sleep 10
+    
+    log "INFO" "📱 Iniciando Evolution API MeuBoot..."
+    docker-compose up -d evolution-meuboot
     sleep 10
     
     # Adminer
@@ -913,7 +1154,7 @@ intelligent_final_deploy() {
 verify_deployment() {
     log "INFO" "🔍 Verificando status dos serviços..."
     
-    local services=("traefik" "postgres" "redis" "project-frontend" "project-backend" "portainer-siqueira" "portainer-meuboot" "adminer" "n8n" "grafana" "minio")
+    local services=("traefik" "postgres-siqueira" "postgres-meuboot" "redis" "project-frontend" "project-backend" "portainer-siqueira" "portainer-meuboot" "evolution-siqueira" "evolution-meuboot" "adminer" "n8n" "grafana" "minio")
     local services_running=0
     local total_services=${#services[@]}
     
@@ -941,13 +1182,13 @@ verify_deployment() {
         fi
     done
     
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     log "INFO" "📊 RESUMO: $services_running/$total_services serviços rodando"
     
-    if [ $services_running -ge 8 ]; then
+    if [ $services_running -ge 10 ]; then
         log "SUCCESS" "🎉 Deploy EXCELENTE! Maioria dos serviços funcionando"
         return 0
-    elif [ $services_running -ge 5 ]; then
+    elif [ $services_running -ge 7 ]; then
         log "SUCCESS" "✅ Deploy BOM! Serviços principais funcionando"
         return 0
     else
@@ -962,11 +1203,15 @@ test_https_connectivity() {
     
     local urls=(
         "https://siqueicamposimoveis.com.br:Frontend Principal"
-        "https://portainer.siqueicamposimoveis.com.br:Portainer Principal"
+        "https://portainer.siqueicamposimoveis.com.br:Portainer Siqueira"
+        "https://portainer.meuboot.site:Portainer MeuBoot"
         "https://traefik.siqueicamposimoveis.com.br:Traefik Dashboard"
         "https://n8n.siqueicamposimoveis.com.br:N8N Automation"
         "https://grafana.siqueicamposimoveis.com.br:Grafana Dashboard"
-        "https://portainer.meuboot.site:Portainer MeuBoot"
+        "https://evo-siqueira.siqueicamposimoveis.com.br:Evolution Siqueira"
+        "https://evo.meuboot.site:Evolution MeuBoot"
+        "https://minio.siqueicamposimoveis.com.br:MinIO Console"
+        "https://storage.siqueicamposimoveis.com.br:MinIO API"
     )
     
     local working_urls=0
@@ -1004,8 +1249,8 @@ EOF
     echo
     
     # Aguardar serviços ficarem operacionais
-    log "INFO" "Aguardando serviços ficarem totalmente operacionais (60 segundos)..."
-    sleep 60
+    log "INFO" "Aguardando serviços ficarem totalmente operacionais (120 segundos)..."
+    sleep 120
     
     test_https_connectivity
     
@@ -1017,10 +1262,9 @@ EOF
     echo
     
     echo -e "${BOLD}${BLUE}🛠️  GERENCIAMENTO:${NC}"
-    echo -e "   🐳 Portainer (Principal): ${BOLD}https://portainer.siqueicamposimoveis.com.br${NC}"
-    echo -e "      👤 Usuário: ${YELLOW}$PORTAINER_USER${NC} | 🔑 Senha: ${YELLOW}$PORTAINER_PASS${NC}"
-    echo -e "   🐳 Portainer (MeuBoot): ${BOLD}https://portainer.meuboot.site${NC}"
-    echo -e "      👤 Usuário: ${YELLOW}$PORTAINER_USER${NC} | 🔑 Senha: ${YELLOW}$PORTAINER_PASS${NC}"
+    echo -e "   🐳 Portainer Siqueira: ${BOLD}https://portainer.siqueicamposimoveis.com.br${NC}"
+    echo -e "   🐳 Portainer MeuBoot: ${BOLD}https://portainer.meuboot.site${NC}"
+    echo -e "      ${YELLOW}⚠️  CONFIGURE MANUALMENTE NO PRIMEIRO ACESSO${NC}"
     echo -e "   🔀 Traefik Dashboard: ${BOLD}https://traefik.siqueicamposimoveis.com.br${NC}"
     echo
     
@@ -1028,17 +1272,33 @@ EOF
     echo -e "   🔄 N8N (Principal): ${BOLD}https://n8n.siqueicamposimoveis.com.br${NC}"
     echo -e "   🔄 N8N (MeuBoot): ${BOLD}https://n8n.meuboot.site${NC}"
     echo -e "      👤 Usuário: ${YELLOW}kryonix${NC} | 🔑 Senha: ${YELLOW}$N8N_PASSWORD${NC}"
+    echo -e "   📱 Evolution Siqueira: ${BOLD}https://evo-siqueira.siqueicamposimoveis.com.br${NC}"
+    echo -e "   📱 Evolution MeuBoot: ${BOLD}https://evo.meuboot.site${NC}"
+    echo
+    
+    echo -e "${BOLD}${GREEN}🗄️  BANCOS DE DADOS:${NC}"
+    echo -e "   🐘 PostgreSQL Siqueira: ${BOLD}postgres-siqueira:5432${NC}"
+    echo -e "      📊 DB: siqueira_main | 👤 User: siqueira_user"
+    echo -e "   🐘 PostgreSQL MeuBoot: ${BOLD}postgres-meuboot:5432${NC}"
+    echo -e "      📊 DB: meuboot_main | 👤 User: meuboot_user"
+    echo -e "   🗄️  Adminer: ${BOLD}https://adminer.siqueicamposimoveis.com.br${NC}"
     echo
     
     echo -e "${BOLD}${GREEN}📁 ARMAZENAMENTO:${NC}"
     echo -e "   🗃️  MinIO Console: ${BOLD}https://minio.siqueicamposimoveis.com.br${NC}"
+    echo -e "   📡 MinIO API: ${BOLD}https://storage.siqueicamposimoveis.com.br${NC}"
     echo -e "      👤 Usuário: ${YELLOW}kryonix_minio_admin${NC} | 🔑 Senha: ${YELLOW}$MINIO_PASSWORD${NC}"
     echo
     
     echo -e "${BOLD}${BLUE}📊 MONITORAMENTO:${NC}"
     echo -e "   📈 Grafana: ${BOLD}https://grafana.siqueicamposimoveis.com.br${NC}"
     echo -e "      👤 Usuário: ${YELLOW}admin${NC} | 🔑 Senha: ${YELLOW}$GRAFANA_PASSWORD${NC}"
-    echo -e "   🗄️  Adminer: ${BOLD}https://adminer.siqueicamposimoveis.com.br${NC}"
+    echo
+    
+    echo -e "${BOLD}${PURPLE}🔧 DEPLOY AUTOMÁTICO:${NC}"
+    echo -e "   🔗 Webhook URL: ${BOLD}http://$SERVER_IP:9999/webhook${NC}"
+    echo -e "   📝 Configure no GitHub: Settings > Webhooks > Add webhook"
+    echo -e "   🔄 Tipo: application/json | Eventos: Just the push event"
     echo
     
     echo -e "${BOLD}${YELLOW}🔧 INFORMAÇÕES TÉCNICAS:${NC}"
@@ -1054,14 +1314,17 @@ EOF
     echo -e "   🔍 Ver logs: ${BOLD}docker-compose -f $KRYONIX_DIR/docker-compose.yml logs -f [serviço]${NC}"
     echo -e "   🔄 Restart: ${BOLD}docker-compose -f $KRYONIX_DIR/docker-compose.yml restart [serviço]${NC}"
     echo -e "   📊 Status: ${BOLD}docker-compose -f $KRYONIX_DIR/docker-compose.yml ps${NC}"
-    echo -e "   ��� Update: ${BOLD}cd $PROJECT_DIR && git pull${NC}"
+    echo -e "   🆕 Update: ${BOLD}cd $PROJECT_DIR && git pull${NC}"
+    echo -e "   🔄 Redeploy: ${BOLD}curl -X POST http://$SERVER_IP:9999/webhook${NC}"
     echo
     
-    echo -e "${BOLD}${GREEN}✅ Sistema KRYONIX implantado com sucesso!${NC}"
-    echo -e "${BOLD}${GREEN}🎉 Acesse os links acima para começar a usar o sistema.${NC}"
+    echo -e "${BOLD}${GREEN}✅ Sistema KRYONIX V3.0 implantado com sucesso!${NC}"
+    echo -e "${BOLD}${GREEN}🎉 Todos os serviços com Let's Encrypt automático!${NC}"
+    echo -e "${BOLD}${GREEN}🚀 Deploy automático configurado!${NC}"
+    echo -e "${BOLD}${YELLOW}⚠️  Configure os Portainers manualmente no primeiro acesso${NC}"
     echo
     
-    log "SUCCESS" "Deploy KRYONIX concluído com sucesso!"
+    log "SUCCESS" "Deploy KRYONIX V3.0 concluído com sucesso!"
 }
 
 # Função principal
@@ -1073,34 +1336,40 @@ main() {
     check_root
     
     # Fases do deploy
-    log "DEPLOY" "🚀 FASE 1: Preparação do Sistema"
+    log "DEPLOY" "🚀 FASE 1: Limpeza Completa do Sistema"
+    clean_system
+    
+    log "DEPLOY" "🚀 FASE 2: Preparação do Sistema"
     intelligent_system_update
     
-    log "DEPLOY" "🚀 FASE 2: Instalação do Docker"
+    log "DEPLOY" "🚀 FASE 3: Instalação do Docker"
     intelligent_docker_install
     
-    log "DEPLOY" "🚀 FASE 3: Análise do Projeto"
+    log "DEPLOY" "🚀 FASE 4: Análise do Projeto"
     intelligent_project_analysis
     
-    log "DEPLOY" "🚀 FASE 4: Configuração da Infraestrutura"
+    log "DEPLOY" "🚀 FASE 5: Configuração Automática GitHub"
+    setup_github_webhook
+    
+    log "DEPLOY" "🚀 FASE 6: Configuração da Infraestrutura"
     intelligent_directory_setup
     intelligent_traefik_setup
     
-    log "DEPLOY" "🚀 FASE 5: Criação dos Containers"
+    log "DEPLOY" "🚀 FASE 7: Criação dos Containers"
     create_intelligent_dockerfiles
     create_intelligent_compose
     
-    log "DEPLOY" "🚀 FASE 6: Build do Projeto"
+    log "DEPLOY" "🚀 FASE 8: Build do Projeto"
     intelligent_project_build
     
-    log "DEPLOY" "🚀 FASE 7: Deploy dos Serviços"
+    log "DEPLOY" "🚀 FASE 9: Deploy dos Serviços"
     intelligent_final_deploy
     
-    log "DEPLOY" "🚀 FASE 8: Verificação e Testes"
+    log "DEPLOY" "🚀 FASE 10: Verificação e Testes"
     sleep 30  # Aguardar serviços ficarem prontos
     verify_deployment
     
-    log "DEPLOY" "🚀 FASE 9: Finalização"
+    log "DEPLOY" "🚀 FASE 11: Finalização"
     show_final_links
 }
 
