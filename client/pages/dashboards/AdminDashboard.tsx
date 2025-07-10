@@ -1662,6 +1662,7 @@ export default function AdminDashboard() {
                 icon: Users,
                 color: "bg-green-100 text-green-600",
                 stats: "8 corretores ativos",
+                tipo: "performance",
               },
               {
                 titulo: "Análise Financeira",
@@ -1669,6 +1670,7 @@ export default function AdminDashboard() {
                 icon: DollarSign,
                 color: "bg-yellow-100 text-yellow-600",
                 stats: formatCurrency(380000) + " faturamento",
+                tipo: "financeira",
               },
               {
                 titulo: "Leads e Conversões",
@@ -1676,6 +1678,7 @@ export default function AdminDashboard() {
                 icon: TrendingUp,
                 color: "bg-purple-100 text-purple-600",
                 stats: "23% taxa de conversão",
+                tipo: "leads",
               },
               {
                 titulo: "Análise de Mercado",
@@ -1683,6 +1686,7 @@ export default function AdminDashboard() {
                 icon: PieChart,
                 color: "bg-orange-100 text-orange-600",
                 stats: "156 imóveis cadastrados",
+                tipo: "mercado",
               },
               {
                 titulo: "Relatório de Visitas",
@@ -1690,6 +1694,7 @@ export default function AdminDashboard() {
                 icon: Calendar,
                 color: "bg-indigo-100 text-indigo-600",
                 stats: "12 visitas agendadas",
+                tipo: "visitas",
               },
             ].map((relatorio, index) => (
               <Card
