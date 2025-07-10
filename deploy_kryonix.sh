@@ -575,10 +575,24 @@ intelligent_project_analysis() {
         fi
     fi
     
+        # Verificar se existe Prisma para configuração de banco
+    if [ -f "prisma/schema.prisma" ]; then
+        log "SUCCESS" "🗄️  Prisma detectado - configuração de banco necessária"
+        export HAS_PRISMA=true
+    else
+        export HAS_PRISMA=false
+    fi
+
+    # Verificar configuração de ambiente
+    if [ -f ".env" ] || [ -f ".env.example" ]; then
+        log "SUCCESS" "📋 Arquivos de ambiente detectados"
+    fi
+
     log "SUCCESS" "Análise do projeto concluída!"
     echo "  🎯 Tipo: $PROJECT_TYPE"
     echo "  🌐 Frontend Port: $FRONTEND_PORT"
-        echo "  ⚙️ Backend Port: $BACKEND_PORT"
+    echo "  ⚙️ Backend Port: $BACKEND_PORT"
+    echo "  🗄️ Prisma: $HAS_PRISMA"
 }
 
 # Criação de estrutura inteligente
