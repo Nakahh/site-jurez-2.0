@@ -402,7 +402,7 @@ EOF
 create_docker_compose() {
     log "DEPLOY" "🐙 Criando Docker Compose completo..."
     
-        cat > "$PROJECT_DIR/docker-compose.yml" << 'DOCKER_COMPOSE_EOF'
+    cat > "$PROJECT_DIR/docker-compose.yml" << 'DOCKER_COMPOSE_EOF'
 version: '3.8'
 
 networks:
@@ -424,7 +424,6 @@ volumes:
   evolution_data:
 
 services:
-  # Traefik - Proxy Reverso com SSL Automático
   traefik:
     image: traefik:v3.0
     container_name: traefik
@@ -445,19 +444,18 @@ services:
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
       - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
-            - --certificatesresolvers.letsencrypt.acme.email=vitor.nakahh@gmail.com
+      - --certificatesresolvers.letsencrypt.acme.email=vitor.nakahh@gmail.com
       - --certificatesresolvers.letsencrypt.acme.storage=/data/acme.json
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
       - --entrypoints.web.http.redirections.entrypoint.permanent=true
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.traefik.rule=Host(\`traefik.siqueicamposimoveis.com.br\`)"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.siqueicamposimoveis.com.br`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.service=api@internal"
 
-  # PostgreSQL
   postgres:
     image: postgres:15-alpine
     container_name: postgres
@@ -467,7 +465,7 @@ services:
     environment:
       POSTGRES_DB: kryonix
       POSTGRES_USER: kryonix_user
-            POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -477,24 +475,16 @@ services:
       timeout: 10s
       retries: 3
 
-  # Redis
   redis:
     image: redis:7-alpine
     container_name: redis
     restart: unless-stopped
     networks:
       - internal
-        command: redis-server --requirepass \${REDIS_PASSWORD} --appendonly yes
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
     volumes:
       - redis_data:/data
-    labels:
-      - "traefik.enable=true"
-            - "traefik.http.routers.redis.rule=Host(\`redis.siqueicamposimoveis.com.br\`)"
-      - "traefik.http.routers.redis.entrypoints=websecure"
-      - "traefik.http.routers.redis.tls.certresolver=letsencrypt"
-      - "traefik.http.services.redis.loadbalancer.server.port=6379"
 
-  # Frontend (Site Principal) - SEM NGINX
   frontend:
     build:
       context: .
@@ -508,13 +498,11 @@ services:
       - backend
     labels:
       - "traefik.enable=true"
-      # Domínio principal
-            - "traefik.http.routers.frontend.rule=Host(\`siqueicamposimoveis.com.br\`) || Host(\`www.siqueicamposimoveis.com.br\`)"
+      - "traefik.http.routers.frontend.rule=Host(`siqueicamposimoveis.com.br`) || Host(`www.siqueicamposimoveis.com.br`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
 
-  # Backend API
   backend:
     build:
       context: .
@@ -529,21 +517,20 @@ services:
       - redis
     environment:
       NODE_ENV: production
-            DATABASE_URL: postgresql://kryonix_user:\${POSTGRES_PASSWORD}@postgres:5432/kryonix
-            REDIS_URL: redis://:\${REDIS_PASSWORD}@redis:6379
+      DATABASE_URL: postgresql://kryonix_user:${POSTGRES_PASSWORD}@postgres:5432/kryonix
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       JWT_SECRET: "kryonix-jwt-secret-2024-ultra"
-            SMTP_HOST: smtp.gmail.com
-            SMTP_PORT: 587
-            SMTP_USER: vitor.nakahh@gmail.com
-            SMTP_PASS: "@Vitor.12345@"
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_USER: vitor.nakahh@gmail.com
+      SMTP_PASS: "@Vitor.12345@"
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.backend.rule=Host(\`api.siqueicamposimoveis.com.br\`)"
+      - "traefik.http.routers.backend.rule=Host(`api.siqueicamposimoveis.com.br`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=3001"
 
-  # Portainer Domínio 1 (Siqueira Campos)
   portainer-siqueira:
     image: portainer/portainer-ce:latest
     container_name: portainer-siqueira
@@ -555,12 +542,11 @@ services:
       - portainer_data_siqueira:/data
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.portainer-siqueira.rule=Host(\`portainer.siqueicamposimoveis.com.br\`)"
+      - "traefik.http.routers.portainer-siqueira.rule=Host(`portainer.siqueicamposimoveis.com.br`)"
       - "traefik.http.routers.portainer-siqueira.entrypoints=websecure"
       - "traefik.http.routers.portainer-siqueira.tls.certresolver=letsencrypt"
       - "traefik.http.services.portainer-siqueira.loadbalancer.server.port=9000"
 
-  # Portainer Domínio 2 (MeuBoot) - Site Principal
   portainer-meuboot:
     image: portainer/portainer-ce:latest
     container_name: portainer-meuboot
@@ -572,19 +558,16 @@ services:
       - portainer_data_meuboot:/data
     labels:
       - "traefik.enable=true"
-      # Domínio principal
-            - "traefik.http.routers.portainer-main.rule=Host(\`meuboot.site\`) || Host(\`www.meuboot.site\`)"
+      - "traefik.http.routers.portainer-main.rule=Host(`meuboot.site`) || Host(`www.meuboot.site`)"
       - "traefik.http.routers.portainer-main.entrypoints=websecure"
       - "traefik.http.routers.portainer-main.tls.certresolver=letsencrypt"
       - "traefik.http.routers.portainer-main.service=portainer-meuboot"
-      # Subdomínio
-            - "traefik.http.routers.portainer-sub.rule=Host(\`portainer.meuboot.site\`)"
+      - "traefik.http.routers.portainer-sub.rule=Host(`portainer.meuboot.site`)"
       - "traefik.http.routers.portainer-sub.entrypoints=websecure"
       - "traefik.http.routers.portainer-sub.tls.certresolver=letsencrypt"
       - "traefik.http.routers.portainer-sub.service=portainer-meuboot"
       - "traefik.http.services.portainer-meuboot.loadbalancer.server.port=9000"
 
-  # N8N - Automação
   n8n:
     image: n8nio/n8n:latest
     container_name: n8n
@@ -597,27 +580,26 @@ services:
     environment:
       N8N_BASIC_AUTH_ACTIVE: true
       N8N_BASIC_AUTH_USER: admin
-            N8N_BASIC_AUTH_PASSWORD: \${N8N_PASSWORD}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_PASSWORD}
       DB_TYPE: postgresdb
       DB_POSTGRESDB_HOST: postgres
       DB_POSTGRESDB_PORT: 5432
       DB_POSTGRESDB_DATABASE: kryonix
       DB_POSTGRESDB_USER: kryonix_user
-            DB_POSTGRESDB_PASSWORD: \${POSTGRES_PASSWORD}
-            N8N_HOST: n8n.siqueicamposimoveis.com.br
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+      N8N_HOST: n8n.siqueicamposimoveis.com.br
       N8N_PROTOCOL: https
       NODE_ENV: production
-            WEBHOOK_URL: https://n8n.siqueicamposimoveis.com.br
+      WEBHOOK_URL: https://n8n.siqueicamposimoveis.com.br
     volumes:
       - n8n_data:/home/node/.n8n
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.n8n.rule=Host(\`n8n.siqueicamposimoveis.com.br\`) || Host(\`n8n.meuboot.site\`)"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.siqueicamposimoveis.com.br`) || Host(`n8n.meuboot.site`)"
       - "traefik.http.routers.n8n.entrypoints=websecure"
       - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
       - "traefik.http.services.n8n.loadbalancer.server.port=5678"
 
-  # Evolution API - WhatsApp
   evolution-api:
     image: davidsongomes/evolution-api:latest
     container_name: evolution-api
@@ -626,7 +608,7 @@ services:
       - traefik
       - internal
     environment:
-            AUTHENTICATION_API_KEY: \${EVOLUTION_PASSWORD}
+      AUTHENTICATION_API_KEY: ${EVOLUTION_PASSWORD}
       AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES: true
       QRCODE_LIMIT: 5
       WEBSOCKET_ENABLED: true
@@ -637,12 +619,11 @@ services:
       - evolution_data:/evolution/instances
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.evolution.rule=Host(\`evolution.siqueicamposimoveis.com.br\`) || Host(\`evolution.meuboot.site\`)"
+      - "traefik.http.routers.evolution.rule=Host(`evolution.siqueicamposimoveis.com.br`) || Host(`evolution.meuboot.site`)"
       - "traefik.http.routers.evolution.entrypoints=websecure"
       - "traefik.http.routers.evolution.tls.certresolver=letsencrypt"
       - "traefik.http.services.evolution.loadbalancer.server.port=8080"
 
-  # MinIO - Storage S3
   minio:
     image: minio/minio:latest
     container_name: minio
@@ -652,26 +633,23 @@ services:
       - internal
     environment:
       MINIO_ROOT_USER: admin
-            MINIO_ROOT_PASSWORD: \${MINIO_PASSWORD}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
     labels:
       - "traefik.enable=true"
-      # Console
-            - "traefik.http.routers.minio-console.rule=Host(\`minio.siqueicamposimoveis.com.br\`) || Host(\`minio.meuboot.site\`)"
+      - "traefik.http.routers.minio-console.rule=Host(`minio.siqueicamposimoveis.com.br`) || Host(`minio.meuboot.site`)"
       - "traefik.http.routers.minio-console.entrypoints=websecure"
       - "traefik.http.routers.minio-console.tls.certresolver=letsencrypt"
       - "traefik.http.routers.minio-console.service=minio-console"
       - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
-      # API
-            - "traefik.http.routers.minio-api.rule=Host(\`storage.siqueicamposimoveis.com.br\`) || Host(\`storage.meuboot.site\`)"
+      - "traefik.http.routers.minio-api.rule=Host(`storage.siqueicamposimoveis.com.br`) || Host(`storage.meuboot.site`)"
       - "traefik.http.routers.minio-api.entrypoints=websecure"
       - "traefik.http.routers.minio-api.tls.certresolver=letsencrypt"
       - "traefik.http.routers.minio-api.service=minio-api"
       - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
 
-  # Grafana - Monitoramento
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -680,19 +658,18 @@ services:
       - traefik
       - internal
     environment:
-            GF_SECURITY_ADMIN_PASSWORD: \${GRAFANA_PASSWORD}
-            GF_SERVER_ROOT_URL: https://grafana.siqueicamposimoveis.com.br
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_SERVER_ROOT_URL: https://grafana.siqueicamposimoveis.com.br
       GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
     volumes:
       - grafana_data:/var/lib/grafana
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.grafana.rule=Host(\`grafana.siqueicamposimoveis.com.br\`) || Host(\`grafana.meuboot.site\`)"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.siqueicamposimoveis.com.br`) || Host(`grafana.meuboot.site`)"
       - "traefik.http.routers.grafana.entrypoints=websecure"
       - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
 
-  # Prometheus - Métricas
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -709,12 +686,11 @@ services:
       - prometheus_data:/prometheus
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.prometheus.rule=Host(\`prometheus.siqueicamposimoveis.com.br\`) || Host(\`prometheus.meuboot.site\`)"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.siqueicamposimoveis.com.br`) || Host(`prometheus.meuboot.site`)"
       - "traefik.http.routers.prometheus.entrypoints=websecure"
       - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
 
-  # Adminer - Gerenciamento de DB
   adminer:
     image: adminer:latest
     container_name: adminer
@@ -728,10 +704,10 @@ services:
       ADMINER_DEFAULT_SERVER: postgres
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.adminer.rule=Host(\`adminer.siqueicamposimoveis.com.br\`) || Host(\`adminer.meuboot.site\`)"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.siqueicamposimoveis.com.br`) || Host(`adminer.meuboot.site`)"
       - "traefik.http.routers.adminer.entrypoints=websecure"
       - "traefik.http.routers.adminer.tls.certresolver=letsencrypt"
-            - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
 DOCKER_COMPOSE_EOF
 
     log "SUCCESS" "Docker Compose criado com todos os serviços!"
@@ -753,7 +729,7 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
 
-log "��� Iniciando auto-deploy..."
+log "🚀 Iniciando auto-deploy..."
 
 cd "$PROJECT_DIR"
 
@@ -925,7 +901,7 @@ create_credentials_file() {
 #                     🔐 CREDENCIAIS KRYONIX ULTRA v3.0                     #
 ##############################################################################
 
-🌐 DOMÍNIOS:
+��� DOMÍNIOS:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📱 Site Principal: https://$DOMAIN1
@@ -991,7 +967,7 @@ create_credentials_file() {
    Pass: $SMTP_PASS
 
 🔄 AUTO-DEPLOY:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━
 Webhook URL: http://$SERVER_IP:9000/webhook
 Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 
@@ -1002,7 +978,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 ✅ Renovação automática dos certificados
 
 📝 LOGS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 Instalação: tail -f /var/log/kryonix-ultra-install.log
 🔄 Auto-Deploy: tail -f /var/log/auto-deploy.log
 🐳 Docker: docker-compose logs -f
@@ -1042,7 +1018,7 @@ grafana.$DOMAIN2 → $SERVER_IP
 prometheus.$DOMAIN2 → $SERVER_IP
 adminer.$DOMAIN2 → $SERVER_IP
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
