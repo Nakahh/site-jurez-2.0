@@ -75,6 +75,9 @@ export function createServer() {
     leadRoutes.webhookRespostaCorretor,
   );
 
+  // Webhook para auto-deploy do GitHub
+  app.post("/api/webhook/github", handleWebhook);
+
   // Rotas do corretor
   app.get(
     "/api/corretor/info",
