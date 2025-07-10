@@ -206,19 +206,15 @@ export const updateImovel: RequestHandler = async (req, res) => {
         .json({ error: "Sem permissão para editar este imóvel" });
     }
 
-    // Registrar mudança de preço se houver
+    // Registrar mudança de preço se houver (comentado até criar o modelo)
     if (
       dadosAtualizacao.preco &&
       dadosAtualizacao.preco !== imovelExistente.preco
     ) {
-      await prisma.historicoPreco.create({
-        data: {
-          precoAnterior: imovelExistente.preco,
-          precoNovo: dadosAtualizacao.preco,
-          motivo: dadosAtualizacao.motivoMudancaPreco || "Atualização de preço",
-          imovelId: id,
-        },
-      });
+      // TODO: Criar modelo HistoricoPreco no schema do Prisma
+      console.log(
+        `Preço alterado de ${imovelExistente.preco} para ${dadosAtualizacao.preco}`,
+      );
     }
 
     const imovelAtualizado = await prisma.imovel.update({
