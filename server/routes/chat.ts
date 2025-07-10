@@ -209,8 +209,8 @@ export const chatComCorretor: RequestHandler = async (req, res) => {
     const novaMensagem = await prisma.mensagem.create({
       data: {
         conteudo: mensagem,
-        remetente: clienteId,
-        destinatario: corretorId,
+        tipo: "TEXTO",
+        remetenteId: clienteId,
       },
     });
 
