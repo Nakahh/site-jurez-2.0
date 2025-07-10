@@ -1227,10 +1227,24 @@ intelligent_project_build() {
 
             log "INFO" "📦 Executando build do projeto com correções automáticas..."
 
-            # Aplicar correções automáticas antes do build
-            intelligent_code_fixes
-            fix_build_syntax_errors
-            fix_typescript_build_errors
+                # Aplicar correções automáticas antes do build (com tratamento de erro)
+            if intelligent_code_fixes; then
+                log "SUCCESS" "✅ Correções automáticas aplicadas"
+            else
+                log "WARNING" "⚠️  Algumas correções falharam, continuando..."
+            fi
+
+            if fix_build_syntax_errors; then
+                log "SUCCESS" "✅ Erros de sintaxe corrigidos"
+            else
+                log "WARNING" "⚠️  Alguns erros de sintaxe persistem, continuando..."
+            fi
+
+            if fix_typescript_build_errors; then
+                log "SUCCESS" "✅ Erros TypeScript corrigidos"
+            else
+                log "WARNING" "⚠️  Alguns erros TypeScript persistem, continuando..."
+            fi
 
             # Build inteligente com múltiplas tentativas
             local build_success=false
@@ -2780,7 +2794,7 @@ show_final_links() {
     echo -e "      👤 Usuário: $PORTAINER_USER | 🔑 Senha: $PORTAINER_PASS"
     echo -e "   🐳 ${BOLD}Portainer (MeuBoot):${NC} https://portainer.meuboot.site"
     echo -e "      👤 Usuário: $PORTAINER_USER | 🔑 Senha: $PORTAINER_PASS"
-    echo -e "   🔀 ${BOLD}Traefik Dashboard:${NC} https://traefik.siqueicamposimoveis.com.br"
+    echo -e "   ��� ${BOLD}Traefik Dashboard:${NC} https://traefik.siqueicamposimoveis.com.br"
     echo
 
     # Automação e integração
