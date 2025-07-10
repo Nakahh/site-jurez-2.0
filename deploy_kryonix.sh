@@ -488,8 +488,8 @@ services:
     volumes:
       - redis_data:/data
     labels:
-      - "traefik.enable=true"
-                  - "traefik.http.routers.redis.rule=Host(\`redis.$DOMAIN1\`)"
+            - "traefik.enable=true"
+      - "traefik.http.routers.redis.rule=Host(\`redis.$DOMAIN1\`)"
       - "traefik.http.routers.redis.entrypoints=websecure"
       - "traefik.http.routers.redis.tls.certresolver=letsencrypt"
       - "traefik.http.services.redis.loadbalancer.server.port=6379"
@@ -926,7 +926,7 @@ create_credentials_file() {
 ##############################################################################
 
 🌐 DOMÍNIOS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
 
 📱 Site Principal: https://$DOMAIN1
 🏠 Portainer Principal: https://$DOMAIN2
@@ -944,7 +944,7 @@ create_credentials_file() {
 🗄️ Adminer: https://adminer.$DOMAIN1
 
 📊 SERVIÇOS - DOMÍNIO 2 ($DOMAIN2):
-━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 Portainer: https://portainer.$DOMAIN2 (mesma stack do domínio 1)
 🤖 N8N: https://n8n.$DOMAIN2
 📱 Evolution API: https://evolution.$DOMAIN2
@@ -1009,7 +1009,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 🔗 Webhook: journalctl -u github-webhook -f
 
 💡 COMANDOS ÚTEIS:
-━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔄 Restart: cd /opt/site-jurez-2.0 && docker-compose restart
 📊 Status: docker ps
 🗑️ Limpar: docker system prune -af
