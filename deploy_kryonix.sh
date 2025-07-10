@@ -1278,7 +1278,7 @@ intelligent_project_build() {
                 elif [[ $build_attempts -eq $max_attempts ]]; then
                     log "WARNING" "⚠️  Todas as tentativas de build falharam, criando build básico..."
 
-                    # Criar estrutura básica de fallback
+                    # Criar estrutura b��sica de fallback
                     mkdir -p dist/spa 2>/dev/null || true
 
                     # Copiar arquivos estáticos se existirem
@@ -1451,7 +1451,7 @@ intelligent_final_deploy() {
 
     sleep 15
 
-    log "DEPLOY" "🔄 Deploy etapa 3: Serviços auxiliares..."
+    log "DEPLOY" "���� Deploy etapa 3: Serviços auxiliares..."
     docker-compose up -d portainer-siqueira portainer-meuboot adminer 2>/dev/null || {
         log "WARNING" "Deploy dos serviços auxiliares com problemas"
     }
@@ -1549,7 +1549,7 @@ services:
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.middlewares=auth,security-headers"
-      - "traefik.http.middlewares.auth.basicauth.users=admin:\\\$2y\\\$10\\\$K7y9F5x8P2Qx9Q8Q8Q8Q8Q"
+            - "traefik.http.middlewares.auth.basicauth.users=admin:$$2y$$10$$K7y9F5x8P2Qx9Q8Q8Q8Q8Q"
       # Redirect HTTP to HTTPS
       - "traefik.http.routers.http-catchall.rule=hostregexp(\`{host:.+}\`)"
       - "traefik.http.routers.http-catchall.entrypoints=web"
@@ -2660,7 +2660,7 @@ intelligent_https_test() {
         fi
     done
     
-    log "INFO" "📊 Testes HTTPS: $successful_tests/$total_tests bem-sucedidos"
+    log "INFO" "���� Testes HTTPS: $successful_tests/$total_tests bem-sucedidos"
     
     if [ $successful_tests -gt 0 ]; then
         log "SUCCESS" "🎯 Pelo menos alguns serviços HTTPS estão funcionando!"
