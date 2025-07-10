@@ -452,7 +452,7 @@ services:
       - --entrypoints.web.http.redirections.entrypoint.permanent=true
         labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(\`traefik.$DOMAIN1\`)"
+            - "traefik.http.routers.traefik.rule=Host('traefik.$DOMAIN1')"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.service=api@internal"
@@ -944,7 +944,7 @@ create_credentials_file() {
 🗄️ Adminer: https://adminer.$DOMAIN1
 
 📊 SERVIÇOS - DOMÍNIO 2 ($DOMAIN2):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 Portainer: https://portainer.$DOMAIN2 (mesma stack do domínio 1)
 🤖 N8N: https://n8n.$DOMAIN2
 📱 Evolution API: https://evolution.$DOMAIN2
@@ -1009,7 +1009,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 🔗 Webhook: journalctl -u github-webhook -f
 
 💡 COMANDOS ÚTEIS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔄 Restart: cd /opt/site-jurez-2.0 && docker-compose restart
 📊 Status: docker ps
 🗑️ Limpar: docker system prune -af
@@ -1042,7 +1042,7 @@ grafana.$DOMAIN2 → $SERVER_IP
 prometheus.$DOMAIN2 → $SERVER_IP
 adminer.$DOMAIN2 → $SERVER_IP
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
