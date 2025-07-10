@@ -903,7 +903,7 @@ EOF
         fi
     fi
 
-                        # Verificação final dos arquivos críticos
+                        # Verificaç��o final dos arquivos críticos
     log "INFO" "🔍 Verificação final dos arquivos..."
     for file in "${critical_files[@]}" 2>/dev/null || true; do
         if [ -f "$file" ]; then
@@ -1023,11 +1023,13 @@ except:
         fi
     done
 
-    if [ $errors_found -eq 0 ]; then
+        if [ $errors_found -eq 0 ]; then
         log "SUCCESS" "Todos os arquivos TypeScript validados com sucesso!"
     else
         log "WARNING" "Encontrados $errors_found arquivos com problemas de sintaxe"
     fi
+
+    return 0
 }
 
 # Função para corrigir erros específicos que aparecem durante o tsc
@@ -1047,7 +1049,7 @@ fix_typescript_build_errors() {
     log "SUCCESS" "Correcoes TypeScript aplicadas!"
 }
 
-# Aplicar correções específicas para build
+# Aplicar correções espec��ficas para build
 apply_build_fixes() {
     log "INSTALL" "Aplicando correcoes especificas para build..."
 
