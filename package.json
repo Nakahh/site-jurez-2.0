@@ -9,6 +9,7 @@
     "dev:server": "tsx watch server/start.ts",
     "build": "tsc && vite build",
     "build:dev": "vite build",
+    "test:deploy": "npm run build:dev && echo 'Build OK' && curl -f http://localhost:3001/api/ping && echo 'API OK'",
     "build:server": "tsc --project tsconfig.server.json",
     "start": "npm run build && node dist/server/start.js",
     "preview": "vite preview",
