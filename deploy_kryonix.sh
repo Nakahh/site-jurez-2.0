@@ -578,7 +578,7 @@ services:
       - "traefik.http.routers.portainer-main.tls.certresolver=letsencrypt"
       - "traefik.http.routers.portainer-main.service=portainer-meuboot"
       # Subdomínio
-                  - "traefik.http.routers.portainer-sub.rule=Host(\`portainer.$DOMAIN2\`)"
+                        - "traefik.http.routers.portainer-sub.rule=Host(\`portainer.$DOMAIN2\`)"
       - "traefik.http.routers.portainer-sub.entrypoints=websecure"
       - "traefik.http.routers.portainer-sub.tls.certresolver=letsencrypt"
       - "traefik.http.routers.portainer-sub.service=portainer-meuboot"
@@ -922,11 +922,11 @@ create_credentials_file() {
     
     cat > /root/KRYONIX_CREDENTIALS.txt << EOF
 ##############################################################################
-#                     🔐 CREDENCIAIS KRYONIX ULTRA v3.0                     #
+#                     �� CREDENCIAIS KRYONIX ULTRA v3.0                     #
 ##############################################################################
 
 🌐 DOMÍNIOS:
-━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
 
 📱 Site Principal: https://$DOMAIN1
 🏠 Portainer Principal: https://$DOMAIN2
@@ -991,7 +991,7 @@ create_credentials_file() {
    Pass: $SMTP_PASS
 
 🔄 AUTO-DEPLOY:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Webhook URL: http://$SERVER_IP:9000/webhook
 Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 
@@ -1042,7 +1042,7 @@ grafana.$DOMAIN2 → $SERVER_IP
 prometheus.$DOMAIN2 → $SERVER_IP
 adminer.$DOMAIN2 → $SERVER_IP
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
