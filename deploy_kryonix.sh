@@ -548,7 +548,189 @@ deploy_services() {
     log "INFO" "Etapa 4: N8N, MinIO, Grafana e demais serviços..."
     docker-compose up -d n8n minio grafana prometheus adminer evolution-api
     
-    log "SUCCESS" "Deploy completo realizado!"
+        log "SUCCESS" "Deploy completo realizado!"
+}
+
+# Criar webhook automático para GitHub
+setup_auto_deploy() {
+    log "DEPLOY" "🔄 Configurando sistema de deploy automático..."
+
+    # Criar secret para webhook
+    WEBHOOK_SECRET="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
+    echo "$WEBHOOK_SECRET" > /opt/webhook-secret.txt
+
+    # Criar script de webhook
+    cat > "/opt/webhook-deploy.sh" << EOF
+#!/bin/bash
+set -euo pipefail
+
+# Configurações
+PROJECT_DIR="$PROJECT_DIR"
+WEBHOOK_SECRET="$WEBHOOK_SECRET"
+
+# Função de log
+log() {
+    echo "[\$(date '+%Y-%m-%d %H:%M:%S')] \$1"
+}
+
+# Função de deploy automático
+auto_deploy() {
+    log "🚀 Iniciando deploy automático..."
+
+    cd "\$PROJECT_DIR"
+
+    # 1. Fazer backup do estado atual
+    log "📦 Fazendo backup do estado atual..."
+    docker-compose ps > /tmp/containers_state.txt
+
+    # 2. Atualizar código do GitHub
+    log "📥 Atualizando código do GitHub..."
+    git fetch origin
+    git reset --hard origin/$GITHUB_BRANCH
+    git pull origin $GITHUB_BRANCH
+
+    # 3. Rebuild e redeploy dos serviços principais
+    log "🔨 Rebuilding frontend e backend..."
+    docker-compose build --no-cache frontend backend
+
+    # 4. Restart dos containers com novo código
+    log "🔄 Reiniciando containers..."
+    docker-compose up -d --force-recreate frontend backend
+
+    # 5. Verificar se tudo está funcionando
+    log "✅ Verificando saúde dos serviços..."
+    sleep 15
+
+    # Verificar se containers estão rodando
+    if docker-compose ps | grep -q "frontend.*Up" && docker-compose ps | grep -q "backend.*Up"; then
+        log "✅ Deploy automático concluído com sucesso!"
+
+        # Limpar imagens antigas
+        docker image prune -f
+
+        return 0
+    else
+        log "❌ Erro no deploy automático - rollback necessário"
+        return 1
+    fi
+}
+
+# Executar deploy
+auto_deploy
+EOF
+
+    chmod +x /opt/webhook-deploy.sh
+
+    # Criar serviço Node.js para webhook
+    cat > "/opt/webhook-server.js" << EOF
+const http = require('http');
+const crypto = require('crypto');
+const { exec } = require('child_process');
+
+const WEBHOOK_SECRET = '$WEBHOOK_SECRET';
+const PORT = 9999;
+
+function verifySignature(payload, signature) {
+    const hmac = crypto.createHmac('sha256', WEBHOOK_SECRET);
+    const digest = 'sha256=' + hmac.update(payload).digest('hex');
+    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest));
+}
+
+const server = http.createServer((req, res) => {
+    if (req.method !== 'POST') {
+        res.writeHead(405);
+        res.end('Method not allowed');
+        return;
+    }
+
+    let body = '';
+    req.on('data', chunk => {
+        body += chunk.toString();
+    });
+
+    req.on('end', () => {
+        const signature = req.headers['x-hub-signature-256'];
+
+        if (!signature || !verifySignature(body, signature)) {
+            console.log('❌ Assinatura inválida');
+            res.writeHead(401);
+            res.end('Unauthorized');
+            return;
+        }
+
+        try {
+            const payload = JSON.parse(body);
+
+            // Verificar se é push na branch main
+            if (payload.ref === 'refs/heads/$GITHUB_BRANCH') {
+                console.log('🚀 Webhook recebido - iniciando deploy automático...');
+
+                exec('/opt/webhook-deploy.sh', (error, stdout, stderr) => {
+                    if (error) {
+                        console.error('❌ Erro no deploy:', error);
+                        console.error('stderr:', stderr);
+                    } else {
+                        console.log('✅ Deploy automático concluído');
+                        console.log('stdout:', stdout);
+                    }
+                });
+
+                res.writeHead(200);
+                res.end('Deploy iniciado');
+            } else {
+                console.log('ℹ️ Push em branch diferente de $GITHUB_BRANCH - ignorado');
+                res.writeHead(200);
+                res.end('Branch ignorada');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao processar webhook:', error);
+            res.writeHead(400);
+            res.end('Bad request');
+        }
+    });
+});
+
+server.listen(PORT, () => {
+    console.log(\`🎣 Webhook server rodando na porta \${PORT}\`);
+    console.log(\`📡 URL do webhook: https://webhook.$DOMAIN1\`);
+});
+EOF
+
+    # Adicionar webhook service no docker-compose
+    cat >> "$PROJECT_DIR/docker-compose.yml" << EOF
+
+  webhook-deploy:
+    image: node:18-alpine
+    container_name: webhook-deploy
+    restart: unless-stopped
+    networks:
+      - traefik
+    volumes:
+      - /opt/webhook-server.js:/app/webhook-server.js:ro
+      - /opt/webhook-deploy.sh:/opt/webhook-deploy.sh:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - $PROJECT_DIR:$PROJECT_DIR
+      - /usr/bin/docker:/usr/bin/docker:ro
+      - /usr/local/bin/docker-compose:/usr/local/bin/docker-compose:ro
+    working_dir: /app
+    command: node webhook-server.js
+    environment:
+      - NODE_ENV=production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.webhook.rule=Host(\`webhook.$DOMAIN1\`) || Host(\`webhook.$DOMAIN2\`)"
+      - "traefik.http.routers.webhook.entrypoints=websecure"
+      - "traefik.http.routers.webhook.tls.certresolver=letsencrypt"
+      - "traefik.http.services.webhook.loadbalancer.server.port=9999"
+EOF
+
+    # Deploy do webhook container
+    cd "$PROJECT_DIR"
+    docker-compose up -d webhook-deploy
+
+    log "SUCCESS" "Sistema de deploy automático configurado!"
+    log "INFO" "URL do Webhook: https://webhook.$DOMAIN1"
+    log "INFO" "Secret salvo em: /opt/webhook-secret.txt"
 }
 
 # Mostrar resumo final
