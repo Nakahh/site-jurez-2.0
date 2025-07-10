@@ -2284,7 +2284,7 @@ server {
         add_header X-XSS-Protection "1; mode=block";
     }
 
-    # Configurações de compressão
+    # Configurações de compress��o
     gzip on;
     gzip_vary on;
     gzip_min_length 1024;
@@ -2859,7 +2859,7 @@ intelligent_health_check() {
                 log "WARNING" "Webhook GitHub nao esta ativo"
     fi
     
-    log "INFO" "📊 Serviços saudáveis: $healthy_services/$total_services"
+    log "INFO" "��� Serviços saudáveis: $healthy_services/$total_services"
     
     if [ $healthy_services -ge $((total_services * 80 / 100)) ]; then
         log "SUCCESS" "🎯 Sistema está majoritariamente saudável!"
@@ -3009,6 +3009,41 @@ EOF
     echo "5. ✅ Configure o webhook no GitHub com a URL fornecida"
     echo "6. ✅ Monitore o sistema via Grafana"
     echo
+}
+
+# Função para testar conectividade HTTPS
+test_https_connectivity() {
+    log "INSTALL" "🔒 Testando conectividade HTTPS inteligente..."
+
+    local urls=(
+        "https://siqueicamposimoveis.com.br:Frontend Principal"
+        "https://portainer.siqueicamposimoveis.com.br:Portainer Principal"
+        "https://traefik.siqueicamposimoveis.com.br:Traefik Dashboard"
+        "https://n8n.siqueicamposimoveis.com.br:N8N Automation"
+        "https://grafana.siqueicamposimoveis.com.br:Grafana Dashboard"
+        "https://portainer.meuboot.site:Portainer MeuBoot"
+    )
+
+    local working_urls=0
+    local total_urls=${#urls[@]}
+
+    for url_info in "${urls[@]}"; do
+        IFS=':' read -r url desc <<< "$url_info"
+        log "INFO" "🔍 Testando HTTPS para $desc..."
+
+        if curl -k -s --max-time 10 "$url" >/dev/null 2>&1; then
+            log "SUCCESS" "✅ $desc - HTTPS funcionando"
+            ((working_urls++))
+        else
+            log "WARNING" "⚠️  $desc - HTTPS nao acessivel (normal se certificados ainda estao sendo gerados)"
+        fi
+    done
+
+    log "INFO" "📊 Testes HTTPS: $working_urls/$total_urls bem-sucedidos"
+
+    if [ $working_urls -eq 0 ]; then
+        log "WARNING" "Nenhum servico HTTPS acessivel ainda - aguarde propagacao de certificados"
+    fi
 }
 
 # Exibir links finais de acesso
