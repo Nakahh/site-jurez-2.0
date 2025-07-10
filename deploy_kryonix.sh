@@ -1396,7 +1396,7 @@ intelligent_project_build() {
         <p class="status">Deploy em progresso - Aguarde alguns instantes</p>
         <script>
             setTimeout(() => {
-                document.querySelector('.loading').textContent = 'Finalizando configuraç��o...';
+                document.querySelector('.loading').textContent = 'Finalizando configuração...';
             }, 3000);
             setTimeout(() => {
                 window.location.reload();
@@ -1657,32 +1657,83 @@ intelligent_final_deploy() {
         log "WARNING" "ChatGPT falhou - configure OPENAI_API_KEY depois"
     fi
 
-    # Verificar status dos serviços
-    log "INFO" "🔍 Verificando status dos serviços..."
-    local services_running=0
-    local total_services=0
+        # Verificação completa e inteligente de todos os serviços
+    log "INFO" "🔍 Verificando status completo de todos os serviços..."
 
-    for service in traefik postgres redis project-frontend project-backend portainer-siqueira; do
-        ((total_services++))
-        if docker-compose ps -q "$service" 2>/dev/null | grep -q .; then
-            if [ "$(docker-compose ps -q "$service" | xargs docker inspect -f '{{.State.Status}}')" = "running" ]; then
-                log "SUCCESS" "   ✅ $service: rodando"
-                ((services_running++))
-            else
-                log "WARNING" "   ⚠️  $service: com problemas"
-            fi
+    local services=(
+        "traefik:Traefik Proxy:🔀"
+        "postgres:PostgreSQL:🗄️"
+        "redis:Redis Cache:🔄"
+        "project-frontend:Frontend App:🌐"
+        "project-backend:Backend API:⚙️"
+        "portainer-siqueira:Portainer Principal:🐳"
+        "portainer-meuboot:Portainer MeuBoot:🐳"
+        "adminer:Adminer DB:🗃️"
+        "prometheus:Prometheus:📊"
+        "grafana:Grafana:📈"
+        "n8n:N8N Automation:🔄"
+        "evolution-api:Evolution API:📱"
+        "minio:MinIO Storage:📁"
+        "chatgpt-stack:ChatGPT Stack:🤖"
+    )
+
+    local services_running=0
+    local services_healthy=0
+    local total_services=${#services[@]}
+
+    echo
+    log "INFO" "📋 RELATÓRIO DETALHADO DE SERVIÇOS:"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    for service_info in "${services[@]}"; do
+        IFS=':' read -r service_name service_desc service_icon <<< "$service_info"
+
+        printf "%-25s %s " "$service_icon $service_desc" "→"
+
+        if docker-compose ps -q "$service_name" 2>/dev/null | grep -q .; then
+            local status=$(docker-compose ps -q "$service_name" | xargs docker inspect -f '{{.State.Status}}' 2>/dev/null)
+            local health=$(docker-compose ps -q "$service_name" | xargs docker inspect -f '{{.State.Health.Status}}' 2>/dev/null)
+
+            case "$status" in
+                "running")
+                    ((services_running++))
+                    if [ "$health" = "healthy" ] || [ "$health" = "<no value>" ]; then
+                        ((services_healthy++))
+                        printf "${GREEN}✅ FUNCIONANDO${NC}\n"
+                    else
+                        printf "${YELLOW}⚠️  RODANDO (sem healthcheck)${NC}\n"
+                    fi
+                    ;;
+                "restarting")
+                    printf "${YELLOW}🔄 REINICIANDO${NC}\n"
+                    ;;
+                "exited")
+                    printf "${RED}❌ PARADO${NC}\n"
+                    ;;
+                *)
+                    printf "${RED}❓ STATUS: $status${NC}\n"
+                    ;;
+            esac
         else
-            log "ERROR" "   ❌ $service: não encontrado"
+            printf "${RED}❌ NÃO ENCONTRADO${NC}\n"
         fi
     done
 
-    log "INFO" "📊 Status: $services_running/$total_services serviços principais rodando"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log "INFO" "📊 RESUMO: $services_running/$total_services rodando | $services_healthy/$total_services saudáveis"
 
-    if [ $services_running -ge 4 ]; then
-        log "SUCCESS" "✅ Deploy realizado com sucesso!"
+    # Determinar status do deploy
+    if [ $services_running -ge 10 ]; then
+        log "SUCCESS" "🎉 Deploy EXCELENTE! Maioria dos serviços funcionando"
         return 0
+    elif [ $services_running -ge 6 ]; then
+        log "SUCCESS" "✅ Deploy BOM! Serviços principais funcionando"
+        return 0
+    elif [ $services_running -ge 3 ]; then
+        log "WARNING" "⚠️  Deploy PARCIAL - alguns serviços com problemas"
+        return 1
     else
-        log "WARNING" "⚠️  Deploy parcial - alguns serviços podem estar com problemas"
+        log "ERROR" "❌ Deploy FALHOU - poucos serviços funcionando"
         return 1
     fi
 }
@@ -2753,7 +2804,7 @@ intelligent_database_config() {
     log "SUCCESS" "Bancos de dados configurados!"
 }
 
-# Configuração inteligente do Grafana
+# Configuraç��o inteligente do Grafana
 intelligent_grafana_config() {
     log "INSTALL" "📊 Configurando Grafana inteligente..."
     
@@ -2987,7 +3038,7 @@ show_final_links() {
     echo
 
     # Automação e integração
-    echo -e "${BOLD}${CYAN}🤖 AUTOMAÇÃO E INTEGRAÇÃO:${NC}"
+    echo -e "${BOLD}${CYAN}🤖 AUTOMAÇÃO E INTEGRA��ÃO:${NC}"
     echo -e "   🔄 ${BOLD}N8N (Principal):${NC} https://n8n.siqueicamposimoveis.com.br"
     echo -e "   🔄 ${BOLD}N8N (MeuBoot):${NC} https://n8n.meuboot.site"
     echo -e "      👤 Usuário: kryonix | 🔑 Senha: $N8N_PASSWORD"
@@ -3005,7 +3056,7 @@ show_final_links() {
     # Armazenamento
     echo -e "${BOLD}${BLUE}📁 ARMAZENAMENTO:${NC}"
     echo -e "   🗃️  ${BOLD}MinIO Console:${NC} https://minio.siqueicamposimoveis.com.br"
-    echo -e "   �� ${BOLD}MinIO API:${NC} https://storage.siqueicamposimoveis.com.br"
+    echo -e "   📡 ${BOLD}MinIO API:${NC} https://storage.siqueicamposimoveis.com.br"
     echo -e "      👤 Usuário: kryonix_minio_admin | 🔑 Senha: $MINIO_PASSWORD"
     echo
 
