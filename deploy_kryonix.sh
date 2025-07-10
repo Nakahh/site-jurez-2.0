@@ -761,7 +761,7 @@ intelligent_code_fixes() {
 
         # Verificação básica de sintaxe
         if [ ! -s "$file_path" ]; then
-            log "WARNING" "   ⚠��  Arquivo vazio detectado"
+            log "WARNING" "   ⚠️  Arquivo vazio detectado"
             return 1
         fi
 
@@ -923,8 +923,10 @@ EOF
     log "SUCCESS" "✅ Correções automáticas concluídas!"
     log "INFO" "📊 Resultado: $fixes_applied correções aplicadas em $total_files_checked arquivos verificados"
 
-    # Limpar backups antigos (manter apenas os últimos 3)
+        # Limpar backups antigos (manter apenas os últimos 3)
     find . -maxdepth 1 -name "backups_*" -type d | sort | head -n -3 | xargs rm -rf 2>/dev/null || true
+
+    return 0
 }
 
 # Função específica para corrigir erros de sintaxe detectados durante build
@@ -2803,7 +2805,7 @@ show_final_links() {
     # IA e ChatBots
     echo -e "${BOLD}${GREEN}🧠 INTELIGÊNCIA ARTIFICIAL:${NC}"
     echo -e "   🤖 ${BOLD}ChatGPT Stack:${NC} https://chatgpt.siqueicamposimoveis.com.br"
-    echo -e "   ���� ${BOLD}Bot Interface:${NC} https://bot.siqueicamposimoveis.com.br"
+    echo -e "   🤖 ${BOLD}Bot Interface:${NC} https://bot.siqueicamposimoveis.com.br"
     echo -e "      ⚠️  ${YELLOW}Configure OPENAI_API_KEY no docker-compose.yml${NC}"
     echo
 
@@ -2825,7 +2827,7 @@ show_final_links() {
     # Informações técnicas
     echo -e "${BOLD}${CYAN}🔧 INFORMAÇÕES TÉCNICAS:${NC}"
     echo -e "   🌐 ${BOLD}IP Servidor:${NC} $SERVER_IP"
-    echo -e "   🏗️  ${BOLD}Frontend Port:${NC} $FRONTEND_PORT"
+    echo -e "   ����️  ${BOLD}Frontend Port:${NC} $FRONTEND_PORT"
     echo -e "   ⚙️  ${BOLD}Backend Port:${NC} $BACKEND_PORT"
     echo -e "   🗄️  ${BOLD}Prisma:${NC} $HAS_PRISMA"
     echo -e "   📂 ${BOLD}Projeto:${NC} $PROJECT_DIR"
