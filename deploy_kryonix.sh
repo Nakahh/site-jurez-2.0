@@ -38,13 +38,13 @@ SMTP_PASS="@Vitor.12345@"
 ADMIN_EMAIL="vitor.nakahh@gmail.com"
 
 # Senhas dos serviços (geradas automaticamente)
-POSTGRES_PASSWORD="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
-REDIS_PASSWORD="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
-N8N_PASSWORD="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
-GRAFANA_PASSWORD="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
-MINIO_PASSWORD="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
-PORTAINER_PASSWORD="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
-EVOLUTION_PASSWORD="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
+export POSTGRES_PASSWORD="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
+export REDIS_PASSWORD="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
+export N8N_PASSWORD="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
+export GRAFANA_PASSWORD="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
+export MINIO_PASSWORD="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
+export PORTAINER_PASSWORD="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
+export EVOLUTION_PASSWORD="$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)"
 
 # Função de logging
 log() {
@@ -972,7 +972,7 @@ Webhook URL: http://$SERVER_IP:9000/webhook
 Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 
 🔐 SSL:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Certificados SSL automáticos via Let's Encrypt
 ✅ Redirecionamento automático HTTP → HTTPS
 ✅ Renovação automática dos certificados
@@ -992,7 +992,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 🔗 Webhook: systemctl restart github-webhook
 
 ⚠️ CONFIGURAÇÃO DNS NECESSÁRIA:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Configure os seguintes registros DNS para apontar para $SERVER_IP:
 
 $DOMAIN1 → $SERVER_IP
@@ -1021,7 +1021,7 @@ adminer.$DOMAIN2 → $SERVER_IP
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 
     chmod 600 /root/KRYONIX_CREDENTIALS.txt
