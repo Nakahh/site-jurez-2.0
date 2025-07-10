@@ -54,7 +54,7 @@ log() {
         "SUCCESS") echo -e "${GREEN}✅ [$timestamp] $message${NC}" ;;
         "ERROR") echo -e "${RED}❌ [$timestamp] $message${NC}" ;;
         "WARNING") echo -e "${YELLOW}⚠️ [$timestamp] $message${NC}" ;;
-        "INFO") echo -e "${BLUE}ℹ️ [$timestamp] $message${NC}" ;;
+        "INFO") echo -e "${BLUE}ℹ�� [$timestamp] $message${NC}" ;;
         "INSTALL") echo -e "${PURPLE}⚙️ [$timestamp] $message${NC}" ;;
         "DEPLOY") echo -e "${CYAN}🚀 [$timestamp] $message${NC}" ;;
         *) echo -e "${BOLD}📋 [$timestamp] $message${NC}" ;;
@@ -248,6 +248,71 @@ setup_directories() {
     chown -R 472:472 "$KRYONIX_DIR"/grafana 2>/dev/null || true
     
     log "SUCCESS" "Estrutura criada!"
+}
+
+# Criar Dockerfiles
+create_dockerfiles() {
+    log "DEPLOY" "📦 Criando Dockerfiles..."
+    
+    # Frontend Dockerfile - CORRIGIDO
+    cat > "$PROJECT_DIR/Dockerfile.frontend" << 'EOF'
+FROM node:18-alpine AS builder
+WORKDIR /app
+RUN apk add --no-cache git python3 make g++
+COPY package*.json ./
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+COPY . .
+ENV NODE_OPTIONS="--max-old-space-size=8192"
+ENV CI=false
+ENV GENERATE_SOURCEMAP=false
+RUN npm run build || npx vite build --outDir dist || (mkdir -p dist && cp -r client/* dist/ 2>/dev/null || true)
+
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Criar configuração nginx corretamente
+RUN cat > /etc/nginx/conf.d/default.conf << 'NGINXEOF'
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+    
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    
+    location /api {
+        proxy_pass http://kryonix-backend:3333;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+NGINXEOF
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+EOF
+    
+    # Backend Dockerfile - CORRIGIDO
+    cat > "$PROJECT_DIR/Dockerfile.backend" << 'EOF'
+FROM node:18-alpine
+WORKDIR /app
+RUN apk add --no-cache git python3 make g++ curl
+COPY package*.json ./
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+COPY . .
+RUN npm run build:server 2>/dev/null || echo "Sem build de server necessário"
+RUN npm run db:generate 2>/dev/null || npx prisma generate 2>/dev/null || echo "Sem Prisma"
+EXPOSE 3333
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3333/api/ping || exit 1
+CMD ["npm", "run", "start"]
+EOF
+    
+    log "SUCCESS" "Dockerfiles criados!"
 }
 
 # Criar Docker Compose único
@@ -488,62 +553,6 @@ EOF
     log "SUCCESS" "Docker Compose criado!"
 }
 
-# Criar Dockerfiles
-create_dockerfiles() {
-    log "DEPLOY" "📦 Criando Dockerfiles..."
-    
-    # Frontend Dockerfile
-    cat > "$PROJECT_DIR/Dockerfile.frontend" << EOF
-FROM node:18-alpine AS builder
-WORKDIR /app
-RUN apk add --no-cache git python3 make g++
-COPY package*.json ./
-RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
-COPY . .
-ENV NODE_OPTIONS="--max-old-space-size=8192"
-ENV CI=false
-ENV GENERATE_SOURCEMAP=false
-RUN npm run build || npx vite build --outDir dist || (mkdir -p dist && cp -r client/* dist/ 2>/dev/null || true)
-
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-RUN echo 'server {
-    listen 80;
-    server_name _;
-    root /usr/share/nginx/html;
-    index index.html;
-    location / {
-        try_files \$uri \$uri/ /index.html;
-    }
-    location /api {
-        proxy_pass http://kryonix-backend:$BACKEND_PORT;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-    }
-}' > /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-EOF
-    
-    # Backend Dockerfile
-    cat > "$PROJECT_DIR/Dockerfile.backend" << EOF
-FROM node:18-alpine
-WORKDIR /app
-RUN apk add --no-cache git python3 make g++ curl
-COPY package*.json ./
-RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
-COPY . .
-RUN npm run build:server 2>/dev/null || echo "Sem build de server necessário"
-RUN npm run db:generate 2>/dev/null || npx prisma generate 2>/dev/null || echo "Sem Prisma"
-EXPOSE $BACKEND_PORT
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \\
-  CMD curl -f http://localhost:$BACKEND_PORT/api/ping || exit 1
-CMD ["npm", "run", "start"]
-EOF
-    
-    log "SUCCESS" "Dockerfiles criados!"
-}
-
 # Build do projeto
 build_project() {
     log "DEPLOY" "🔨 Fazendo build do projeto..."
@@ -603,7 +612,7 @@ EOF
     chmod +x /usr/local/bin/github-webhook.sh
     
     # Webhook service
-    cat > /etc/systemd/system/github-webhook.service << EOF
+    cat > /etc/systemd/system/github-webhook.service << 'EOF'
 [Unit]
 Description=GitHub Webhook Auto Deploy
 After=network.target
@@ -679,7 +688,7 @@ show_final_info() {
     sleep 60  # Aguardar serviços iniciarem
     
     clear
-    echo -e "${BOLD}${GREEN}🎉 KRYONIX DEPLOY CONCLU��DO! 🎉${NC}"
+    echo -e "${BOLD}${GREEN}🎉 KRYONIX DEPLOY CONCLUÍDO! 🎉${NC}"
     echo
     echo -e "${BOLD}📱 APLICAÇÕES:${NC}"
     echo -e "   🏠 Frontend: ${BOLD}https://$DOMAIN1${NC}"
