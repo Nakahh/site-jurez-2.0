@@ -11,7 +11,7 @@ const Imoveis = loadable(() => import("../pages/Imoveis"), {
   fallback: <LoadingFallback />,
 });
 
-const ImovelDetalhes = loadable(() => import("../pages/ImovelDetalhes"), {
+const ImovelDetalhes = loadable(() => import("../pages/Imovel"), {
   fallback: <LoadingFallback />,
 });
 
