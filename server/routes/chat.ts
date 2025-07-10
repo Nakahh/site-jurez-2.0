@@ -159,7 +159,7 @@ export const getHistoricoChat: RequestHandler = async (req, res) => {
     // Agrupar mensagens por conversa
     const conversas = mensagens.reduce(
       (acc, mensagem) => {
-        const key = `${mensagem.remetente}-${mensagem.destinatario || "IA"}`;
+        const key = `${mensagem.remetenteId}-IA`;
         if (!acc[key]) acc[key] = [];
         acc[key].push({
           id: mensagem.id,
