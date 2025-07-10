@@ -39,12 +39,9 @@ const Comparador = loadable(() => import("../pages/Comparador"), {
   fallback: <LoadingFallback />,
 });
 
-const SimuladorFinanciamento = loadable(
-  () => import("../pages/SimuladorFinanciamento"),
-  {
-    fallback: <LoadingFallback />,
-  },
-);
+const SimuladorFinanciamento = loadable(() => import("../pages/Simulador"), {
+  fallback: <LoadingFallback />,
+});
 
 const Blog = loadable(() => import("../pages/Blog"), {
   fallback: <LoadingFallback />,
