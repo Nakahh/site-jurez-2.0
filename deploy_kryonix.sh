@@ -659,7 +659,7 @@ services:
     labels:
       - "traefik.enable=true"
       # Console
-                  - "traefik.http.routers.minio-console.rule=Host(\`minio.$DOMAIN1\`) || Host(\`minio.$DOMAIN2\`)"
+                        - "traefik.http.routers.minio-console.rule=Host(\`minio.$DOMAIN1\`) || Host(\`minio.$DOMAIN2\`)"
       - "traefik.http.routers.minio-console.entrypoints=websecure"
       - "traefik.http.routers.minio-console.tls.certresolver=letsencrypt"
       - "traefik.http.routers.minio-console.service=minio-console"
@@ -925,7 +925,7 @@ create_credentials_file() {
 #                     🔐 CREDENCIAIS KRYONIX ULTRA v3.0                     #
 ##############################################################################
 
-���� DOMÍNIOS:
+🌐 DOMÍNIOS:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
 
 📱 Site Principal: https://$DOMAIN1
@@ -944,7 +944,7 @@ create_credentials_file() {
 🗄️ Adminer: https://adminer.$DOMAIN1
 
 📊 SERVIÇOS - DOMÍNIO 2 ($DOMAIN2):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 Portainer: https://portainer.$DOMAIN2 (mesma stack do domínio 1)
 🤖 N8N: https://n8n.$DOMAIN2
 📱 Evolution API: https://evolution.$DOMAIN2
@@ -1009,7 +1009,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 🔗 Webhook: journalctl -u github-webhook -f
 
 💡 COMANDOS ÚTEIS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔄 Restart: cd /opt/site-jurez-2.0 && docker-compose restart
 📊 Status: docker ps
 🗑️ Limpar: docker system prune -af
@@ -1042,7 +1042,7 @@ grafana.$DOMAIN2 → $SERVER_IP
 prometheus.$DOMAIN2 → $SERVER_IP
 adminer.$DOMAIN2 → $SERVER_IP
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
