@@ -84,7 +84,7 @@ clean_server() {
     systemctl stop docker 2>/dev/null || true
     docker system prune -af --volumes 2>/dev/null || true
     apt-get remove -y docker-ce docker-ce-cli docker-engine docker docker.io containerd runc 2>/dev/null || true
-    apt-get remove -y postgresql npm redis-server apache2 mysql-server nginx nodejs 2>/dev/null || true
+        apt-get remove -y postgresql redis-server apache2 mysql-server nginx nodejs 2>/dev/null || true
     apt-get autoremove -y 2>/dev/null || true
     
     # Preservar arquivos essenciais
