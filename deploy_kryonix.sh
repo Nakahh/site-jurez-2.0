@@ -801,9 +801,10 @@ main() {
     install_nodejs
     setup_firewall
     setup_project
-    create_dockerfiles
+        create_dockerfiles
     create_docker_compose
     deploy_services
+    setup_auto_deploy
     show_summary
 }
 
