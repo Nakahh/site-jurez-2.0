@@ -203,7 +203,7 @@ intelligent_reset() {
 
 # Atualização inteligente do sistema
 intelligent_system_update() {
-    log "INSTALL" "🔄 Atualizando sistema Ubuntu com inteligência..."
+    log "INSTALL" "�� Atualizando sistema Ubuntu com inteligência..."
     
     # Configurar locale para evitar warnings
     export LC_ALL=C.UTF-8
@@ -1511,16 +1511,61 @@ intelligent_final_deploy() {
         log "WARNING" "Problemas na geração de senhas - usando defaults"
     fi
 
-    # Deploy em etapas para maior confiabilidade
+        # Deploy inteligente com verificação de saúde
     log "DEPLOY" "🔄 Deploy etapa 1: Infraestrutura base..."
-    docker-compose up -d traefik postgres redis 2>/dev/null || {
-        log "WARNING" "Deploy da infraestrutura falhou, tentando individual..."
-        docker-compose up -d traefik || log "WARNING" "Traefik falhou"
-        sleep 5
-        docker-compose up -d postgres || log "WARNING" "PostgreSQL falhou"
-        sleep 5
-        docker-compose up -d redis || log "WARNING" "Redis falhou"
+
+    # Função para verificar saúde do serviço
+    check_service_health() {
+        local service_name="$1"
+        local max_attempts=30
+        local attempt=0
+
+        while [ $attempt -lt $max_attempts ]; do
+            if docker-compose ps "$service_name" 2>/dev/null | grep -q "Up"; then
+                log "SUCCESS" "✅ $service_name está rodando"
+                return 0
+            fi
+
+            ((attempt++))
+            if [ $((attempt % 5)) -eq 0 ]; then
+                log "INFO" "⏳ Aguardando $service_name ($attempt/$max_attempts)..."
+            fi
+            sleep 2
+        done
+
+        log "WARNING" "⚠️  $service_name não subiu após $max_attempts tentativas"
+        return 1
     }
+
+    # Deploy Traefik primeiro (�� fundamental)
+    log "INFO" "🔀 Iniciando Traefik..."
+    if docker-compose up -d traefik 2>/dev/null; then
+        check_service_health traefik
+    else
+        log "WARNING" "Problemas com Traefik, tentando build..."
+        docker-compose build traefik 2>/dev/null || true
+        docker-compose up -d traefik 2>/dev/null || log "ERROR" "Traefik falhou completamente"
+    fi
+
+    sleep 10
+
+    # Deploy PostgreSQL
+    log "INFO" "🗄️  Iniciando PostgreSQL..."
+    if docker-compose up -d postgres 2>/dev/null; then
+        check_service_health postgres
+    else
+        log "WARNING" "Problemas com PostgreSQL"
+    fi
+
+    sleep 10
+
+    # Deploy Redis
+    log "INFO" "🔄 Iniciando Redis..."
+    if docker-compose up -d redis 2>/dev/null; then
+        check_service_health redis
+    else
+        log "WARNING" "Problemas com Redis"
+    fi
 
     # Aguardar infraestrutura ficar pronta
     log "INFO" "⏳ Aguardando infraestrutura ficar pronta (30 segundos)..."
@@ -2813,7 +2858,7 @@ EOF
     echo "  🔗 GitHub Webhook: http://$SERVER_IP:9999/webhook"
     echo "  🔑 Webhook Secret: kryonix_webhook_secret_2024"
     echo "  📁 Projeto GitHub: $GITHUB_REPO"
-    echo "  ���� Diretório Local: $PROJECT_DIR"
+    echo "  📁 Diretório Local: $PROJECT_DIR"
     echo "  🔄 Auto-deploy: ATIVO (webhook + systemd)"
     echo "  📊 Monitoramento: ATIVO (Prometheus + Grafana)"
     echo "  🛡️ Segurança: ATIVA (UFW + Fail2ban + HTTPS)"
@@ -2836,7 +2881,7 @@ EOF
     memory_usage=$(free -h | grep '^Mem:' | awk '{print $3"/"$2}')
     
     echo -e "${BOLD}📊 ESTATÍSTICAS DO SISTEMA:${NC}"
-    echo "  🐳 Containers ativos: $running_containers"
+    echo "  ��� Containers ativos: $running_containers"
     echo "  💾 Uso de disco: $disk_usage"
     echo "  🧠 Uso de memória: $memory_usage"
     echo "  ⏰ Deploy concluído em: $(date)"
@@ -2889,7 +2934,7 @@ show_final_links() {
     echo -e "   🔄 ${BOLD}N8N (MeuBoot):${NC} https://n8n.meuboot.site"
     echo -e "      👤 Usuário: kryonix | 🔑 Senha: $N8N_PASSWORD"
     echo -e "   📱 ${BOLD}Evolution API:${NC} https://evolution.siqueicamposimoveis.com.br"
-    echo -e "   �� ${BOLD}Evolution (MeuBoot):${NC} https://evo.meuboot.site"
+    echo -e "   📱 ${BOLD}Evolution (MeuBoot):${NC} https://evo.meuboot.site"
     echo
 
     # IA e ChatBots
@@ -2981,7 +3026,7 @@ intelligent_main() {
     create_intelligent_dockerfiles
     create_intelligent_compose
     
-        # Fase 6: Deploy dos Serviços
+        # Fase 6: Deploy dos Servi��os
     log "DEPLOY" "🚀 FASE 6: Deploy Inteligente dos Serviços"
     intelligent_final_deploy
     
