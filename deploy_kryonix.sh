@@ -1457,7 +1457,7 @@ intelligent_final_deploy() {
 
     sleep 15
 
-    log "DEPLOY" "🔄 Deploy etapa 3: Serviços auxiliares..."
+    log "DEPLOY" "�� Deploy etapa 3: Serviços auxiliares..."
     docker-compose up -d portainer-siqueira portainer-meuboot adminer 2>/dev/null || {
         log "WARNING" "Deploy dos serviços auxiliares com problemas"
     }
@@ -2352,7 +2352,7 @@ def update_project():
                                         log_message(f"Erro ao instalar dependencias: {npm_result.stderr}", "ERROR")
             
             # Rebuild e restart containers
-            log_message("🔄 Reconstruindo containers...")
+            log_message("���� Reconstruindo containers...")
             os.chdir(KRYONIX_DIR)
             
             # Rebuild apenas os containers do projeto
@@ -2840,9 +2840,9 @@ intelligent_main() {
     # Teste final de HTTPS
     intelligent_https_test
     
-    # Fase 9: Resumo Final
+        # Fase 9: Resumo Final
     log "DEPLOY" "🎉 FASE 9: Finalização"
-    intelligent_final_summary
+    show_final_links
 }
 
 # Executar deploy inteligente
