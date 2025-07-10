@@ -106,7 +106,7 @@ show_banner() {
     echo -e "${BOLD}${PURPLE}"
     cat << 'EOF'
 ##############################################################################
-#                           ��� KRYONIX DEPLOY                               #
+#                           🚀 KRYONIX DEPLOY                               #
 #         Sistema de Deploy Inteligente e Autônomo para VPS Oracle          #
 #                     Ubuntu 22.04 - Versão 2.0 ULTRA                      #
 ##############################################################################
@@ -566,7 +566,7 @@ intelligent_project_analysis() {
     FRONTEND_PORT="3000"
     BACKEND_PORT="3333"
     
-    # Verificar se há configuração específica de portas
+    # Verificar se há configuraç��o específica de portas
     if [ -f "vite.config.js" ]; then
         CONFIGURED_PORT=$(grep -o "port.*[0-9]\+" vite.config.js | grep -o "[0-9]\+" | head -1 2>/dev/null || echo "")
         if [ ! -z "$CONFIGURED_PORT" ]; then
@@ -903,11 +903,16 @@ EOF
         fi
     fi
 
-                # Verificação final dos arquivos críticos
+                    # Verificação final dos arquivos críticos
     log "INFO" "🔍 Verificação final dos arquivos..."
     for file in "${critical_files[@]}"; do
         if [ -f "$file" ]; then
-            verify_and_fix_file "$file" "${file##*.}"
+            if check_file_basic "$file"; then
+                log "SUCCESS" "   ✅ $file validado"
+            else
+                log "WARNING" "   ⚠️  $file com problemas"
+                ((fixes_applied++))
+            fi
         fi
     done
 
@@ -1444,7 +1449,7 @@ intelligent_final_deploy() {
 
     sleep 10
 
-    log "DEPLOY" "🔄 Deploy etapa 5: ChatGPT Stack..."
+    log "DEPLOY" "��� Deploy etapa 5: ChatGPT Stack..."
     docker-compose up -d chatgpt-stack 2>/dev/null || {
         log "WARNING" "Deploy do ChatGPT falhou - verifique OPENAI_API_KEY"
     }
@@ -2535,7 +2540,7 @@ intelligent_database_config() {
     docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "SELECT 'CREATE DATABASE chatgpt_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'chatgpt_db')\\gexec" 2>/dev/null || true
     docker exec kryonix-postgres psql -U kryonix_user -d kryonix_main -c "SELECT 'CREATE DATABASE project_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'project_db')\\gexec" 2>/dev/null || true
     
-    # Executar migraç��es do projeto se existir Prisma
+    # Executar migrações do projeto se existir Prisma
     if [ -f "$PROJECT_DIR/prisma/schema.prisma" ]; then
         log "INFO" "🔄 Executando migra��ões do Prisma..."
         cd "$PROJECT_DIR"
