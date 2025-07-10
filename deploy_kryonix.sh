@@ -903,15 +903,15 @@ EOF
         fi
     fi
 
-                    # Verificação final dos arquivos críticos
+                        # Verificação final dos arquivos críticos
     log "INFO" "🔍 Verificação final dos arquivos..."
-    for file in "${critical_files[@]}"; do
+    for file in "${critical_files[@]}" 2>/dev/null || true; do
         if [ -f "$file" ]; then
-            if check_file_basic "$file"; then
+            if check_file_basic "$file" 2>/dev/null; then
                 log "SUCCESS" "   ✅ $file validado"
             else
                 log "WARNING" "   ⚠️  $file com problemas"
-                ((fixes_applied++))
+                fixes_applied=$((fixes_applied + 1))
             fi
         fi
     done
@@ -2100,7 +2100,7 @@ COPY . .
 # Configurar Prisma se existir
 RUN if [ -f "prisma/schema.prisma" ]; then \\
         echo "📦 Configurando Prisma..." && \\
-        npx prisma generate || echo "⚠️  Prisma generate failed"; \\
+        npx prisma generate || echo "��️  Prisma generate failed"; \\
     fi
 
 # Build TypeScript se necessário
