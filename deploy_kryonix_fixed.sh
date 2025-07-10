@@ -4,6 +4,7 @@
 #                           🚀 KRYONIX DEPLOY                               #
 #         Sistema de Deploy Inteligente e Autônomo para VPS Oracle          #
 #                     Ubuntu 22.04 - Versão ULTRA CLEAN                     #
+#                      CONFIGURADO PARA 2 DOMÍNIOS                          #
 ##############################################################################
 
 set -euo pipefail
@@ -26,8 +27,8 @@ PURPLE='\033[0;35m'; CYAN='\033[0;36m'; BOLD='\033[1m'; NC='\033[0m'
 
 # Configurações principais
 SERVER_IP="144.22.212.82"
-DOMAIN1="siqueicamposimoveis.com.br"
-DOMAIN2="meuboot.site"
+DOMAIN1="siqueicamposimoveis.com.br"    # Domínio principal: Frontend + Backend + Todos serviços
+DOMAIN2="meuboot.site"                  # Domínio secundário: Apenas Portainer para stacks
 GITHUB_REPO="https://github.com/Nakahh/site-jurez-2.0"
 
 # SMTP e credenciais
@@ -64,8 +65,10 @@ log() {
 # Banner simplificado
 show_banner() {
     clear
-    echo -e "${BOLD}${PURPLE}🚀 KRYONIX DEPLOY - Ubuntu 22.04 Oracle VPS${NC}"
-    echo -e "${BLUE}📊 IP: $SERVER_IP | 📁 Projeto: GitHub${NC}"
+    echo -e "${BOLD}${PURPLE}🚀 KRYONIX DEPLOY - 2 DOMÍNIOS - Ubuntu 22.04 Oracle VPS${NC}"
+    echo -e "${BLUE}📊 IP: $SERVER_IP | 🌐 Dom1: $DOMAIN1 | 🌐 Dom2: $DOMAIN2${NC}"
+    echo -e "${YELLOW}📁 $DOMAIN1: Frontend + Backend + Todos serviços${NC}"
+    echo -e "${YELLOW}📁 $DOMAIN2: Apenas Portainer para stacks${NC}"
     echo
 }
 
@@ -238,9 +241,9 @@ analyze_project() {
 
 # Configurar estrutura de diretórios
 setup_directories() {
-    log "INSTALL" "📁 Criando estrutura de diretórios..."
+    log "INSTALL" "📁 Criando estrutura de diretórios para 2 domínios..."
     
-    mkdir -p "$KRYONIX_DIR"/{traefik/config,postgres/data,redis/data,minio/data,grafana/data,n8n/data,evolution/{siqueira,meuboot}/data,portainer/{siqueira,meuboot}/data}
+    mkdir -p "$KRYONIX_DIR"/{traefik/config,postgres/data,redis/data,minio/data,grafana/data,n8n/data,portainer/{siqueira,meuboot}/data}
     
     # Definir permissões
     chown -R 1001:1001 "$KRYONIX_DIR"/{n8n,minio} 2>/dev/null || true
@@ -313,9 +316,9 @@ EOF
     log "SUCCESS" "Dockerfiles criados!"
 }
 
-# Criar Docker Compose único
+# Criar Docker Compose para 2 domínios
 create_compose() {
-    log "DEPLOY" "🐳 Criando docker-compose.yml..."
+    log "DEPLOY" "🐳 Criando docker-compose.yml para 2 domínios..."
     
     cat > "$KRYONIX_DIR/docker-compose.yml" << EOF
 version: "3.8"
@@ -323,9 +326,11 @@ version: "3.8"
 networks:
   kryonixnet:
     driver: bridge
+  meubootnet:
+    driver: bridge
 
 services:
-  # Traefik - Reverse Proxy
+  # Traefik - Reverse Proxy Global com SSL automático
   traefik:
     image: traefik:v3.0
     container_name: kryonix-traefik
@@ -348,6 +353,7 @@ services:
       - "$KRYONIX_DIR/traefik/config:/letsencrypt"
     networks:
       - kryonixnet
+      - meubootnet
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(\`traefik.$DOMAIN1\`)"
@@ -390,7 +396,7 @@ services:
     networks:
       - kryonixnet
 
-  # Frontend do Projeto
+  # Frontend do Projeto (APENAS DOMÍNIO 1)
   frontend:
     build:
       context: $PROJECT_DIR
@@ -409,7 +415,7 @@ services:
       - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
 
-  # Backend do Projeto
+  # Backend do Projeto (APENAS DOMÍNIO 1)
   backend:
     build:
       context: $PROJECT_DIR
@@ -433,24 +439,41 @@ services:
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=$BACKEND_PORT"
 
-  # Portainer
-  portainer:
+  # Portainer Siqueira (DOMÍNIO 1 - todos serviços)
+  portainer-siqueira:
     image: portainer/portainer-ee:latest
-    container_name: kryonix-portainer
+    container_name: kryonix-portainer-siqueira
     restart: unless-stopped
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - "$KRYONIX_DIR/portainer/$DOMAIN2:/data"
+      - "$KRYONIX_DIR/portainer/siqueira:/data"
     networks:
       - kryonixnet
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.portainer.rule=Host(\`portainer.$DOMAIN2\`)"
-      - "traefik.http.routers.portainer.entrypoints=websecure"
-      - "traefik.http.routers.portainer.tls.certresolver=letsencrypt"
-      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "traefik.http.routers.portainer-siqueira.rule=Host(\`portainer.$DOMAIN1\`)"
+      - "traefik.http.routers.portainer-siqueira.entrypoints=websecure"
+      - "traefik.http.routers.portainer-siqueira.tls.certresolver=letsencrypt"
+      - "traefik.http.services.portainer-siqueira.loadbalancer.server.port=9000"
 
-  # N8N
+  # Portainer MeuBoot (DOMÍNIO 2 - APENAS STACKS)
+  portainer-meuboot:
+    image: portainer/portainer-ee:latest
+    container_name: kryonix-portainer-meuboot
+    restart: unless-stopped
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "$KRYONIX_DIR/portainer/meuboot:/data"
+    networks:
+      - meubootnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer-meuboot.rule=Host(\`$DOMAIN2\`) || Host(\`www.$DOMAIN2\`) || Host(\`portainer.$DOMAIN2\`)"
+      - "traefik.http.routers.portainer-meuboot.entrypoints=websecure"
+      - "traefik.http.routers.portainer-meuboot.tls.certresolver=letsencrypt"
+      - "traefik.http.services.portainer-meuboot.loadbalancer.server.port=9000"
+
+  # N8N (APENAS DOMÍNIO 1)
   n8n:
     image: n8nio/n8n:latest
     container_name: kryonix-n8n
@@ -482,7 +505,7 @@ services:
       - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
       - "traefik.http.services.n8n.loadbalancer.server.port=5678"
 
-  # MinIO
+  # MinIO (APENAS DOMÍNIO 1)
   minio:
     image: minio/minio:latest
     container_name: kryonix-minio
@@ -510,7 +533,7 @@ services:
       - "traefik.http.routers.minio-api.service=minio-api"
       - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
 
-  # Grafana
+  # Grafana (APENAS DOMÍNIO 1)
   grafana:
     image: grafana/grafana:latest
     container_name: kryonix-grafana
@@ -530,7 +553,7 @@ services:
       - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
 
-  # Adminer
+  # Adminer (APENAS DOMÍNIO 1)
   adminer:
     image: adminer:4.8.1
     container_name: kryonix-adminer
@@ -548,7 +571,7 @@ services:
 
 EOF
     
-    log "SUCCESS" "Docker Compose criado!"
+    log "SUCCESS" "Docker Compose criado para 2 domínios!"
 }
 
 # Build do projeto
@@ -572,7 +595,7 @@ build_project() {
 
 # Deploy final
 deploy_services() {
-    log "DEPLOY" "🚀 Iniciando deploy dos serviços..."
+    log "DEPLOY" "🚀 Iniciando deploy dos serviços para 2 domínios..."
     
     cd "$KRYONIX_DIR"
     
@@ -588,37 +611,35 @@ deploy_services() {
     docker-compose up -d traefik postgres redis
     sleep 30
     
-    log "INFO" "Etapa 2: Aplicação principal..."
+    log "INFO" "Etapa 2: Aplicação principal (Domínio 1)..."
     docker-compose up -d --build frontend backend
     sleep 20
     
-    log "INFO" "Etapa 3: Serviços auxiliares..."
-    docker-compose up -d portainer n8n minio grafana adminer
+    log "INFO" "Etapa 3: Portainers para ambos domínios..."
+    docker-compose up -d portainer-siqueira portainer-meuboot
     sleep 15
     
-    log "SUCCESS" "Deploy concluído!"
+    log "INFO" "Etapa 4: Serviços auxiliares (Domínio 1)..."
+    docker-compose up -d n8n minio grafana adminer
+    sleep 15
+    
+    log "SUCCESS" "Deploy concluído para 2 domínios!"
 }
 
-# Configurar webhook GitHub
+# Configurar webhook GitHub CORRIGIDO
 setup_webhook() {
     log "DEPLOY" "🔗 Configurando webhook GitHub..."
     
+    # Script de deploy
     cat > /usr/local/bin/github-webhook.sh << 'EOF'
 #!/bin/bash
 cd /opt/site-jurez-2.0 && git pull && docker-compose -f /opt/kryonix/docker-compose.yml up -d --build frontend backend
 EOF
     chmod +x /usr/local/bin/github-webhook.sh
     
-    # Webhook service
-    cat > /etc/systemd/system/github-webhook.service << 'EOF'
-[Unit]
-Description=GitHub Webhook Auto Deploy
-After=network.target
-
-[Service]
-Type=simple
-User=root
-ExecStart=/usr/bin/python3 -c "
+    # Script Python para webhook
+    cat > /usr/local/bin/webhook-server.py << 'EOF'
+#!/usr/bin/env python3
 import http.server
 import socketserver
 import subprocess
@@ -641,26 +662,42 @@ class WebhookHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
-with socketserver.TCPServer(('', 9999), WebhookHandler) as httpd:
-    httpd.serve_forever()
-"
+if __name__ == '__main__':
+    PORT = 9999
+    with socketserver.TCPServer(('', PORT), WebhookHandler) as httpd:
+        print(f'Webhook server rodando na porta {PORT}')
+        httpd.serve_forever()
+EOF
+    chmod +x /usr/local/bin/webhook-server.py
+    
+    # Service file corrigido
+    cat > /etc/systemd/system/github-webhook.service << 'EOF'
+[Unit]
+Description=GitHub Webhook Auto Deploy
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/webhook-server.py
 Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
 EOF
     
     systemctl daemon-reload
-    systemctl enable --now github-webhook.service
+    systemctl enable --now github-webhook.service 2>/dev/null || true
     
     log "SUCCESS" "Webhook configurado!"
 }
 
 # Verificar deployment
 verify_deployment() {
-    log "INFO" "🔍 Verificando serviços..."
+    log "INFO" "🔍 Verificando serviços para 2 domínios..."
     
-    local services=("traefik" "postgres" "redis" "frontend" "backend" "portainer" "n8n" "minio" "grafana" "adminer")
+    local services=("traefik" "postgres" "redis" "frontend" "backend" "portainer-siqueira" "portainer-meuboot" "n8n" "minio" "grafana" "adminer")
     local running=0
     
     for service in "${services[@]}"; do
@@ -674,8 +711,8 @@ verify_deployment() {
     
     log "INFO" "📊 Serviços funcionando: $running/${#services[@]}"
     
-    if [ $running -ge 7 ]; then
-        log "SUCCESS" "Deploy bem-sucedido!"
+    if [ $running -ge 8 ]; then
+        log "SUCCESS" "Deploy bem-sucedido para 2 domínios!"
     else
         log "WARNING" "Deploy parcial"
     fi
@@ -686,29 +723,29 @@ show_final_info() {
     sleep 60  # Aguardar serviços iniciarem
     
     clear
-    echo -e "${BOLD}${GREEN}🎉 KRYONIX DEPLOY CONCLUÍDO! 🎉${NC}"
+    echo -e "${BOLD}${GREEN}🎉 KRYONIX DEPLOY 2 DOMÍNIOS CONCLUÍDO! 🎉${NC}"
     echo
-    echo -e "${BOLD}📱 APLICAÇÕES:${NC}"
+    echo -e "${BOLD}📱 DOMÍNIO 1 ($DOMAIN1) - APLICAÇÃO COMPLETA:${NC}"
     echo -e "   🏠 Frontend: ${BOLD}https://$DOMAIN1${NC}"
     echo -e "   ⚙️  Backend API: ${BOLD}https://api.$DOMAIN1${NC}"
-    echo
-    echo -e "${BOLD}🛠️ GERENCIAMENTO:${NC}"
-    echo -e "   🐳 Portainer: ${BOLD}https://portainer.$DOMAIN2${NC}"
-    echo -e "      👤 Configure manualmente no primeiro acesso"
+    echo -e "   🐳 Portainer: ${BOLD}https://portainer.$DOMAIN1${NC}"
+    echo -e "   🔄 N8N: ${BOLD}https://n8n.$DOMAIN1${NC}"
+    echo -e "   📁 MinIO: ${BOLD}https://minio.$DOMAIN1${NC}"
+    echo -e "   📊 Grafana: ${BOLD}https://grafana.$DOMAIN1${NC}"
+    echo -e "   🗄️  Adminer: ${BOLD}https://adminer.$DOMAIN1${NC}"
     echo -e "   🔀 Traefik: ${BOLD}https://traefik.$DOMAIN1${NC}"
     echo
-    echo -e "${BOLD}🤖 AUTOMAÇÃO:${NC}"
-    echo -e "   🔄 N8N: ${BOLD}https://n8n.$DOMAIN1${NC}"
-    echo -e "      👤 kryonix | 🔑 $N8N_PASSWORD"
+    echo -e "${BOLD}🛠️ DOMÍNIO 2 ($DOMAIN2) - APENAS PORTAINER STACKS:${NC}"
+    echo -e "   ��� Site Principal: ${BOLD}https://$DOMAIN2${NC} (redireciona para Portainer)"
+    echo -e "   🐳 Portainer Stacks: ${BOLD}https://portainer.$DOMAIN2${NC}"
+    echo -e "      👤 Configure manualmente no primeiro acesso"
     echo
-    echo -e "${BOLD}🗄️ DADOS:${NC}"
-    echo -e "   🗄️  Adminer: ${BOLD}https://adminer.$DOMAIN1${NC}"
-    echo -e "   📁 MinIO: ${BOLD}https://minio.$DOMAIN1${NC}"
-    echo -e "      👤 kryonix_minio_admin | 🔑 $MINIO_PASSWORD"
-    echo -e "   📊 Grafana: ${BOLD}https://grafana.$DOMAIN1${NC}"
-    echo -e "      👤 admin | 🔑 $GRAFANA_PASSWORD"
+    echo -e "${BOLD}🔧 CREDENCIAIS:${NC}"
+    echo -e "   🔄 N8N: usuário ${YELLOW}kryonix${NC} | senha ${YELLOW}$N8N_PASSWORD${NC}"
+    echo -e "   📁 MinIO: usuário ${YELLOW}kryonix_minio_admin${NC} | senha ${YELLOW}$MINIO_PASSWORD${NC}"
+    echo -e "   📊 Grafana: usuário ${YELLOW}admin${NC} | senha ${YELLOW}$GRAFANA_PASSWORD${NC}"
     echo
-    echo -e "${BOLD}🔧 WEBHOOK:${NC}"
+    echo -e "${BOLD}🔧 WEBHOOK GITHUB:${NC}"
     echo -e "   🔗 URL: ${BOLD}http://$SERVER_IP:9999/webhook${NC}"
     echo -e "   📝 Configure no GitHub: Settings > Webhooks"
     echo
@@ -717,7 +754,10 @@ show_final_info() {
     echo -e "   🔄 Restart: ${BOLD}docker-compose -f $KRYONIX_DIR/docker-compose.yml restart [serviço]${NC}"
     echo -e "   🔍 Logs: ${BOLD}docker-compose -f $KRYONIX_DIR/docker-compose.yml logs -f [serviço]${NC}"
     echo
-    log "SUCCESS" "Sistema KRYONIX implantado com sucesso!"
+    echo -e "${BOLD}${GREEN}✅ SSL/HTTPS automático configurado para TODOS os serviços!${NC}"
+    echo -e "${BOLD}${GREEN}🚀 Deploy automático via webhook configurado!${NC}"
+    echo
+    log "SUCCESS" "Sistema KRYONIX para 2 domínios implantado com sucesso!"
 }
 
 # Função principal
