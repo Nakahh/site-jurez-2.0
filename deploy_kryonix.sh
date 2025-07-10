@@ -665,7 +665,7 @@ services:
       - "traefik.http.routers.minio-console.service=minio-console"
       - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
       # API
-                  - "traefik.http.routers.minio-api.rule=Host(\`storage.$DOMAIN1\`) || Host(\`storage.$DOMAIN2\`)"
+                        - "traefik.http.routers.minio-api.rule=Host(\`storage.$DOMAIN1\`) || Host(\`storage.$DOMAIN2\`)"
       - "traefik.http.routers.minio-api.entrypoints=websecure"
       - "traefik.http.routers.minio-api.tls.certresolver=letsencrypt"
       - "traefik.http.routers.minio-api.service=minio-api"
@@ -944,7 +944,7 @@ create_credentials_file() {
 🗄️ Adminer: https://adminer.$DOMAIN1
 
 📊 SERVIÇOS - DOMÍNIO 2 ($DOMAIN2):
-━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 Portainer: https://portainer.$DOMAIN2 (mesma stack do domínio 1)
 🤖 N8N: https://n8n.$DOMAIN2
 📱 Evolution API: https://evolution.$DOMAIN2
@@ -991,7 +991,7 @@ create_credentials_file() {
    Pass: $SMTP_PASS
 
 🔄 AUTO-DEPLOY:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Webhook URL: http://$SERVER_IP:9000/webhook
 Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 
@@ -1009,7 +1009,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 🔗 Webhook: journalctl -u github-webhook -f
 
 💡 COMANDOS ÚTEIS:
-━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔄 Restart: cd /opt/site-jurez-2.0 && docker-compose restart
 📊 Status: docker ps
 🗑️ Limpar: docker system prune -af
