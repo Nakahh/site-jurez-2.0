@@ -655,7 +655,7 @@ export default function AdminDashboard() {
                       className="h-16 flex flex-col items-center justify-center space-y-2"
                       onClick={() => {
                         alert(
-                          "Backup iniciado! Você receberá uma notificação quando conclu��do.",
+                          "Backup iniciado! Você receberá uma notificação quando concluído.",
                         );
                       }}
                     >
@@ -1594,7 +1594,7 @@ export default function AdminDashboard() {
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            setSelectedProperty(usuario);
+                            setSelectedUser(usuario);
                             setShowSettingsModal(true);
                           }}
                           className="w-full sm:w-auto"
