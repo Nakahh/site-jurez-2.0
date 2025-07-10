@@ -33,7 +33,7 @@ import { Imovel, TipoImovel, Finalidade } from "@shared/types";
 import { ChatBubble } from "@/components/ChatBubble";
 import { EnhancedSearch } from "@/components/EnhancedSearch";
 import { PropertyCardSkeleton } from "@/components/LoadingSkeleton";
-import { NotificationSystem } from "@/components/NotificationSystem";
+import { NotificationBell } from "@/components/NotificationSystem";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ShareButton } from "@/components/ShareButton";
 import { SharedNavigation } from "@/components/SharedNavigation";
