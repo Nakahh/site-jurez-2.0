@@ -142,7 +142,7 @@ export default function AdminDashboard() {
   const handleExport = async () => {
     try {
       const { generateSalesReport } = await import("@/utils/pdfGenerator");
-      await generateSalesReport();
+      await generateSalesReport([]);
 
       // Simular download do arquivo
       const blob = new Blob(
@@ -511,7 +511,7 @@ export default function AdminDashboard() {
         <TabsContent value="overview" className="space-y-6">
           {realData && (
             <>
-              {/* Cards de Estatísticas - Dados Reais */}
+              {/* Cards de Estat��sticas - Dados Reais */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 <StatsCard
                   title="Faturamento Mensal"
