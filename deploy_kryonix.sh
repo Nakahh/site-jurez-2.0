@@ -69,7 +69,7 @@ show_banner() {
     echo "#               Sistema Completo com SSL + Auto-Deploy                      #"
     echo "##############################################################################"
     echo -e "${NC}"
-    echo -e "${BLUE}🌐 Dom��nio 1: ${BOLD}$DOMAIN1${NC} ${BLUE}(Site principal + Todos serviços)${NC}"
+    echo -e "${BLUE}🌐 Domínio 1: ${BOLD}$DOMAIN1${NC} ${BLUE}(Site principal + Todos serviços)${NC}"
     echo -e "${BLUE}🌐 Domínio 2: ${BOLD}$DOMAIN2${NC} ${BLUE}(Portainer + Stacks idênticas)${NC}"
     echo -e "${YELLOW}📡 IP do Servidor: ${BOLD}$SERVER_IP${NC}"
     echo -e "${GREEN}🔐 SSL Automático via Let's Encrypt${NC}"
@@ -652,20 +652,20 @@ services:
       - internal
     environment:
       MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: $MINIO_PASSWORD
+            MINIO_ROOT_PASSWORD: \${MINIO_PASSWORD}
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
     labels:
       - "traefik.enable=true"
       # Console
-      - "traefik.http.routers.minio-console.rule=Host(\`minio.$DOMAIN1\`) || Host(\`minio.$DOMAIN2\`)"
+            - "traefik.http.routers.minio-console.rule=Host(\`minio.siqueicamposimoveis.com.br\`) || Host(\`minio.meuboot.site\`)"
       - "traefik.http.routers.minio-console.entrypoints=websecure"
       - "traefik.http.routers.minio-console.tls.certresolver=letsencrypt"
       - "traefik.http.routers.minio-console.service=minio-console"
       - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
       # API
-      - "traefik.http.routers.minio-api.rule=Host(\`storage.$DOMAIN1\`) || Host(\`storage.$DOMAIN2\`)"
+            - "traefik.http.routers.minio-api.rule=Host(\`storage.siqueicamposimoveis.com.br\`) || Host(\`storage.meuboot.site\`)"
       - "traefik.http.routers.minio-api.entrypoints=websecure"
       - "traefik.http.routers.minio-api.tls.certresolver=letsencrypt"
       - "traefik.http.routers.minio-api.service=minio-api"
@@ -680,14 +680,14 @@ services:
       - traefik
       - internal
     environment:
-      GF_SECURITY_ADMIN_PASSWORD: $GRAFANA_PASSWORD
-      GF_SERVER_ROOT_URL: https://grafana.$DOMAIN1
+            GF_SECURITY_ADMIN_PASSWORD: \${GRAFANA_PASSWORD}
+            GF_SERVER_ROOT_URL: https://grafana.siqueicamposimoveis.com.br
       GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
     volumes:
       - grafana_data:/var/lib/grafana
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(\`grafana.$DOMAIN1\`) || Host(\`grafana.$DOMAIN2\`)"
+            - "traefik.http.routers.grafana.rule=Host(\`grafana.siqueicamposimoveis.com.br\`) || Host(\`grafana.meuboot.site\`)"
       - "traefik.http.routers.grafana.entrypoints=websecure"
       - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
@@ -709,7 +709,7 @@ services:
       - prometheus_data:/prometheus
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.rule=Host(\`prometheus.$DOMAIN1\`) || Host(\`prometheus.$DOMAIN2\`)"
+            - "traefik.http.routers.prometheus.rule=Host(\`prometheus.siqueicamposimoveis.com.br\`) || Host(\`prometheus.meuboot.site\`)"
       - "traefik.http.routers.prometheus.entrypoints=websecure"
       - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
@@ -728,7 +728,7 @@ services:
       ADMINER_DEFAULT_SERVER: postgres
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.adminer.rule=Host(\`adminer.$DOMAIN1\`) || Host(\`adminer.$DOMAIN2\`)"
+            - "traefik.http.routers.adminer.rule=Host(\`adminer.siqueicamposimoveis.com.br\`) || Host(\`adminer.meuboot.site\`)"
       - "traefik.http.routers.adminer.entrypoints=websecure"
       - "traefik.http.routers.adminer.tls.certresolver=letsencrypt"
             - "traefik.http.services.adminer.loadbalancer.server.port=8080"
@@ -991,7 +991,7 @@ create_credentials_file() {
    Pass: $SMTP_PASS
 
 🔄 AUTO-DEPLOY:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Webhook URL: http://$SERVER_IP:9000/webhook
 Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 
@@ -1042,7 +1042,7 @@ grafana.$DOMAIN2 → $SERVER_IP
 prometheus.$DOMAIN2 → $SERVER_IP
 adminer.$DOMAIN2 → $SERVER_IP
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
