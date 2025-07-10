@@ -94,10 +94,6 @@ export const getImovel: RequestHandler = async (req, res) => {
             whatsapp: true,
           },
         },
-        historicosPreco: {
-          orderBy: { criadoEm: "desc" },
-          take: 5,
-        },
       },
     });
 
