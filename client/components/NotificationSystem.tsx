@@ -744,6 +744,7 @@ export function useNotificationActions() {
   };
 
   return {
+    addNotification,
     notifyNewLead,
     notifyVisitScheduled,
     notifySaleCompleted,
