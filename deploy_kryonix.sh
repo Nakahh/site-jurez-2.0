@@ -452,7 +452,7 @@ services:
       - --entrypoints.web.http.redirections.entrypoint.permanent=true
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(\`traefik.$DOMAIN1\`)"
+            - "traefik.http.routers.traefik.rule=Host(\\`traefik.$DOMAIN1\\`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.service=api@internal"
@@ -926,7 +926,7 @@ create_credentials_file() {
 ##############################################################################
 
 🌐 DOMÍNIOS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
 
 📱 Site Principal: https://$DOMAIN1
 🏠 Portainer Principal: https://$DOMAIN2
