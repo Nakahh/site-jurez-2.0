@@ -94,7 +94,8 @@ export function ChatSystem({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const { notifyNewMessage, notifyVisitScheduled } = useNotificationActions();
+  const { notifyNewMessage, notifyVisitScheduled, addNotification } =
+    useNotificationActions();
 
   useEffect(() => {
     // Simular carregamento de salas de chat
