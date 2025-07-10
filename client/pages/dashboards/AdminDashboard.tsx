@@ -70,6 +70,7 @@ export default function AdminDashboard() {
   const [showNewTransactionModal, setShowNewTransactionModal] = useState(false);
   const [showNewPropertyModal, setShowNewPropertyModal] = useState(false);
   const [showNewUserModal, setShowNewUserModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedPropertyImages, setSelectedPropertyImages] = useState<
     string[]
   >([]);
