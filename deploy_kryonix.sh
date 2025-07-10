@@ -533,7 +533,7 @@ intelligent_project_analysis() {
     log "INFO" "Estrutura de pastas detectada:"
     for dir in client server frontend backend web api src dist public; do
         if [ -d "$dir" ]; then
-            log "SUCCESS" "  📁 $dir/ encontrado"
+            log "SUCCESS" "  ��� $dir/ encontrado"
             
             # Verificar package.json específico
             if [ -f "$dir/package.json" ]; then
@@ -715,23 +715,38 @@ EOF
     log "SUCCESS" "Configuração de banco de dados criada!"
 }
 
-# Sistema inteligente de correção automática de código
+# Sistema inteligente de correção automática de código MELHORADO
 intelligent_code_fixes() {
-    log "INSTALL" "Aplicando correcoes automaticas inteligentes no codigo..."
+    log "INSTALL" "🔧 Aplicando correções automáticas inteligentes no código..."
 
     cd "$PROJECT_DIR" || return 0
 
+    # Contador de correções aplicadas
+    local fixes_applied=0
+    local total_files_checked=0
+
+    # Lista de arquivos críticos para verificar e corrigir
+    local critical_files=(
+        "client/lib/performance.ts"
+        "server/routes/chat.ts"
+        "server/routes/imoveis.ts"
+        "client/hooks/usePerformance.ts"
+        "client/lib/optimizationManager.ts"
+        "client/components/ChatSystem.tsx"
+        "client/utils/systemConfig.ts"
+    )
+
     # Fazer backup de arquivos críticos antes de qualquer modificação
-    log "INFO" "Criando backups de seguranca..."
-    if [ -f "client/lib/performance.ts" ]; then
-        cp "client/lib/performance.ts" "client/lib/performance.ts.backup" 2>/dev/null || true
-    fi
-    if [ -f "server/routes/chat.ts" ]; then
-        cp "server/routes/chat.ts" "server/routes/chat.ts.backup" 2>/dev/null || true
-    fi
-    if [ -f "server/routes/imoveis.ts" ]; then
-        cp "server/routes/imoveis.ts" "server/routes/imoveis.ts.backup" 2>/dev/null || true
-    fi
+    log "INFO" "🗂️  Criando backups de segurança..."
+    local backup_dir="backups_$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$backup_dir"
+
+    for file in "${critical_files[@]}"; do
+        if [ -f "$file" ]; then
+            cp "$file" "$backup_dir/$(basename "$file").backup" 2>/dev/null || true
+            log "INFO" "   📁 Backup: $file"
+        fi
+    done
 
     # Correção segura do performance.ts - recriar arquivo se houver problemas
     log "INFO" "Corrigindo performance.ts..."
@@ -1933,7 +1948,7 @@ COPY . .
 # Configurar Prisma se existir
 RUN if [ -f "prisma/schema.prisma" ]; then \\
         echo "📦 Configurando Prisma..." && \\
-        npx prisma generate || echo "⚠️  Prisma generate failed"; \\
+        npx prisma generate || echo "���️  Prisma generate failed"; \\
     fi
 
 # Build TypeScript se necessário
@@ -2159,7 +2174,7 @@ def update_project():
                 timeout=30
             )
             
-            log_message("✅ Código atualizado com sucesso!")
+            log_message("✅ C��digo atualizado com sucesso!")
             
             # Instalar dependências se package.json foi modificado
             if os.path.exists("package.json"):
@@ -2543,7 +2558,7 @@ EOF
     echo "  📱 Evolution API (MeuBoot):     https://evo.meuboot.site"
     echo
     
-    echo -e "${BOLD}${GREEN}🎯 PROJETO PRINCIPAL:${NC}"
+    echo -e "${BOLD}${GREEN}���� PROJETO PRINCIPAL:${NC}"
     echo "  🌐 Frontend (Site Principal):   https://siqueicamposimoveis.com.br"
     echo "  ⚙️ Backend API:                 https://api.siqueicamposimoveis.com.br"
     echo
