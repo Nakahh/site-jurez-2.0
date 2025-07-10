@@ -143,11 +143,7 @@ export const getHistoricoChat: RequestHandler = async (req, res) => {
 
     const mensagens = await prisma.mensagem.findMany({
       where: {
-        OR: [
-          { remetente: req.user.userId },
-          { destinatario: req.user.userId },
-          { remetente: "IA" },
-        ],
+        remetenteId: req.user.userId,
       },
       skip,
       take: parseInt(limit as string),
