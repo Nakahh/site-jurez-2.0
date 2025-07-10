@@ -709,7 +709,7 @@ services:
       - prometheus_data:/prometheus
     labels:
       - "traefik.enable=true"
-                  - "traefik.http.routers.prometheus.rule=Host(\`prometheus.$DOMAIN1\`) || Host(\`prometheus.$DOMAIN2\`)"
+                        - "traefik.http.routers.prometheus.rule=Host(\`prometheus.$DOMAIN1\`) || Host(\`prometheus.$DOMAIN2\`)"
       - "traefik.http.routers.prometheus.entrypoints=websecure"
       - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
@@ -991,7 +991,7 @@ create_credentials_file() {
    Pass: $SMTP_PASS
 
 🔄 AUTO-DEPLOY:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Webhook URL: http://$SERVER_IP:9000/webhook
 Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 
@@ -1009,7 +1009,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 🔗 Webhook: journalctl -u github-webhook -f
 
 💡 COMANDOS ÚTEIS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
 🔄 Restart: cd /opt/site-jurez-2.0 && docker-compose restart
 📊 Status: docker ps
 🗑️ Limpar: docker system prune -af
@@ -1042,7 +1042,7 @@ grafana.$DOMAIN2 → $SERVER_IP
 prometheus.$DOMAIN2 → $SERVER_IP
 adminer.$DOMAIN2 → $SERVER_IP
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
