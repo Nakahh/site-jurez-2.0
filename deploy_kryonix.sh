@@ -761,7 +761,7 @@ intelligent_code_fixes() {
 
         # Verificação básica de sintaxe
         if [ ! -s "$file_path" ]; then
-            log "WARNING" "   ⚠️  Arquivo vazio detectado"
+            log "WARNING" "   ⚠��  Arquivo vazio detectado"
             return 1
         fi
 
@@ -1227,23 +1227,17 @@ intelligent_project_build() {
 
             log "INFO" "📦 Executando build do projeto com correções automáticas..."
 
-                # Aplicar correções automáticas antes do build (com tratamento de erro)
-            if intelligent_code_fixes; then
-                log "SUCCESS" "✅ Correções automáticas aplicadas"
-            else
-                log "WARNING" "⚠️  Algumas correções falharam, continuando..."
+                            # Aplicar correções automáticas antes do build (com tratamento de erro)
+            if type intelligent_code_fixes >/dev/null 2>&1; then
+                intelligent_code_fixes || log "WARNING" "⚠️  Algumas correções falharam, continuando..."
             fi
 
-            if fix_build_syntax_errors; then
-                log "SUCCESS" "✅ Erros de sintaxe corrigidos"
-            else
-                log "WARNING" "⚠️  Alguns erros de sintaxe persistem, continuando..."
+            if type fix_build_syntax_errors >/dev/null 2>&1; then
+                fix_build_syntax_errors || log "WARNING" "⚠️  Alguns erros de sintaxe persistem, continuando..."
             fi
 
-            if fix_typescript_build_errors; then
-                log "SUCCESS" "✅ Erros TypeScript corrigidos"
-            else
-                log "WARNING" "⚠️  Alguns erros TypeScript persistem, continuando..."
+            if type fix_typescript_build_errors >/dev/null 2>&1; then
+                fix_typescript_build_errors || log "WARNING" "⚠️  Alguns erros TypeScript persistem, continuando..."
             fi
 
             # Build inteligente com múltiplas tentativas
@@ -2100,7 +2094,7 @@ COPY . .
 # Configurar Prisma se existir
 RUN if [ -f "prisma/schema.prisma" ]; then \\
         echo "📦 Configurando Prisma..." && \\
-        npx prisma generate || echo "��️  Prisma generate failed"; \\
+        npx prisma generate || echo "⚠️  Prisma generate failed"; \\
     fi
 
 # Build TypeScript se necessário
@@ -2809,7 +2803,7 @@ show_final_links() {
     # IA e ChatBots
     echo -e "${BOLD}${GREEN}🧠 INTELIGÊNCIA ARTIFICIAL:${NC}"
     echo -e "   🤖 ${BOLD}ChatGPT Stack:${NC} https://chatgpt.siqueicamposimoveis.com.br"
-    echo -e "   🤖 ${BOLD}Bot Interface:${NC} https://bot.siqueicamposimoveis.com.br"
+    echo -e "   ���� ${BOLD}Bot Interface:${NC} https://bot.siqueicamposimoveis.com.br"
     echo -e "      ⚠️  ${YELLOW}Configure OPENAI_API_KEY no docker-compose.yml${NC}"
     echo
 
