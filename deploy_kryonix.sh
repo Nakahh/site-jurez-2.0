@@ -230,10 +230,27 @@ setup_firewall() {
     ufw default allow outgoing
     
     # Portas necessárias
+        # Portas essenciais do sistema
+    ufw allow 22/tcp comment 'SSH'
     ufw allow ssh
     ufw allow 80/tcp comment 'HTTP'
     ufw allow 443/tcp comment 'HTTPS'
-    ufw allow 9000/tcp comment 'Webhook GitHub'
+
+    # Portas dos serviços
+    ufw allow 3000/tcp comment 'Frontend'
+    ufw allow 3001/tcp comment 'Backend API'
+    ufw allow 5432/tcp comment 'PostgreSQL'
+    ufw allow 6379/tcp comment 'Redis'
+    ufw allow 5678/tcp comment 'N8N'
+    ufw allow 8080/tcp comment 'Evolution API & Adminer'
+    ufw allow 9000/tcp comment 'MinIO API & Portainer & Webhook'
+    ufw allow 9001/tcp comment 'MinIO Console'
+    ufw allow 9090/tcp comment 'Prometheus'
+
+    # Docker e comunicação interna
+    ufw allow from 172.16.0.0/12 comment 'Docker Networks'
+    ufw allow from 10.0.0.0/8 comment 'Private Networks'
+    ufw allow from 192.168.0.0/16 comment 'Local Networks'
     
     # Ativar UFW
     ufw --force enable
@@ -868,7 +885,7 @@ create_credentials_file() {
 ##############################################################################
 
 🌐 DOMÍNIOS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📱 Site Principal: https://$DOMAIN1
 🏠 Portainer Principal: https://$DOMAIN2
