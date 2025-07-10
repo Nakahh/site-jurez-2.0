@@ -130,8 +130,13 @@ install_docker() {
 # Instalar Node.js
 install_nodejs() {
     log "DEPLOY" "📦 Instalando Node.js 18 LTS..."
-    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+        curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
     apt-get install -y nodejs
+
+    # Configurar npm para não fazer auto-updates
+    npm config set update-notifier false --global 2>/dev/null || true
+    npm config set fund false --global 2>/dev/null || true
+
     # Node.js 18 vem com npm compatível, não fazer upgrade
     log "SUCCESS" "Node.js $(node -v) e npm $(npm -v) instalados!"
 }
