@@ -405,7 +405,7 @@ export function useSystemConfig() {
     () => systemConfig.getConfig(),
   ) || [systemConfig.getConfig(), () => {}];
 
-  React.useEffect(() => {
+  (globalThis as any).React?.useEffect(() => {
     const unsubscribe = systemConfig.subscribe(setConfig);
     return unsubscribe;
   }, []);
