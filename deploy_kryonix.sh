@@ -109,7 +109,7 @@ clean_system_completely() {
         rm -rf /var/lib/docker /etc/docker 2>/dev/null || true
     fi
     
-    # Remover aplicações instaladas
+    # Remover aplicaç��es instaladas
     apt remove -y --purge nginx apache2 mysql-server postgresql redis-server nodejs npm 2>/dev/null || true
     apt autoremove -y --purge 2>/dev/null || true
     
@@ -452,7 +452,7 @@ services:
       - --entrypoints.web.http.redirections.entrypoint.permanent=true
         labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.traefik.rule=Host('traefik.$DOMAIN1')"
+                  - "traefik.http.routers.traefik.rule=Host(\`traefik.$DOMAIN1\`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.service=api@internal"
@@ -489,7 +489,7 @@ services:
       - redis_data:/data
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.redis.rule=Host(\`redis.$DOMAIN1\`)"
+                  - "traefik.http.routers.redis.rule=Host(\`redis.$DOMAIN1\`)"
       - "traefik.http.routers.redis.entrypoints=websecure"
       - "traefik.http.routers.redis.tls.certresolver=letsencrypt"
       - "traefik.http.services.redis.loadbalancer.server.port=6379"
@@ -509,7 +509,7 @@ services:
     labels:
       - "traefik.enable=true"
       # Domínio principal
-            - "traefik.http.routers.frontend.rule=Host(\`$DOMAIN1\`) || Host(\`www.$DOMAIN1\`)"
+                  - "traefik.http.routers.frontend.rule=Host(\`$DOMAIN1\`) || Host(\`www.$DOMAIN1\`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
@@ -538,7 +538,7 @@ services:
       SMTP_PASS: $SMTP_PASS
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.backend.rule=Host(\`api.$DOMAIN1\`)"
+                  - "traefik.http.routers.backend.rule=Host(\`api.$DOMAIN1\`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=3001"
@@ -555,7 +555,7 @@ services:
       - portainer_data_siqueira:/data
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.portainer-siqueira.rule=Host(\`portainer.$DOMAIN1\`)"
+                  - "traefik.http.routers.portainer-siqueira.rule=Host(\`portainer.$DOMAIN1\`)"
       - "traefik.http.routers.portainer-siqueira.entrypoints=websecure"
       - "traefik.http.routers.portainer-siqueira.tls.certresolver=letsencrypt"
       - "traefik.http.services.portainer-siqueira.loadbalancer.server.port=9000"
@@ -573,12 +573,12 @@ services:
     labels:
       - "traefik.enable=true"
       # Domínio principal
-            - "traefik.http.routers.portainer-main.rule=Host(\`$DOMAIN2\`) || Host(\`www.$DOMAIN2\`)"
+                  - "traefik.http.routers.portainer-main.rule=Host(\`$DOMAIN2\`) || Host(\`www.$DOMAIN2\`)"
       - "traefik.http.routers.portainer-main.entrypoints=websecure"
       - "traefik.http.routers.portainer-main.tls.certresolver=letsencrypt"
       - "traefik.http.routers.portainer-main.service=portainer-meuboot"
       # Subdomínio
-            - "traefik.http.routers.portainer-sub.rule=Host(\`portainer.$DOMAIN2\`)"
+                  - "traefik.http.routers.portainer-sub.rule=Host(\`portainer.$DOMAIN2\`)"
       - "traefik.http.routers.portainer-sub.entrypoints=websecure"
       - "traefik.http.routers.portainer-sub.tls.certresolver=letsencrypt"
       - "traefik.http.routers.portainer-sub.service=portainer-meuboot"
@@ -612,7 +612,7 @@ services:
       - n8n_data:/home/node/.n8n
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.n8n.rule=Host(\`n8n.$DOMAIN1\`) || Host(\`n8n.$DOMAIN2\`)"
+                  - "traefik.http.routers.n8n.rule=Host(\`n8n.$DOMAIN1\`) || Host(\`n8n.$DOMAIN2\`)"
       - "traefik.http.routers.n8n.entrypoints=websecure"
       - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
       - "traefik.http.services.n8n.loadbalancer.server.port=5678"
@@ -637,7 +637,7 @@ services:
       - evolution_data:/evolution/instances
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.evolution.rule=Host(\`evolution.$DOMAIN1\`) || Host(\`evolution.$DOMAIN2\`)"
+                  - "traefik.http.routers.evolution.rule=Host(\`evolution.$DOMAIN1\`) || Host(\`evolution.$DOMAIN2\`)"
       - "traefik.http.routers.evolution.entrypoints=websecure"
       - "traefik.http.routers.evolution.tls.certresolver=letsencrypt"
       - "traefik.http.services.evolution.loadbalancer.server.port=8080"
@@ -659,13 +659,13 @@ services:
     labels:
       - "traefik.enable=true"
       # Console
-            - "traefik.http.routers.minio-console.rule=Host(\`minio.$DOMAIN1\`) || Host(\`minio.$DOMAIN2\`)"
+                  - "traefik.http.routers.minio-console.rule=Host(\`minio.$DOMAIN1\`) || Host(\`minio.$DOMAIN2\`)"
       - "traefik.http.routers.minio-console.entrypoints=websecure"
       - "traefik.http.routers.minio-console.tls.certresolver=letsencrypt"
       - "traefik.http.routers.minio-console.service=minio-console"
       - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
       # API
-            - "traefik.http.routers.minio-api.rule=Host(\`storage.$DOMAIN1\`) || Host(\`storage.$DOMAIN2\`)"
+                  - "traefik.http.routers.minio-api.rule=Host(\`storage.$DOMAIN1\`) || Host(\`storage.$DOMAIN2\`)"
       - "traefik.http.routers.minio-api.entrypoints=websecure"
       - "traefik.http.routers.minio-api.tls.certresolver=letsencrypt"
       - "traefik.http.routers.minio-api.service=minio-api"
@@ -687,7 +687,7 @@ services:
       - grafana_data:/var/lib/grafana
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.grafana.rule=Host(\`grafana.$DOMAIN1\`) || Host(\`grafana.$DOMAIN2\`)"
+                  - "traefik.http.routers.grafana.rule=Host(\`grafana.$DOMAIN1\`) || Host(\`grafana.$DOMAIN2\`)"
       - "traefik.http.routers.grafana.entrypoints=websecure"
       - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
@@ -709,7 +709,7 @@ services:
       - prometheus_data:/prometheus
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.prometheus.rule=Host(\`prometheus.$DOMAIN1\`) || Host(\`prometheus.$DOMAIN2\`)"
+                  - "traefik.http.routers.prometheus.rule=Host(\`prometheus.$DOMAIN1\`) || Host(\`prometheus.$DOMAIN2\`)"
       - "traefik.http.routers.prometheus.entrypoints=websecure"
       - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
@@ -728,7 +728,7 @@ services:
       ADMINER_DEFAULT_SERVER: postgres
     labels:
       - "traefik.enable=true"
-            - "traefik.http.routers.adminer.rule=Host(\`adminer.$DOMAIN1\`) || Host(\`adminer.$DOMAIN2\`)"
+                  - "traefik.http.routers.adminer.rule=Host(\`adminer.$DOMAIN1\`) || Host(\`adminer.$DOMAIN2\`)"
       - "traefik.http.routers.adminer.entrypoints=websecure"
       - "traefik.http.routers.adminer.tls.certresolver=letsencrypt"
       - "traefik.http.services.adminer.loadbalancer.server.port=8080"
@@ -932,7 +932,7 @@ create_credentials_file() {
 🏠 Portainer Principal: https://$DOMAIN2
 
 📊 SERVIÇOS - DOMÍNIO 1 ($DOMAIN1):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔀 Traefik Dashboard: https://traefik.$DOMAIN1
 📊 Portainer: https://portainer.$DOMAIN1
 🤖 N8N: https://n8n.$DOMAIN1
@@ -944,7 +944,7 @@ create_credentials_file() {
 🗄️ Adminer: https://adminer.$DOMAIN1
 
 📊 SERVIÇOS - DOMÍNIO 2 ($DOMAIN2):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 Portainer: https://portainer.$DOMAIN2 (mesma stack do domínio 1)
 🤖 N8N: https://n8n.$DOMAIN2
 📱 Evolution API: https://evolution.$DOMAIN2
@@ -955,7 +955,7 @@ create_credentials_file() {
 🗄️ Adminer: https://adminer.$DOMAIN2
 
 🔑 CREDENCIAIS:
-━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━
 🗄️ PostgreSQL:
    Host: postgres
    Database: kryonix
@@ -997,7 +997,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 
 🔐 SSL:
 ━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Certificados SSL automáticos via Let's Encrypt
+��� Certificados SSL automáticos via Let's Encrypt
 ✅ Redirecionamento automático HTTP → HTTPS
 ✅ Renovação automática dos certificados
 
@@ -1009,7 +1009,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 🔗 Webhook: journalctl -u github-webhook -f
 
 💡 COMANDOS ÚTEIS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔄 Restart: cd /opt/site-jurez-2.0 && docker-compose restart
 📊 Status: docker ps
 🗑️ Limpar: docker system prune -af
@@ -1042,7 +1042,7 @@ grafana.$DOMAIN2 → $SERVER_IP
 prometheus.$DOMAIN2 → $SERVER_IP
 adminer.$DOMAIN2 → $SERVER_IP
 
-━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
