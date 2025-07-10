@@ -1278,7 +1278,7 @@ intelligent_project_build() {
                 elif [[ $build_attempts -eq $max_attempts ]]; then
                     log "WARNING" "⚠️  Todas as tentativas de build falharam, criando build básico..."
 
-                    # Criar estrutura b��sica de fallback
+                    # Criar estrutura básica de fallback
                     mkdir -p dist/spa 2>/dev/null || true
 
                     # Copiar arquivos estáticos se existirem
@@ -1451,7 +1451,7 @@ intelligent_final_deploy() {
 
     sleep 15
 
-    log "DEPLOY" "���� Deploy etapa 3: Serviços auxiliares..."
+    log "DEPLOY" "🔄 Deploy etapa 3: Serviços auxiliares..."
     docker-compose up -d portainer-siqueira portainer-meuboot adminer 2>/dev/null || {
         log "WARNING" "Deploy dos serviços auxiliares com problemas"
     }
@@ -2660,7 +2660,7 @@ intelligent_https_test() {
         fi
     done
     
-    log "INFO" "���� Testes HTTPS: $successful_tests/$total_tests bem-sucedidos"
+    log "INFO" "📊 Testes HTTPS: $successful_tests/$total_tests bem-sucedidos"
     
     if [ $successful_tests -gt 0 ]; then
         log "SUCCESS" "🎯 Pelo menos alguns serviços HTTPS estão funcionando!"
@@ -2876,9 +2876,9 @@ intelligent_main() {
     intelligent_firewall_setup
 
         # DNS setup - tentar mas não falhar se der erro
-    log "INFO" "Tentando configurar DNS..."
-    if intelligent_dns_setup; then
-        log "SUCCESS" "DNS configurado com sucesso!"
+        log "INFO" "DNS automático desabilitado - configure manualmente"
+    # if intelligent_dns_setup; then
+    #     log "SUCCESS" "DNS configurado com sucesso!"
     else
         log "WARNING" "DNS setup falhou (credenciais ou permissões), continuando sem DNS automático"
         log "INFO" "💡 Configure manualmente os DNS apontando para $SERVER_IP"
