@@ -11,25 +11,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { initPerformanceMonitoring } from "@/lib/performance";
 import { optimizationManager } from "@/lib/optimizationManager";
-import {
-  LazyIndex,
-  LazyLogin,
-  LazySobre,
-  LazyContato,
-  LazySimulador,
-  LazyDesenvolvedor,
-  LazyBlog,
-  LazyImoveis,
-  LazyImovel,
-  LazyComparador,
-  LazyCorretorDashboard,
-  LazyAdminDashboard,
-  LazyClienteDashboard,
-  LazyMarketingDashboard,
-  LazyDesenvolvedorDashboard,
-  LazyNotFound,
-  preloadRoute,
-} from "./components/LazyRoutes";
+import { LazyRoutes } from "./components/LazyRoutes";
 
 // Import individual pages for corretor
 import { lazy, Suspense } from "react";
