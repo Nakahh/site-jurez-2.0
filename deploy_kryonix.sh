@@ -330,7 +330,6 @@ server {
         try_files \$uri \$uri/ /index.html;
     }
 }
-EOF
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
@@ -1042,7 +1041,7 @@ minio.$DOMAIN1 → $SERVER_IP
 storage.$DOMAIN1 → $SERVER_IP
 grafana.$DOMAIN1 → $SERVER_IP
 prometheus.$DOMAIN1 → $SERVER_IP
-adminer.$DOMAIN1 → $SERVER_IP
+adminer.$DOMAIN1 �� $SERVER_IP
 chatgpt.$DOMAIN1 → $SERVER_IP
 bot.$DOMAIN1 → $SERVER_IP
 redis.$DOMAIN1 → $SERVER_IP
