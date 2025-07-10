@@ -258,7 +258,7 @@ create_dockerfiles() {
     log "DEPLOY" "📦 Criando Dockerfiles..."
     
     # Frontend Dockerfile - ULTRA CORRIGIDO SEM HEREDOC
-    cat > "$PROJECT_DIR/Dockerfile.frontend" << 'EOF'
+        cat > "$PROJECT_DIR/Dockerfile.frontend" << 'EOF'
 FROM node:18-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache git python3 make g++
@@ -271,7 +271,7 @@ ENV GENERATE_SOURCEMAP=false
 RUN npm run build || npx vite build --outDir dist || (mkdir -p dist && cp -r client/* dist/ 2>/dev/null || true)
 
 FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist/spa /usr/share/nginx/html
 
 # Criar arquivo de configuração nginx linha por linha
 RUN echo 'server {' > /etc/nginx/conf.d/default.conf
@@ -736,7 +736,7 @@ show_final_info() {
     echo -e "   🔀 Traefik: ${BOLD}https://traefik.$DOMAIN1${NC}"
     echo
     echo -e "${BOLD}🛠️ DOMÍNIO 2 ($DOMAIN2) - APENAS PORTAINER STACKS:${NC}"
-    echo -e "   ��� Site Principal: ${BOLD}https://$DOMAIN2${NC} (redireciona para Portainer)"
+    echo -e "   🏠 Site Principal: ${BOLD}https://$DOMAIN2${NC} (redireciona para Portainer)"
     echo -e "   🐳 Portainer Stacks: ${BOLD}https://portainer.$DOMAIN2${NC}"
     echo -e "      👤 Configure manualmente no primeiro acesso"
     echo
