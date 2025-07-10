@@ -401,11 +401,11 @@ export const systemConfig = new SystemConfigManager();
 
 // React hook for using config in components
 export function useSystemConfig() {
-  const [config, setConfig] = React.useState<SystemConfig>(() =>
+  const [config, setConfig] = (globalThis as any).React?.useState(() =>
     systemConfig.getConfig(),
-  );
+  ) || [systemConfig.getConfig(), () => {}];
 
-  React.useEffect(() => {
+  (globalThis as any).React?.useEffect(() => {
     const unsubscribe = systemConfig.subscribe(setConfig);
     return unsubscribe;
   }, []);

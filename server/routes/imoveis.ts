@@ -94,10 +94,6 @@ export const getImovel: RequestHandler = async (req, res) => {
             whatsapp: true,
           },
         },
-        historicosPreco: {
-          orderBy: { criadoEm: "desc" },
-          take: 5,
-        },
       },
     });
 
@@ -132,7 +128,25 @@ export const createImovel: RequestHandler = async (req, res) => {
 
     const imovel = await prisma.imovel.create({
       data: {
-        ...dadosImovel,
+        titulo: dadosImovel.titulo,
+        descricao: dadosImovel.descricao,
+        tipo: dadosImovel.tipo,
+        finalidade: dadosImovel.finalidade,
+        preco: dadosImovel.preco,
+        area: dadosImovel.area,
+        quartos: dadosImovel.quartos,
+        banheiros: dadosImovel.banheiros,
+        vagas: dadosImovel.vagas,
+        endereco: dadosImovel.endereco,
+        bairro: dadosImovel.bairro,
+        cidade: dadosImovel.cidade,
+        estado: dadosImovel.estado,
+        cep: dadosImovel.cep,
+        latitude: dadosImovel.latitude,
+        longitude: dadosImovel.longitude,
+        fotos: dadosImovel.fotos,
+        status: dadosImovel.status,
+        destaque: dadosImovel.destaque,
         corretorId: req.user.userId,
       },
       include: {
@@ -192,19 +206,15 @@ export const updateImovel: RequestHandler = async (req, res) => {
         .json({ error: "Sem permissão para editar este imóvel" });
     }
 
-    // Registrar mudança de preço se houver
+    // Registrar mudança de preço se houver (comentado até criar o modelo)
     if (
       dadosAtualizacao.preco &&
       dadosAtualizacao.preco !== imovelExistente.preco
     ) {
-      await prisma.historicoPreco.create({
-        data: {
-          precoAnterior: imovelExistente.preco,
-          precoNovo: dadosAtualizacao.preco,
-          motivo: dadosAtualizacao.motivoMudancaPreco || "Atualização de preço",
-          imovelId: id,
-        },
-      });
+      // TODO: Criar modelo HistoricoPreco no schema do Prisma
+      console.log(
+        `Preço alterado de ${imovelExistente.preco} para ${dadosAtualizacao.preco}`,
+      );
     }
 
     const imovelAtualizado = await prisma.imovel.update({

@@ -96,11 +96,13 @@ export const chat: RequestHandler = async (req, res) => {
         data: [
           {
             conteudo: mensagem,
-            remetente: usuarioId,
+            tipo: "TEXTO",
+            remetenteId: usuarioId,
           },
           {
             conteudo: resposta,
-            remetente: "IA",
+            tipo: "TEXTO",
+            remetenteId: "sistema", // We'll need to handle this properly
           },
         ],
       });
@@ -141,11 +143,7 @@ export const getHistoricoChat: RequestHandler = async (req, res) => {
 
     const mensagens = await prisma.mensagem.findMany({
       where: {
-        OR: [
-          { remetente: req.user.userId },
-          { destinatario: req.user.userId },
-          { remetente: "IA" },
-        ],
+        remetenteId: req.user.userId,
       },
       skip,
       take: parseInt(limit as string),
@@ -157,12 +155,13 @@ export const getHistoricoChat: RequestHandler = async (req, res) => {
     // Agrupar mensagens por conversa
     const conversas = mensagens.reduce(
       (acc, mensagem) => {
-        const key = `${mensagem.remetente}-${mensagem.destinatario || "IA"}`;
+        const key = `${mensagem.remetenteId}-IA`;
         if (!acc[key]) acc[key] = [];
         acc[key].push({
           id: mensagem.id,
           conteudo: mensagem.conteudo,
-          remetente: mensagem.remetente === req.user!.userId ? "usuario" : "ia",
+          remetente:
+            mensagem.remetenteId === req.user!.userId ? "usuario" : "ia",
           timestamp: mensagem.criadoEm,
         });
         return acc;
@@ -206,8 +205,8 @@ export const chatComCorretor: RequestHandler = async (req, res) => {
     const novaMensagem = await prisma.mensagem.create({
       data: {
         conteudo: mensagem,
-        remetente: clienteId,
-        destinatario: corretorId,
+        tipo: "TEXTO",
+        remetenteId: clienteId,
       },
     });
 
@@ -274,8 +273,8 @@ export const responderCliente: RequestHandler = async (req, res) => {
     const novaMensagem = await prisma.mensagem.create({
       data: {
         conteudo: mensagem,
-        remetente: req.user.userId,
-        destinatario: clienteId,
+        tipo: "TEXTO",
+        remetenteId: req.user.userId,
       },
     });
 

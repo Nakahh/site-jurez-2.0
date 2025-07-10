@@ -2455,7 +2455,7 @@ Siqueira Campos Imóveis
                         alert("Mensagem de apresentação copiada!");
                       }}
                     >
-                      <User className="h-4 w-4 mr-2" />
+                      <Users className="h-4 w-4 mr-2" />
                       Mensagem de Apresentação
                     </Button>
                   </div>

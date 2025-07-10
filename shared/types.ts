@@ -159,10 +159,13 @@ export interface CreateImovelRequest {
   vagas?: number;
   endereco: string;
   bairro: string;
+  cidade: string;
+  estado: string;
   cep?: string;
   latitude?: number;
   longitude?: number;
-  fotos: string[];
+  fotos: string;
+  status?: string;
   destaque?: boolean;
 }
 
