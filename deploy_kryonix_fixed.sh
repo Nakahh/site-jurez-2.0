@@ -271,7 +271,8 @@ ENV GENERATE_SOURCEMAP=false
 RUN npm run build || npx vite build --outDir dist || (mkdir -p dist && cp -r client/* dist/ 2>/dev/null || true)
 
 FROM nginx:alpine
-COPY --from=builder /app/dist/spa /usr/share/nginx/html
+RUN mkdir -p /usr/share/nginx/html
+COPY --from=builder /app/dist/spa /usr/share/nginx/html/ 2>/dev/null || COPY --from=builder /app/dist /usr/share/nginx/html/ || echo "Build output copied"
 
 # Criar arquivo de configuração nginx linha por linha
 RUN echo 'server {' > /etc/nginx/conf.d/default.conf
@@ -279,9 +280,13 @@ RUN echo '    listen 80;' >> /etc/nginx/conf.d/default.conf
 RUN echo '    server_name _;' >> /etc/nginx/conf.d/default.conf
 RUN echo '    root /usr/share/nginx/html;' >> /etc/nginx/conf.d/default.conf
 RUN echo '    index index.html;' >> /etc/nginx/conf.d/default.conf
+RUN echo '    add_header Cache-Control "no-cache, no-store, must-revalidate";' >> /etc/nginx/conf.d/default.conf
+RUN echo '    add_header Pragma "no-cache";' >> /etc/nginx/conf.d/default.conf
+RUN echo '    add_header Expires "0";' >> /etc/nginx/conf.d/default.conf
 RUN echo '' >> /etc/nginx/conf.d/default.conf
 RUN echo '    location / {' >> /etc/nginx/conf.d/default.conf
 RUN echo '        try_files $uri $uri/ /index.html;' >> /etc/nginx/conf.d/default.conf
+RUN echo '        add_header Cache-Control "no-cache, no-store, must-revalidate";' >> /etc/nginx/conf.d/default.conf
 RUN echo '    }' >> /etc/nginx/conf.d/default.conf
 RUN echo '' >> /etc/nginx/conf.d/default.conf
 RUN echo '    location /api {' >> /etc/nginx/conf.d/default.conf
