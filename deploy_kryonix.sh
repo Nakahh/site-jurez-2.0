@@ -701,7 +701,7 @@ EOF
     log "SUCCESS" "Configuração de banco de dados criada!"
 }
 
-# Sistema inteligente de correção automática de c��digo
+# Sistema inteligente de correção automática de código
 intelligent_code_fixes() {
     log "INSTALL" "Aplicando correcoes automaticas inteligentes no codigo..."
 
@@ -1157,9 +1157,11 @@ intelligent_project_build() {
             export GENERATE_SOURCEMAP=false
             export NODE_OPTIONS="--max-old-space-size=4096"
 
-            # Tentar build do servidor TypeScript primeiro (ignorando erros)
-            log "INFO" "Compilando servidor TypeScript..."
-            npx tsc --project tsconfig.server.json --noEmit --skipLibCheck 2>/dev/null || log "WARNING" "TypeScript server compilation com warnings"
+                        # Compilar servidor TypeScript se existir
+            if [ -f "tsconfig.server.json" ]; then
+                log "INFO" "Compilando servidor TypeScript..."
+                npx tsc --project tsconfig.server.json --noEmit --skipLibCheck 2>/dev/null || log "WARNING" "TypeScript server compilation com warnings, continuando..."
+            fi
 
             # Build do frontend com Vite
             log "INFO" "Fazendo build do frontend..."
@@ -2120,11 +2122,25 @@ intelligent_services_deploy() {
     # Criar arquivos de configuração adicionais
     create_intelligent_prometheus_config
     
-        # Build dos containers do projeto
+            # Build dos containers do projeto
     log "DEPLOY" "Fazendo build dos containers do projeto..."
-    docker-compose build project-frontend project-backend 2>/dev/null || {
-        log "WARNING" "Falha no build dos containers, continuando mesmo assim..."
-        docker-compose build --no-cache project-frontend project-backend 2>/dev/null || true
+
+    # Build do frontend
+    log "INFO" "Building frontend container..."
+    docker-compose build project-frontend 2>/dev/null || {
+        log "WARNING" "Frontend build falhou, tentando sem cache..."
+        docker-compose build --no-cache project-frontend 2>/dev/null || {
+            log "ERROR" "Frontend build falhou completamente, mas continuando..."
+        }
+    }
+
+    # Build do backend
+    log "INFO" "Building backend container..."
+    docker-compose build project-backend 2>/dev/null || {
+        log "WARNING" "Backend build falhou, tentando sem cache..."
+        docker-compose build --no-cache project-backend 2>/dev/null || {
+            log "ERROR" "Backend build falhou completamente, mas continuando..."
+        }
     }
     
     # Iniciar serviços em ordem
@@ -2399,10 +2415,13 @@ intelligent_main() {
     intelligent_docker_install
     intelligent_swarm_setup
     
-    # Fase 3: Segurança e Rede Inteligente
-        log "DEPLOY" "FASE 3: Seguranca e Rede Inteligente"
+        # Fase 3: Segurança e Rede Inteligente
+    log "DEPLOY" "🛡️ FASE 3: Seguranca e Rede Inteligente"
     intelligent_firewall_setup
-    # intelligent_dns_setup  # Comentado para evitar erros da API
+
+    # DNS setup - tentar mas não falhar se der erro
+    log "INFO" "Tentando configurar DNS..."
+    intelligent_dns_setup || log "WARNING" "DNS setup falhou, continuando sem DNS automático"
     
     # Fase 4: Análise e Preparação do Projeto
     log "DEPLOY" "🔍 FASE 4: Análise Inteligente do Projeto"
