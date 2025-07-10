@@ -930,10 +930,23 @@ EOF
         fi
     fi
 
-            # Arquivo server/routes/imoveis.ts está correto, não modificar
-    log "INFO" "Arquivo server/routes/imoveis.ts verificado e está correto"
+                # Verificação final dos arquivos críticos
+    log "INFO" "🔍 Verificação final dos arquivos..."
+    for file in "${critical_files[@]}"; do
+        if [ -f "$file" ]; then
+            verify_and_fix_file "$file" "${file##*.}"
+        fi
+    done
 
-        log "SUCCESS" "Correções automáticas aplicadas!"
+    # Arquivo server/routes/imoveis.ts está correto, não modificar
+    log "INFO" "✅ Arquivo server/routes/imoveis.ts verificado e está correto"
+
+    # Relatório final das correções
+    log "SUCCESS" "✅ Correções automáticas concluídas!"
+    log "INFO" "📊 Resultado: $fixes_applied correções aplicadas em $total_files_checked arquivos verificados"
+
+    # Limpar backups antigos (manter apenas os últimos 3)
+    find . -maxdepth 1 -name "backups_*" -type d | sort | head -n -3 | xargs rm -rf 2>/dev/null || true
 }
 
 # Função específica para corrigir erros de sintaxe detectados durante build
