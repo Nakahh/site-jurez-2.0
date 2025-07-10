@@ -6,7 +6,7 @@
 #                     Ubuntu 22.04 - Versão 2.0 ULTRA                      #
 ##############################################################################
 
-set -euo pipefail
+set -uo pipefail
 
 # Configurações globais
 export DEBIAN_FRONTEND=noninteractive
@@ -368,7 +368,7 @@ intelligent_firewall_setup() {
     # Reset completo
     ufw --force reset
     
-    # Configurações básicas
+    # Configura��ões básicas
     ufw default deny incoming
     ufw default allow outgoing
     
@@ -2794,7 +2794,7 @@ show_final_links() {
     echo -e "      👤 Usuário: $PORTAINER_USER | 🔑 Senha: $PORTAINER_PASS"
     echo -e "   🐳 ${BOLD}Portainer (MeuBoot):${NC} https://portainer.meuboot.site"
     echo -e "      👤 Usuário: $PORTAINER_USER | 🔑 Senha: $PORTAINER_PASS"
-    echo -e "   ��� ${BOLD}Traefik Dashboard:${NC} https://traefik.siqueicamposimoveis.com.br"
+    echo -e "   🔀 ${BOLD}Traefik Dashboard:${NC} https://traefik.siqueicamposimoveis.com.br"
     echo
 
     # Automação e integração
