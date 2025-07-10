@@ -88,7 +88,7 @@ check_root() {
 
 # Limpeza TOTAL do servidor
 clean_system_completely() {
-        log "WARNING" "🧹 LIMPEZA SEGURA DO SERVIDOR (mantendo Ubuntu + SSH)..."
+    log "WARNING" "🧹 LIMPEZA SEGURA DO SERVIDOR (mantendo Ubuntu + SSH)..."
 
     # Backup das chaves SSH ANTES de qualquer limpeza
     log "INFO" "🔐 Fazendo backup das chaves SSH..."
@@ -113,7 +113,7 @@ clean_system_completely() {
     apt remove -y --purge nginx apache2 mysql-server postgresql redis-server nodejs npm 2>/dev/null || true
     apt autoremove -y --purge 2>/dev/null || true
     
-        # Limpar diret��rios (PRESERVANDO SSH backup)
+    # Limpar diretórios (PRESERVANDO SSH backup)
     find /opt -type f -delete 2>/dev/null || true
     find /var/tmp -type f -delete 2>/dev/null || true
     rm -rf /var/www/* /etc/nginx /etc/apache2 2>/dev/null || true
@@ -121,7 +121,7 @@ clean_system_completely() {
     # Limpar /tmp mas preservar backup SSH
     find /tmp -name "ssh_backup" -prune -o -type f -delete 2>/dev/null || true
 
-        # Limpar arquivos de usuário PRESERVANDO arquivos essenciais
+    # Limpar arquivos de usuário PRESERVANDO arquivos essenciais
     log "INFO" "🛡️ Preservando arquivos essenciais: .ssh, .bashrc, .profile, .bash_logout, .cache"
 
     # Backup dos arquivos essenciais do ubuntu
@@ -169,7 +169,7 @@ clean_system_completely() {
     apt clean
     rm -rf /var/cache/apt/archives/* 2>/dev/null || true
     
-            # Restaurar arquivos essenciais do ubuntu se necessário
+    # Restaurar arquivos essenciais do ubuntu se necessário
     if [[ -f "/tmp/user_backup/.bashrc" ]]; then
         cp /tmp/user_backup/.bashrc /home/ubuntu/ 2>/dev/null || true
     fi
@@ -271,7 +271,7 @@ setup_firewall() {
     ufw default allow outgoing
     
     # Portas necessárias
-        # Portas essenciais do sistema
+    # Portas essenciais do sistema
     ufw allow 22/tcp comment 'SSH'
     ufw allow ssh
     ufw allow 80/tcp comment 'HTTP'
@@ -300,7 +300,7 @@ setup_firewall() {
     systemctl enable fail2ban
     systemctl start fail2ban
     
-        log "SUCCESS" "Firewall configurado com TODAS as portas necessárias!"
+    log "SUCCESS" "Firewall configurado com TODAS as portas necessárias!"
 }
 
 # Baixar projeto do GitHub
@@ -449,7 +449,7 @@ services:
       - --certificatesresolvers.letsencrypt.acme.storage=/data/acme.json
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
-            - --entrypoints.web.http.redirections.entrypoint.permanent=true
+      - --entrypoints.web.http.redirections.entrypoint.permanent=true
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(\`traefik.$DOMAIN1\`)"
@@ -488,7 +488,7 @@ services:
     volumes:
       - redis_data:/data
     labels:
-            - "traefik.enable=true"
+      - "traefik.enable=true"
       - "traefik.http.routers.redis.rule=Host(\`redis.$DOMAIN1\`)"
       - "traefik.http.routers.redis.entrypoints=websecure"
       - "traefik.http.routers.redis.tls.certresolver=letsencrypt"
@@ -508,7 +508,7 @@ services:
       - backend
     labels:
       - "traefik.enable=true"
-            # Domínio principal
+      # Domínio principal
       - "traefik.http.routers.frontend.rule=Host(\`$DOMAIN1\`) || Host(\`www.$DOMAIN1\`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
@@ -531,7 +531,7 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgresql://kryonix_user:$POSTGRES_PASSWORD@postgres:5432/kryonix
       REDIS_URL: redis://:$REDIS_PASSWORD@redis:6379
-            JWT_SECRET: "kryonix-jwt-secret-2024-ultra"
+      JWT_SECRET: "kryonix-jwt-secret-2024-ultra"
       SMTP_HOST: $SMTP_HOST
       SMTP_PORT: $SMTP_PORT
       SMTP_USER: $SMTP_USER
@@ -777,7 +777,7 @@ EOF
     chmod +x /usr/local/bin/auto-deploy.sh
 
     # Criar servidor webhook
-    cat > /usr/local/bin/webhook-server.py << EOF
+    cat > /usr/local/bin/webhook-server.py << 'EOF'
 #!/usr/bin/env python3
 import os
 import subprocess
@@ -926,7 +926,7 @@ create_credentials_file() {
 ##############################################################################
 
 🌐 DOMÍNIOS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📱 Site Principal: https://$DOMAIN1
 🏠 Portainer Principal: https://$DOMAIN2
@@ -944,7 +944,7 @@ create_credentials_file() {
 🗄️ Adminer: https://adminer.$DOMAIN1
 
 📊 SERVIÇOS - DOMÍNIO 2 ($DOMAIN2):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 Portainer: https://portainer.$DOMAIN2 (mesma stack do domínio 1)
 🤖 N8N: https://n8n.$DOMAIN2
 📱 Evolution API: https://evolution.$DOMAIN2
@@ -955,7 +955,7 @@ create_credentials_file() {
 🗄️ Adminer: https://adminer.$DOMAIN2
 
 🔑 CREDENCIAIS:
-━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🗄️ PostgreSQL:
    Host: postgres
    Database: kryonix
@@ -996,27 +996,27 @@ Webhook URL: http://$SERVER_IP:9000/webhook
 Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 
 🔐 SSL:
-━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Certificados SSL automáticos via Let's Encrypt
 ✅ Redirecionamento automático HTTP → HTTPS
 ✅ Renovação automática dos certificados
 
 📝 LOGS:
-━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 Instalação: tail -f /var/log/kryonix-ultra-install.log
 🔄 Auto-Deploy: tail -f /var/log/auto-deploy.log
 🐳 Docker: docker-compose logs -f
 🔗 Webhook: journalctl -u github-webhook -f
 
 💡 COMANDOS ÚTEIS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔄 Restart: cd /opt/site-jurez-2.0 && docker-compose restart
 📊 Status: docker ps
 🗑️ Limpar: docker system prune -af
 🔗 Webhook: systemctl restart github-webhook
 
 ⚠️ CONFIGURAÇÃO DNS NECESSÁRIA:
-━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Configure os seguintes registros DNS para apontar para $SERVER_IP:
 
 $DOMAIN1 → $SERVER_IP
@@ -1042,10 +1042,10 @@ grafana.$DOMAIN2 → $SERVER_IP
 prometheus.$DOMAIN2 → $SERVER_IP
 adminer.$DOMAIN2 → $SERVER_IP
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 
     chmod 600 /root/KRYONIX_CREDENTIALS.txt
