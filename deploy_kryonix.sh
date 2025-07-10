@@ -533,7 +533,7 @@ intelligent_project_analysis() {
     log "INFO" "Estrutura de pastas detectada:"
     for dir in client server frontend backend web api src dist public; do
         if [ -d "$dir" ]; then
-            log "SUCCESS" "  ��� $dir/ encontrado"
+            log "SUCCESS" "  📁 $dir/ encontrado"
             
             # Verificar package.json específico
             if [ -f "$dir/package.json" ]; then
@@ -748,12 +748,66 @@ intelligent_code_fixes() {
         fi
     done
 
-    # Correção segura do performance.ts - recriar arquivo se houver problemas
-    log "INFO" "Corrigindo performance.ts..."
+        # Sistema de verificação e correção inteligente
+    verify_and_fix_file() {
+        local file_path="$1"
+        local file_type="$2"
+
+        if [ ! -f "$file_path" ]; then
+            return 0
+        fi
+
+        ((total_files_checked++))
+        log "INFO" "🔍 Verificando $file_path..."
+
+        # Verificação básica de sintaxe
+        local has_issues=false
+
+        # Verificar se o arquivo não está vazio
+        if [ ! -s "$file_path" ]; then
+            log "WARNING" "   ⚠️  Arquivo vazio detectado"
+            has_issues=true
+        fi
+
+        # Verificar estrutura básica baseada no tipo
+        case "$file_type" in
+            "ts"|"tsx")
+                if ! grep -q -E "(export|import|function|const|let|var)" "$file_path" 2>/dev/null; then
+                    log "WARNING" "   ⚠️  Estrutura TypeScript inválida"
+                    has_issues=true
+                fi
+                ;;
+            "js"|"jsx")
+                if ! grep -q -E "(export|import|function|const|let|var)" "$file_path" 2>/dev/null; then
+                    log "WARNING" "   ⚠️  Estrutura JavaScript inválida"
+                    has_issues=true
+                fi
+                ;;
+        esac
+
+        # Se tem problemas, tentar restaurar do backup ou recriar
+        if [ "$has_issues" = true ]; then
+            local backup_file="$backup_dir/$(basename "$file_path").backup"
+            if [ -f "$backup_file" ]; then
+                log "INFO" "   🔄 Restaurando do backup..."
+                cp "$backup_file" "$file_path"
+                ((fixes_applied++))
+            else
+                log "WARNING" "   ⚠️  Backup não encontrado para $file_path"
+            fi
+        else
+            log "SUCCESS" "   ✅ Arquivo válido"
+        fi
+    }
+
+    # Correção específica do performance.ts
+    log "INFO" "🔧 Corrigindo performance.ts..."
     if [ -f "client/lib/performance.ts" ]; then
-                # Verificar se tem problemas (verificação básica)
+        verify_and_fix_file "client/lib/performance.ts" "ts"
+
+        # Se ainda tem problemas, recriar arquivo
         if [ ! -s "client/lib/performance.ts" ] || ! grep -q "export" "client/lib/performance.ts" 2>/dev/null; then
-            log "WARNING" "performance.ts tem problemas, recriando arquivo..."
+            log "WARNING" "   🔄 performance.ts com problemas, recriando arquivo..."
             cat > "client/lib/performance.ts" << 'EOF'
 import { onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
 
@@ -1948,7 +2002,7 @@ COPY . .
 # Configurar Prisma se existir
 RUN if [ -f "prisma/schema.prisma" ]; then \\
         echo "📦 Configurando Prisma..." && \\
-        npx prisma generate || echo "���️  Prisma generate failed"; \\
+        npx prisma generate || echo "⚠️  Prisma generate failed"; \\
     fi
 
 # Build TypeScript se necessário
@@ -2174,7 +2228,7 @@ def update_project():
                 timeout=30
             )
             
-            log_message("✅ C��digo atualizado com sucesso!")
+            log_message("✅ Código atualizado com sucesso!")
             
             # Instalar dependências se package.json foi modificado
             if os.path.exists("package.json"):
@@ -2558,7 +2612,7 @@ EOF
     echo "  📱 Evolution API (MeuBoot):     https://evo.meuboot.site"
     echo
     
-    echo -e "${BOLD}${GREEN}���� PROJETO PRINCIPAL:${NC}"
+    echo -e "${BOLD}${GREEN}🎯 PROJETO PRINCIPAL:${NC}"
     echo "  🌐 Frontend (Site Principal):   https://siqueicamposimoveis.com.br"
     echo "  ⚙️ Backend API:                 https://api.siqueicamposimoveis.com.br"
     echo
