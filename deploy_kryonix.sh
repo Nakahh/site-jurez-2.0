@@ -637,7 +637,7 @@ services:
       - evolution_data:/evolution/instances
     labels:
       - "traefik.enable=true"
-                  - "traefik.http.routers.evolution.rule=Host(\`evolution.$DOMAIN1\`) || Host(\`evolution.$DOMAIN2\`)"
+                        - "traefik.http.routers.evolution.rule=Host(\`evolution.$DOMAIN1\`) || Host(\`evolution.$DOMAIN2\`)"
       - "traefik.http.routers.evolution.entrypoints=websecure"
       - "traefik.http.routers.evolution.tls.certresolver=letsencrypt"
       - "traefik.http.services.evolution.loadbalancer.server.port=8080"
@@ -925,8 +925,8 @@ create_credentials_file() {
 #                     🔐 CREDENCIAIS KRYONIX ULTRA v3.0                     #
 ##############################################################################
 
-🌐 DOMÍNIOS:
-━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
+���� DOMÍNIOS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
 
 📱 Site Principal: https://$DOMAIN1
 🏠 Portainer Principal: https://$DOMAIN2
@@ -1042,7 +1042,7 @@ grafana.$DOMAIN2 → $SERVER_IP
 prometheus.$DOMAIN2 → $SERVER_IP
 adminer.$DOMAIN2 → $SERVER_IP
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
