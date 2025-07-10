@@ -748,10 +748,9 @@ intelligent_code_fixes() {
         fi
     done
 
-        # Sistema de verificação e correção inteligente
-    verify_and_fix_file() {
+            # Função simples de verificação de arquivo
+    check_file_basic() {
         local file_path="$1"
-        local file_type="$2"
 
         if [ ! -f "$file_path" ]; then
             return 0
@@ -761,43 +760,19 @@ intelligent_code_fixes() {
         log "INFO" "🔍 Verificando $file_path..."
 
         # Verificação básica de sintaxe
-        local has_issues=false
-
-        # Verificar se o arquivo não está vazio
         if [ ! -s "$file_path" ]; then
             log "WARNING" "   ⚠️  Arquivo vazio detectado"
-            has_issues=true
+            return 1
         fi
 
-        # Verificar estrutura básica baseada no tipo
-        case "$file_type" in
-            "ts"|"tsx")
-                if ! grep -q -E "(export|import|function|const|let|var)" "$file_path" 2>/dev/null; then
-                    log "WARNING" "   ⚠️  Estrutura TypeScript inválida"
-                    has_issues=true
-                fi
-                ;;
-            "js"|"jsx")
-                if ! grep -q -E "(export|import|function|const|let|var)" "$file_path" 2>/dev/null; then
-                    log "WARNING" "   ⚠️  Estrutura JavaScript inválida"
-                    has_issues=true
-                fi
-                ;;
-        esac
-
-        # Se tem problemas, tentar restaurar do backup ou recriar
-        if [ "$has_issues" = true ]; then
-            local backup_file="$backup_dir/$(basename "$file_path").backup"
-            if [ -f "$backup_file" ]; then
-                log "INFO" "   🔄 Restaurando do backup..."
-                cp "$backup_file" "$file_path"
-                ((fixes_applied++))
-            else
-                log "WARNING" "   ⚠️  Backup não encontrado para $file_path"
-            fi
-        else
-            log "SUCCESS" "   ✅ Arquivo válido"
+        # Verificar estrutura básica
+        if ! grep -q -E "(export|import|function|const|let|var)" "$file_path" 2>/dev/null; then
+            log "WARNING" "   ⚠️  Estrutura inválida"
+            return 1
         fi
+
+        log "SUCCESS" "   ✅ Arquivo válido"
+        return 0
     }
 
     # Correção específica do performance.ts
