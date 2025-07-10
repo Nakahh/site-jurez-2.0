@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import OptimizedImage from "./OptimizedImage";
 import { useIntersectionObserver } from "@/hooks/usePerformance";
 import { cn } from "@/lib/utils";
+import { useRef } from "react";
 
 interface Property {
   id: string;
