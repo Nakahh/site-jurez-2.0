@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##############################################################################
-#                        �� KRYONIX ULTRA DEPLOY v3.0                      #
+#                        🚀 KRYONIX ULTRA DEPLOY v3.0                      #
 #                Sistema Completo com SSL Automático + Auto-Deploy          #
 #                      SSL + Traefik + Webhook + 2 Domínios                 #
 ##############################################################################
@@ -452,7 +452,7 @@ services:
       - --entrypoints.web.http.redirections.entrypoint.permanent=true
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(\`traefik.$DOMAIN1\`)"
+            - "traefik.http.routers.traefik.rule=Host(\`traefik.siqueicamposimoveis.com.br\`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.service=api@internal"
@@ -926,7 +926,7 @@ create_credentials_file() {
 ##############################################################################
 
 🌐 DOMÍNIOS:
-━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��
 
 📱 Site Principal: https://$DOMAIN1
 🏠 Portainer Principal: https://$DOMAIN2
@@ -996,7 +996,7 @@ Webhook URL: http://$SERVER_IP:9000/webhook
 Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 
 🔐 SSL:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Certificados SSL automáticos via Let's Encrypt
 ✅ Redirecionamento automático HTTP → HTTPS
 ✅ Renovação automática dos certificados
@@ -1016,7 +1016,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 🔗 Webhook: systemctl restart github-webhook
 
 ⚠️ CONFIGURAÇÃO DNS NECESSÁRIA:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Configure os seguintes registros DNS para apontar para $SERVER_IP:
 
 $DOMAIN1 → $SERVER_IP
@@ -1045,7 +1045,7 @@ adminer.$DOMAIN2 → $SERVER_IP
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 
     chmod 600 /root/KRYONIX_CREDENTIALS.txt
