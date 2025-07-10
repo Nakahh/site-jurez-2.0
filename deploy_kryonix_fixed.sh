@@ -99,166 +99,139 @@ clean_system() {
     # Limpar diretórios
     rm -rf /opt/kryonix /opt/site-* /tmp/* 2>/dev/null || true
     
-    # Reset firewall
-    ufw --force reset 2>/dev/null || true
+    # Limpar containers órfãos
+    pkill -f "docker\|nginx\|node\|redis\|postgres" 2>/dev/null || true
     
-    # Limpar cache
-    apt-get autoremove --purge -y && apt-get autoclean && apt-get clean
-    
-    log "SUCCESS" "Sistema limpo!"
+    log "SUCCESS" "Sistema limpo"
 }
 
-# Atualização inteligente do sistema
+# Atualizar sistema
 update_system() {
-    log "INSTALL" "🔄 Atualizando sistema Ubuntu..."
+    log "INSTALL" "🔄 Atualizando sistema..."
+    apt update -qq && apt upgrade -y -qq
     
-    export LC_ALL=C.UTF-8 LANG=C.UTF-8
+    # Instalar dependências básicas
+    apt install -y -qq curl wget git unzip software-properties-common \
+        apt-transport-https ca-certificates gnupg lsb-release \
+        htop nano ufw fail2ban 2>/dev/null || true
     
-    # Atualizar e instalar essenciais
-    apt-get update -y && apt-get upgrade -y
-    apt-get install -y curl wget git jq unzip zip \
-        software-properties-common apt-transport-https \
-        ca-certificates gnupg lsb-release python3 python3-pip \
-        build-essential htop vim nano cron ufw fail2ban \
-        rsync tree net-tools dnsutils
-    
-    # Configurar timezone
-    timedatectl set-timezone America/Sao_Paulo 2>/dev/null || true
-    
-    log "SUCCESS" "Sistema atualizado!"
+    log "SUCCESS" "Sistema atualizado"
 }
 
-# Instalação do Node.js
+# Instalar Node.js
 install_nodejs() {
-    log "INSTALL" "📦 Instalando Node.js LTS..."
+    log "INSTALL" "📦 Instalando Node.js 18..."
     
-    # Verificar se já está instalado
-    if command -v node &> /dev/null && command -v npm &> /dev/null; then
-        NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-        if [ "$NODE_VERSION" -ge "18" ]; then
-            log "SUCCESS" "Node.js $(node -v) já instalado!"
-            return 0
-        fi
+    # Remover instalações antigas
+    apt remove -y nodejs npm 2>/dev/null || true
+    rm -rf /usr/local/bin/node /usr/local/bin/npm 2>/dev/null || true
+    
+    # Instalar Node.js 18 via NodeSource
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+    apt install -y nodejs
+    
+    # Verificar instalação
+    node_version=$(node --version 2>/dev/null | sed 's/v//')
+    npm_version=$(npm --version 2>/dev/null)
+    
+    if [[ "$node_version" =~ ^18\. ]]; then
+        log "SUCCESS" "Node.js $node_version e npm $npm_version instalados"
+    else
+        log "ERROR" "Falha na instalação do Node.js"
+        exit 1
     fi
-    
-    # Remover versões antigas
-    apt-get remove -y nodejs npm node-* 2>/dev/null || true
-    
-    # Instalar via NodeSource
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-    apt-get install -y nodejs
-    
-    # Configurar npm
-    npm config set registry https://registry.npmjs.org/
-    npm config set fund false
-    
-    log "SUCCESS" "Node.js $(node -v) e npm $(npm -v) instalados!"
 }
 
-# Instalação do Docker
+# Instalar Docker
 install_docker() {
-    log "INSTALL" "🐳 Instalando Docker..."
+    log "INSTALL" "🐳 Instalando Docker e Docker Compose..."
     
-    # Remover versões antigas
-    apt-get remove -y docker docker-engine docker.io containerd runc 2>/dev/null || true
+    # Remover instalações antigas
+    apt remove -y docker docker-engine docker.io containerd runc 2>/dev/null || true
+    
+    # Adicionar repositório Docker
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
     
     # Instalar Docker
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+    apt update -qq
+    apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
     
-    apt-get update -y
-    apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-    
-    # Configurar Docker
-    mkdir -p /etc/docker
-    cat > /etc/docker/daemon.json << 'EOF'
-{
-    "log-driver": "json-file",
-    "log-opts": {
-        "max-size": "10m",
-        "max-file": "3"
-    },
-    "storage-driver": "overlay2"
-}
-EOF
-    
-    # Iniciar serviços
-    systemctl start docker && systemctl enable docker
-    usermod -aG docker ubuntu 2>/dev/null || true
-    
-    # Instalar Docker Compose standalone
-    curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    # Instalar docker-compose standalone
+    DOCKER_COMPOSE_VERSION="2.21.0"
+    curl -L "https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     chmod +x /usr/local/bin/docker-compose
     
-    # Testar Docker
-    docker run --rm hello-world >/dev/null 2>&1 || log "WARNING" "Docker pode ter problemas"
+    # Iniciar Docker
+    systemctl start docker
+    systemctl enable docker
     
-    log "SUCCESS" "Docker $(docker --version) instalado!"
+    # Verificar instalação
+    docker_version=$(docker --version | awk '{print $3}' | sed 's/,//')
+    compose_version=$(docker-compose --version | awk '{print $4}' | sed 's/,//')
+    
+    log "SUCCESS" "Docker $docker_version e Compose $compose_version instalados"
 }
 
-# Análise inteligente do projeto
-analyze_project() {
-    log "DEPLOY" "🔍 Analisando projeto GitHub..."
+# Configurar firewall básico
+setup_firewall() {
+    log "INSTALL" "🔥 Configurando firewall..."
     
-    # Clonar projeto
-    if [ -d "$PROJECT_DIR" ]; then
-        cd "$PROJECT_DIR" && git pull
-    else
-        git clone "$GITHUB_REPO" "$PROJECT_DIR"
-    fi
+    # Reset UFW
+    ufw --force reset 2>/dev/null || true
+    
+    # Regras básicas
+    ufw default deny incoming
+    ufw default allow outgoing
+    ufw allow ssh
+    ufw allow 80/tcp
+    ufw allow 443/tcp
+    
+    # Ativar UFW
+    ufw --force enable
+    
+    log "SUCCESS" "Firewall configurado"
+}
+
+# Baixar e analisar projeto
+setup_project() {
+    log "DEPLOY" "📥 Baixando projeto do GitHub..."
+    
+    # Criar diretório e clonar
+    mkdir -p /opt
+    cd /opt
+    rm -rf site-jurez-2.0 2>/dev/null || true
+    
+    git clone "$GITHUB_REPO" "$PROJECT_DIR" || {
+        log "ERROR" "Falha ao clonar repositório"
+        exit 1
+    }
     
     cd "$PROJECT_DIR"
     
-    # Analisar estrutura
-    export PROJECT_TYPE="unknown"
-    export FRONTEND_PORT="3000"
-    export BACKEND_PORT="3333"
-    export HAS_PRISMA=false
+    # Verificar estrutura do projeto
+    log "INFO" "🔍 Analisando estrutura do projeto..."
     
-    if [ -f "package.json" ]; then
-        log "SUCCESS" "Projeto Node.js detectado"
-        
-        # Detectar tipo
-        if [ -f "vite.config.js" ] || [ -f "vite.config.ts" ]; then
-            PROJECT_TYPE="vite"
-            log "SUCCESS" "Projeto Vite/React detectado"
-        fi
-        
-        # Verificar Prisma
-        if [ -f "prisma/schema.prisma" ]; then
-            HAS_PRISMA=true
-            log "SUCCESS" "Prisma detectado"
-        fi
-        
-        # Verificar estrutura
-        for dir in client server frontend backend; do
-            [ -d "$dir" ] && log "SUCCESS" "📁 $dir/ encontrado"
-        done
+    if [[ -f "vite.config.ts" || -f "vite.config.js" ]]; then
+        PROJECT_TYPE="vite"
+        log "INFO" "Projeto Vite/React detectado"
+    elif [[ -f "next.config.js" ]]; then
+        PROJECT_TYPE="next"
+        log "INFO" "Projeto Next.js detectado"
+    else
+        PROJECT_TYPE="generic"
+        log "WARNING" "Tipo de projeto não identificado, usando configuração genérica"
     fi
     
-    log "SUCCESS" "Análise concluída! Tipo: $PROJECT_TYPE"
-}
-
-# Configurar estrutura de diretórios
-setup_directories() {
-    log "INSTALL" "📁 Criando estrutura de diretórios para 2 domínios..."
-    
-    mkdir -p "$KRYONIX_DIR"/{traefik/config,postgres/data,redis/data,minio/data,grafana/data,n8n/data,portainer/{siqueira,meuboot}/data}
-    
-    # Definir permissões
-    chown -R 1001:1001 "$KRYONIX_DIR"/{n8n,minio} 2>/dev/null || true
-    chown -R 999:999 "$KRYONIX_DIR"/postgres 2>/dev/null || true
-    chown -R 472:472 "$KRYONIX_DIR"/grafana 2>/dev/null || true
-    
-    log "SUCCESS" "Estrutura criada!"
+    log "SUCCESS" "Projeto baixado e analisado"
 }
 
 # Criar Dockerfiles
 create_dockerfiles() {
     log "DEPLOY" "📦 Criando Dockerfiles..."
     
-    # Frontend Dockerfile - ULTRA CORRIGIDO SEM HEREDOC
-        cat > "$PROJECT_DIR/Dockerfile.frontend" << 'EOF'
+    # Frontend Dockerfile - ULTRA CORRIGIDO
+    cat > "$PROJECT_DIR/Dockerfile.frontend" << 'EOF'
 FROM node:18-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache git python3 make g++
@@ -316,312 +289,302 @@ COPY . .
 RUN npm run build:server 2>/dev/null || echo "Sem build de server necessário"
 RUN npm run db:generate 2>/dev/null || npx prisma generate 2>/dev/null || echo "Sem Prisma"
 EXPOSE 3333
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3333/api/ping || exit 1
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "start:server"]
 EOF
     
-    log "SUCCESS" "Dockerfiles criados!"
+    log "SUCCESS" "Dockerfiles criados"
 }
 
-# Criar Docker Compose para 2 domínios
-create_compose() {
-    log "DEPLOY" "🐳 Criando docker-compose.yml para 2 domínios..."
+# Criar docker-compose para 2 domínios
+create_docker_compose() {
+    log "DEPLOY" "🐙 Criando Docker Compose para 2 domínios..."
     
-    cat > "$KRYONIX_DIR/docker-compose.yml" << EOF
-version: "3.8"
+    cat > "$PROJECT_DIR/docker-compose.yml" << 'EOF'
+version: '3.8'
 
 networks:
   kryonixnet:
     driver: bridge
+    external: false
   meubootnet:
     driver: bridge
+    external: false
+
+volumes:
+  postgres_data:
+  redis_data:
+  portainer_data_siqueira:
+  portainer_data_meuboot:
+  traefik_data:
+  n8n_data:
+  minio_data:
+  grafana_data:
 
 services:
-  # Traefik - Reverse Proxy Global com SSL automático
+  # Traefik - Proxy Reverso com SSL Automático
   traefik:
     image: traefik:v3.0
     container_name: kryonix-traefik
     restart: unless-stopped
-    command:
-      - "--api.dashboard=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.email=$SMTP_USER"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-    ports:
-      - "80:80"
-      - "443:443"
-      - "8080:8080"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "$KRYONIX_DIR/traefik/config:/letsencrypt"
     networks:
       - kryonixnet
       - meubootnet
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_data:/data
+    command:
+      - --api.dashboard=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=kryonixnet
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+      - --certificatesresolvers.letsencrypt.acme.email=vitor.nakahh@gmail.com
+      - --certificatesresolvers.letsencrypt.acme.storage=/data/acme.json
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(\`traefik.$DOMAIN1\`)"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.siqueicamposimoveis.com.br`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.http-catchall.rule=hostregexp(\`{host:.+}\`)"
-      - "traefik.http.routers.http-catchall.entrypoints=web"
-      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
 
   # PostgreSQL
   postgres:
-    image: postgres:15-alpine
+    image: postgres:15
     container_name: kryonix-postgres
     restart: unless-stopped
-    environment:
-      POSTGRES_DB: kryonix_main
-      POSTGRES_USER: kryonix_user
-      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
-      PGDATA: /var/lib/postgresql/data/pgdata
-    volumes:
-      - "$KRYONIX_DIR/postgres/data:/var/lib/postgresql/data"
     networks:
       - kryonixnet
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U kryonix_user -d kryonix_main"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+    environment:
+      POSTGRES_DB: kryonix
+      POSTGRES_USER: kryonix_user
+      POSTGRES_PASSWORD: KryonixPostgres2024!
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
 
   # Redis
   redis:
     image: redis:7-alpine
     container_name: kryonix-redis
     restart: unless-stopped
-    command: redis-server --requirepass $REDIS_PASSWORD --appendonly yes
-    volumes:
-      - "$KRYONIX_DIR/redis/data:/data"
     networks:
       - kryonixnet
+    command: redis-server --requirepass KryonixRedis2024!
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
 
-  # Frontend do Projeto (APENAS DOMÍNIO 1)
+  # Frontend
   frontend:
     build:
-      context: $PROJECT_DIR
+      context: .
       dockerfile: Dockerfile.frontend
     container_name: kryonix-frontend
     restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      REACT_APP_API_URL: https://api.$DOMAIN1
     networks:
       - kryonixnet
+    depends_on:
+      - backend
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(\`$DOMAIN1\`) || Host(\`www.$DOMAIN1\`)"
+      - "traefik.http.routers.frontend.rule=Host(`siqueicamposimoveis.com.br`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
 
-  # Backend do Projeto (APENAS DOMÍNIO 1)
+  # Backend
   backend:
     build:
-      context: $PROJECT_DIR
+      context: .
       dockerfile: Dockerfile.backend
     container_name: kryonix-backend
     restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      DATABASE_URL: postgresql://kryonix_user:$POSTGRES_PASSWORD@postgres:5432/kryonix_main
-      REDIS_URL: redis://:$REDIS_PASSWORD@redis:6379
-      PORT: $BACKEND_PORT
     networks:
       - kryonixnet
     depends_on:
       - postgres
       - redis
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://kryonix_user:KryonixPostgres2024!@postgres:5432/kryonix
+      REDIS_URL: redis://:KryonixRedis2024!@redis:6379
+      JWT_SECRET: kryonix-jwt-secret-2024
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 465
+      SMTP_USER: vitor.nakahh@gmail.com
+      SMTP_PASS: "@Vitor.12345@"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(\`api.$DOMAIN1\`)"
+      - "traefik.http.routers.backend.rule=Host(`api.siqueicamposimoveis.com.br`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
-      - "traefik.http.services.backend.loadbalancer.server.port=$BACKEND_PORT"
+      - "traefik.http.services.backend.loadbalancer.server.port=3333"
 
-  # Portainer Siqueira (DOMÍNIO 1 - todos serviços)
+  # Portainer para Domínio 1 (siqueicamposimoveis.com.br)
   portainer-siqueira:
-    image: portainer/portainer-ee:latest
+    image: portainer/portainer-ce:latest
     container_name: kryonix-portainer-siqueira
     restart: unless-stopped
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "$KRYONIX_DIR/portainer/siqueira:/data"
     networks:
       - kryonixnet
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data_siqueira:/data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.portainer-siqueira.rule=Host(\`portainer.$DOMAIN1\`)"
+      - "traefik.http.routers.portainer-siqueira.rule=Host(`portainer.siqueicamposimoveis.com.br`)"
       - "traefik.http.routers.portainer-siqueira.entrypoints=websecure"
       - "traefik.http.routers.portainer-siqueira.tls.certresolver=letsencrypt"
       - "traefik.http.services.portainer-siqueira.loadbalancer.server.port=9000"
 
-  # Portainer MeuBoot (DOMÍNIO 2 - APENAS STACKS)
+  # Portainer para Domínio 2 (meuboot.site) - PRINCIPAL
   portainer-meuboot:
-    image: portainer/portainer-ee:latest
+    image: portainer/portainer-ce:latest
     container_name: kryonix-portainer-meuboot
     restart: unless-stopped
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "$KRYONIX_DIR/portainer/meuboot:/data"
     networks:
       - meubootnet
+      - kryonixnet
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data_meuboot:/data
+    command: --admin-password='$$2y$$10$$N1.2FTqQMgOVKIhOZ4fyxeAD1XkU7eC7kQ4OUKTH1tBgqSzn/24oq'
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.portainer-meuboot.rule=Host(\`$DOMAIN2\`) || Host(\`www.$DOMAIN2\`) || Host(\`portainer.$DOMAIN2\`)"
-      - "traefik.http.routers.portainer-meuboot.entrypoints=websecure"
-      - "traefik.http.routers.portainer-meuboot.tls.certresolver=letsencrypt"
+      # Domínio principal meuboot.site
+      - "traefik.http.routers.portainer-main.rule=Host(`meuboot.site`)"
+      - "traefik.http.routers.portainer-main.entrypoints=websecure"
+      - "traefik.http.routers.portainer-main.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.portainer-main.service=portainer-meuboot"
+      # Subdomínio portainer.meuboot.site
+      - "traefik.http.routers.portainer-sub.rule=Host(`portainer.meuboot.site`)"
+      - "traefik.http.routers.portainer-sub.entrypoints=websecure"
+      - "traefik.http.routers.portainer-sub.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.portainer-sub.service=portainer-meuboot"
       - "traefik.http.services.portainer-meuboot.loadbalancer.server.port=9000"
 
-  # N8N (APENAS DOMÍNIO 1)
+  # N8N - Automação (apenas no domínio 1)
   n8n:
     image: n8nio/n8n:latest
     container_name: kryonix-n8n
     restart: unless-stopped
+    networks:
+      - kryonixnet
+    depends_on:
+      - postgres
     environment:
       N8N_BASIC_AUTH_ACTIVE: true
       N8N_BASIC_AUTH_USER: kryonix
-      N8N_BASIC_AUTH_PASSWORD: $N8N_PASSWORD
-      N8N_HOST: n8n.$DOMAIN1
-      N8N_PROTOCOL: https
-      WEBHOOK_URL: https://n8n.$DOMAIN1/
-      GENERIC_TIMEZONE: America/Sao_Paulo
+      N8N_BASIC_AUTH_PASSWORD: KryonixN8N2024!
       DB_TYPE: postgresdb
       DB_POSTGRESDB_HOST: postgres
       DB_POSTGRESDB_PORT: 5432
-      DB_POSTGRESDB_DATABASE: kryonix_main
+      DB_POSTGRESDB_DATABASE: kryonix
       DB_POSTGRESDB_USER: kryonix_user
-      DB_POSTGRESDB_PASSWORD: $POSTGRES_PASSWORD
+      DB_POSTGRESDB_PASSWORD: KryonixPostgres2024!
+      N8N_HOST: n8n.siqueicamposimoveis.com.br
+      N8N_PROTOCOL: https
+      NODE_ENV: production
     volumes:
-      - "$KRYONIX_DIR/n8n/data:/home/node/.n8n"
+      - n8n_data:/home/node/.n8n
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.siqueicamposimoveis.com.br`)"
+      - "traefik.http.routers.n8n.entrypoints=websecure"
+      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+
+  # MinIO - Storage S3 (apenas no domínio 1)
+  minio:
+    image: minio/minio:latest
+    container_name: kryonix-minio
+    restart: unless-stopped
+    networks:
+      - kryonixnet
+    environment:
+      MINIO_ROOT_USER: kryonix_minio_admin
+      MINIO_ROOT_PASSWORD: KryonixMinIO2024!
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    labels:
+      - "traefik.enable=true"
+      # Console MinIO
+      - "traefik.http.routers.minio-console.rule=Host(`minio.siqueicamposimoveis.com.br`)"
+      - "traefik.http.routers.minio-console.entrypoints=websecure"
+      - "traefik.http.routers.minio-console.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.minio-console.service=minio-console"
+      - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
+      # API MinIO
+      - "traefik.http.routers.minio-api.rule=Host(`storage.siqueicamposimoveis.com.br`)"
+      - "traefik.http.routers.minio-api.entrypoints=websecure"
+      - "traefik.http.routers.minio-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.minio-api.service=minio-api"
+      - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
+
+  # Grafana - Monitoramento (apenas no domínio 1)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: kryonix-grafana
+    restart: unless-stopped
+    networks:
+      - kryonixnet
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: KryonixGrafana2024!
+      GF_SERVER_ROOT_URL: https://grafana.siqueicamposimoveis.com.br
+    volumes:
+      - grafana_data:/var/lib/grafana
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.siqueicamposimoveis.com.br`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
+  # Adminer - Gerenciamento DB (apenas no domínio 1)
+  adminer:
+    image: adminer:latest
+    container_name: kryonix-adminer
+    restart: unless-stopped
     networks:
       - kryonixnet
     depends_on:
       - postgres
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.n8n.rule=Host(\`n8n.$DOMAIN1\`)"
-      - "traefik.http.routers.n8n.entrypoints=websecure"
-      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
-      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
-
-  # MinIO (APENAS DOMÍNIO 1)
-  minio:
-    image: minio/minio:latest
-    container_name: kryonix-minio
-    restart: unless-stopped
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: kryonix_minio_admin
-      MINIO_ROOT_PASSWORD: $MINIO_PASSWORD
-    volumes:
-      - "$KRYONIX_DIR/minio/data:/data"
-    networks:
-      - kryonixnet
-    labels:
-      - "traefik.enable=true"
-      # MinIO Console
-      - "traefik.http.routers.minio-console.rule=Host(\`minio.$DOMAIN1\`)"
-      - "traefik.http.routers.minio-console.entrypoints=websecure"
-      - "traefik.http.routers.minio-console.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.minio-console.service=minio-console"
-      - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
-      # MinIO API
-      - "traefik.http.routers.minio-api.rule=Host(\`storage.$DOMAIN1\`)"
-      - "traefik.http.routers.minio-api.entrypoints=websecure"
-      - "traefik.http.routers.minio-api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.minio-api.service=minio-api"
-      - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
-
-  # Grafana (APENAS DOMÍNIO 1)
-  grafana:
-    image: grafana/grafana:latest
-    container_name: kryonix-grafana
-    restart: unless-stopped
-    environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: $GRAFANA_PASSWORD
-      GF_SERVER_ROOT_URL: https://grafana.$DOMAIN1
-    volumes:
-      - "$KRYONIX_DIR/grafana/data:/var/lib/grafana"
-    networks:
-      - kryonixnet
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(\`grafana.$DOMAIN1\`)"
-      - "traefik.http.routers.grafana.entrypoints=websecure"
-      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
-      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-
-  # Adminer (APENAS DOMÍNIO 1)
-  adminer:
-    image: adminer:4.8.1
-    container_name: kryonix-adminer
-    restart: unless-stopped
-    environment:
-      ADMINER_DEFAULT_SERVER: postgres
-    networks:
-      - kryonixnet
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.adminer.rule=Host(\`adminer.$DOMAIN1\`)"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.siqueicamposimoveis.com.br`)"
       - "traefik.http.routers.adminer.entrypoints=websecure"
       - "traefik.http.routers.adminer.tls.certresolver=letsencrypt"
       - "traefik.http.services.adminer.loadbalancer.server.port=8080"
-
 EOF
-    
-    log "SUCCESS" "Docker Compose criado para 2 domínios!"
+
+    log "SUCCESS" "Docker Compose criado para 2 domínios"
 }
 
-# Build do projeto
-build_project() {
-    log "DEPLOY" "🔨 Fazendo build do projeto..."
+# Executar deploy com Docker Compose
+run_deployment() {
+    log "DEPLOY" "🚀 Iniciando deploy para 2 domínios..."
     
     cd "$PROJECT_DIR"
     
-    # Instalar dependências
-    if command -v npm &> /dev/null; then
-        npm install --legacy-peer-deps 2>/dev/null || true
-        
-        # Prisma setup
-        if [ "$HAS_PRISMA" = "true" ]; then
-            npm run db:generate 2>/dev/null || npx prisma generate 2>/dev/null || true
-        fi
-    fi
-    
-    log "SUCCESS" "Projeto preparado!"
-}
-
-# Deploy final
-deploy_services() {
-    log "DEPLOY" "🚀 Iniciando deploy dos serviços para 2 domínios..."
-    
-    cd "$KRYONIX_DIR"
-    
-    # Aguardar Docker estar pronto
-    until docker ps >/dev/null 2>&1; do
-        log "WARNING" "Aguardando Docker..."
-        sleep 5
-        systemctl restart docker 2>/dev/null || true
-    done
-    
-    # Deploy em etapas
+    # Build e start dos serviços em etapas
     log "INFO" "Etapa 1: Infraestrutura base..."
     docker-compose up -d traefik postgres redis
-    sleep 30
+    sleep 30  # Aguardar PostgreSQL inicializar
     
-    log "INFO" "Etapa 2: Aplicação principal (Domínio 1)..."
+    log "INFO" "Etapa 2: Aplicação principal (Frontend + Backend)..."
     docker-compose up -d --build frontend backend
-    sleep 20
+    sleep 15
     
     log "INFO" "Etapa 3: Portainers para ambos domínios..."
     docker-compose up -d portainer-siqueira portainer-meuboot
@@ -629,64 +592,77 @@ deploy_services() {
     
     log "INFO" "Etapa 4: Serviços auxiliares (Domínio 1)..."
     docker-compose up -d n8n minio grafana adminer
-    sleep 15
+    sleep 10
     
     log "SUCCESS" "Deploy concluído para 2 domínios!"
 }
 
-# Configurar webhook GitHub CORRIGIDO
+# Configurar webhook GitHub
 setup_webhook() {
     log "DEPLOY" "🔗 Configurando webhook GitHub..."
     
-    # Script de deploy
-    cat > /usr/local/bin/github-webhook.sh << 'EOF'
-#!/bin/bash
-cd /opt/site-jurez-2.0 && git pull && docker-compose -f /opt/kryonix/docker-compose.yml up -d --build frontend backend
-EOF
-    chmod +x /usr/local/bin/github-webhook.sh
-    
-    # Script Python para webhook
+    # Criar script Python do webhook
     cat > /usr/local/bin/webhook-server.py << 'EOF'
 #!/usr/bin/env python3
-import http.server
-import socketserver
+import os
 import subprocess
+import json
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import hmac
+import hashlib
 
-class WebhookHandler(http.server.BaseHTTPRequestHandler):
+class WebhookHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == '/webhook':
+            content_length = int(self.headers['Content-Length'])
+            payload = self.rfile.read(content_length)
+            
             try:
-                subprocess.run(['/usr/local/bin/github-webhook.sh'], check=True)
+                # Parse JSON
+                data = json.loads(payload.decode('utf-8'))
+                
+                # Verificar se é push para main/master
+                if data.get('ref') in ['refs/heads/main', 'refs/heads/master']:
+                    print("Webhook recebido - Executando deploy...")
+                    
+                    # Executar deploy
+                    os.chdir('/opt/site-jurez-2.0')
+                    subprocess.run(['git', 'pull', 'origin', 'main'], check=True)
+                    subprocess.run(['docker-compose', 'up', '-d', '--build', 'frontend', 'backend'], check=True)
+                    
+                    print("Deploy executado com sucesso!")
+                    
                 self.send_response(200)
-                self.send_header('Content-type', 'text/plain')
                 self.end_headers()
-                self.wfile.write(b'Deploy executado com sucesso!')
+                self.wfile.write(b'OK')
+                
             except Exception as e:
+                print(f"Erro no webhook: {e}")
                 self.send_response(500)
-                self.send_header('Content-type', 'text/plain')
                 self.end_headers()
-                self.wfile.write(f'Erro no deploy: {str(e)}'.encode())
-        else:
-            self.send_response(404)
-            self.end_headers()
+                self.wfile.write(b'Error')
+    
+    def log_message(self, format, *args):
+        pass  # Silenciar logs padrão
 
 if __name__ == '__main__':
-    PORT = 9999
-    with socketserver.TCPServer(('', PORT), WebhookHandler) as httpd:
-        print(f'Webhook server rodando na porta {PORT}')
-        httpd.serve_forever()
+    server = HTTPServer(('0.0.0.0', 9000), WebhookHandler)
+    print("Webhook server rodando na porta 9000...")
+    server.serve_forever()
 EOF
+    
     chmod +x /usr/local/bin/webhook-server.py
     
-    # Service file corrigido
+    # Criar serviço systemd
     cat > /etc/systemd/system/github-webhook.service << 'EOF'
 [Unit]
-Description=GitHub Webhook Auto Deploy
+Description=GitHub Webhook Server
 After=network.target
 
 [Service]
 Type=simple
 User=root
+WorkingDirectory=/opt/site-jurez-2.0
 ExecStart=/usr/local/bin/webhook-server.py
 Restart=always
 RestartSec=10
@@ -695,77 +671,72 @@ RestartSec=10
 WantedBy=multi-user.target
 EOF
     
+    # Iniciar serviço
     systemctl daemon-reload
-    systemctl enable --now github-webhook.service 2>/dev/null || true
+    systemctl enable github-webhook
+    systemctl start github-webhook
     
     log "SUCCESS" "Webhook configurado!"
 }
 
-# Verificar deployment
+# Verificação final
 verify_deployment() {
     log "INFO" "🔍 Verificando serviços para 2 domínios..."
     
-    local services=("traefik" "postgres" "redis" "frontend" "backend" "portainer-siqueira" "portainer-meuboot" "n8n" "minio" "grafana" "adminer")
-    local running=0
+    # Verificar containers
+    containers=(
+        "kryonix-traefik"
+        "kryonix-postgres" 
+        "kryonix-redis"
+        "kryonix-frontend"
+        "kryonix-backend"
+        "kryonix-portainer-siqueira"
+        "kryonix-portainer-meuboot"
+        "kryonix-n8n"
+        "kryonix-minio"
+        "kryonix-grafana"
+        "kryonix-adminer"
+    )
     
-    for service in "${services[@]}"; do
-        if docker ps --format "table {{.Names}}" | grep -q "kryonix-$service"; then
-            printf "${GREEN}✅ $service${NC}\n"
-            ((running++))
+    for container in "${containers[@]}"; do
+        if docker ps --format "table {{.Names}}" | grep -q "$container"; then
+            echo "✅ $container"
         else
-            printf "${RED}❌ $service${NC}\n"
+            echo "❌ $container"
         fi
     done
-    
-    log "INFO" "📊 Serviços funcionando: $running/${#services[@]}"
-    
-    if [ $running -ge 8 ]; then
-        log "SUCCESS" "Deploy bem-sucedido para 2 domínios!"
-    else
-        log "WARNING" "Deploy parcial"
-    fi
 }
 
-# Exibir informações finais
+# Mostrar informa��ões finais
 show_final_info() {
-    sleep 60  # Aguardar serviços iniciarem
-    
-    clear
-    echo -e "${BOLD}${GREEN}🎉 KRYONIX DEPLOY 2 DOMÍNIOS CONCLUÍDO! 🎉${NC}"
+    log "SUCCESS" "🎉 DEPLOY KRYONIX FINALIZADO PARA 2 DOMÍNIOS!"
     echo
-    echo -e "${BOLD}📱 DOMÍNIO 1 ($DOMAIN1) - APLICAÇÃO COMPLETA:${NC}"
-    echo -e "   🏠 Frontend: ${BOLD}https://$DOMAIN1${NC}"
-    echo -e "   ⚙️  Backend API: ${BOLD}https://api.$DOMAIN1${NC}"
-    echo -e "   🐳 Portainer: ${BOLD}https://portainer.$DOMAIN1${NC}"
-    echo -e "   🔄 N8N: ${BOLD}https://n8n.$DOMAIN1${NC}"
-    echo -e "   📁 MinIO: ${BOLD}https://minio.$DOMAIN1${NC}"
-    echo -e "   📊 Grafana: ${BOLD}https://grafana.$DOMAIN1${NC}"
-    echo -e "   🗄️  Adminer: ${BOLD}https://adminer.$DOMAIN1${NC}"
-    echo -e "   🔀 Traefik: ${BOLD}https://traefik.$DOMAIN1${NC}"
+    echo -e "${BOLD}${GREEN}🌐 DOMÍNIO 1: $DOMAIN1 (Aplicação Completa)${NC}"
+    echo -e "${CYAN}📱 Frontend: https://$DOMAIN1${NC}"
+    echo -e "${CYAN}🔧 Backend API: https://api.$DOMAIN1${NC}"
+    echo -e "${CYAN}📊 Portainer: https://portainer.$DOMAIN1${NC}"
+    echo -e "${CYAN}🤖 N8N: https://n8n.$DOMAIN1${NC}"
+    echo -e "${CYAN}💾 MinIO Console: https://minio.$DOMAIN1${NC}"
+    echo -e "${CYAN}📦 MinIO API: https://storage.$DOMAIN1${NC}"
+    echo -e "${CYAN}📈 Grafana: https://grafana.$DOMAIN1${NC}"
+    echo -e "${CYAN}🗄️ Adminer: https://adminer.$DOMAIN1${NC}"
+    echo -e "${CYAN}🔀 Traefik: https://traefik.$DOMAIN1${NC}"
     echo
-    echo -e "${BOLD}🛠️ DOMÍNIO 2 ($DOMAIN2) - APENAS PORTAINER STACKS:${NC}"
-    echo -e "   🏠 Site Principal: ${BOLD}https://$DOMAIN2${NC} (redireciona para Portainer)"
-    echo -e "   🐳 Portainer Stacks: ${BOLD}https://portainer.$DOMAIN2${NC}"
-    echo -e "      👤 Configure manualmente no primeiro acesso"
+    echo -e "${BOLD}${PURPLE}🌐 DOMÍNIO 2: $DOMAIN2 (Apenas Portainer)${NC}"
+    echo -e "${CYAN}🏠 Site Principal: https://$DOMAIN2 (redireciona para Portainer)${NC}"
+    echo -e "${CYAN}📊 Portainer: https://portainer.$DOMAIN2${NC}"
     echo
-    echo -e "${BOLD}🔧 CREDENCIAIS:${NC}"
-    echo -e "   🔄 N8N: usuário ${YELLOW}kryonix${NC} | senha ${YELLOW}$N8N_PASSWORD${NC}"
-    echo -e "   📁 MinIO: usuário ${YELLOW}kryonix_minio_admin${NC} | senha ${YELLOW}$MINIO_PASSWORD${NC}"
-    echo -e "   📊 Grafana: usuário ${YELLOW}admin${NC} | senha ${YELLOW}$GRAFANA_PASSWORD${NC}"
+    echo -e "${BOLD}${YELLOW}🔐 CREDENCIAIS:${NC}"
+    echo -e "${GREEN}N8N: kryonix / KryonixN8N2024!${NC}"
+    echo -e "${GREEN}MinIO: kryonix_minio_admin / KryonixMinIO2024!${NC}"
+    echo -e "${GREEN}Grafana: admin / KryonixGrafana2024!${NC}"
+    echo -e "${GREEN}PostgreSQL: kryonix_user / KryonixPostgres2024!${NC}"
+    echo -e "${GREEN}Portainer: $PORTAINER_USER / $PORTAINER_PASS${NC}"
     echo
-    echo -e "${BOLD}🔧 WEBHOOK GITHUB:${NC}"
-    echo -e "   🔗 URL: ${BOLD}http://$SERVER_IP:9999/webhook${NC}"
-    echo -e "   📝 Configure no GitHub: Settings > Webhooks"
+    echo -e "${BOLD}${BLUE}📝 Logs: tail -f $LOG_FILE${NC}"
+    echo -e "${BOLD}${BLUE}🔄 Webhook: Porta 9000 configurada${NC}"
     echo
-    echo -e "${BOLD}📋 COMANDOS:${NC}"
-    echo -e "   📊 Status: ${BOLD}docker-compose -f $KRYONIX_DIR/docker-compose.yml ps${NC}"
-    echo -e "   🔄 Restart: ${BOLD}docker-compose -f $KRYONIX_DIR/docker-compose.yml restart [serviço]${NC}"
-    echo -e "   🔍 Logs: ${BOLD}docker-compose -f $KRYONIX_DIR/docker-compose.yml logs -f [serviço]${NC}"
-    echo
-    echo -e "${BOLD}${GREEN}✅ SSL/HTTPS automático configurado para TODOS os serviços!${NC}"
-    echo -e "${BOLD}${GREEN}🚀 Deploy automático via webhook configurado!${NC}"
-    echo
-    log "SUCCESS" "Sistema KRYONIX para 2 domínios implantado com sucesso!"
+    echo -e "${BOLD}${RED}⚠️ Configure os DNS dos domínios para apontar para: $SERVER_IP${NC}"
 }
 
 # Função principal
@@ -773,39 +744,29 @@ main() {
     show_banner
     check_root
     
-    log "DEPLOY" "🚀 FASE 1: Limpeza do Sistema"
+    log "DEPLOY" "🚀 FASE 1: Preparação"
     clean_system
-    
-    log "DEPLOY" "🚀 FASE 2: Atualização do Sistema"
     update_system
     
-    log "DEPLOY" "🚀 FASE 3: Instalação Node.js"
+    log "DEPLOY" "🚀 FASE 2: Instalações"
     install_nodejs
-    
-    log "DEPLOY" "🚀 FASE 4: Instalação Docker"
     install_docker
+    setup_firewall
     
-    log "DEPLOY" "🚀 FASE 5: Análise do Projeto"
-    analyze_project
-    
-    log "DEPLOY" "🚀 FASE 6: Configuração"
-    setup_directories
+    log "DEPLOY" "🚀 FASE 3: Projeto"
+    setup_project
     create_dockerfiles
-    create_compose
+    create_docker_compose
     
-    log "DEPLOY" "🚀 FASE 7: Build"
-    build_project
+    log "DEPLOY" "🚀 FASE 4: Deploy"
+    run_deployment
     
-    log "DEPLOY" "🚀 FASE 8: Deploy"
-    deploy_services
-    
-    log "DEPLOY" "🚀 FASE 9: Webhook"
+    log "DEPLOY" "🚀 FASE 5: Webhook"
     setup_webhook
     
-    log "DEPLOY" "🚀 FASE 10: Verificação"
+    log "DEPLOY" "🚀 FASE 6: Verificação"
     verify_deployment
     
-    log "DEPLOY" "🚀 FASE 11: Finalização"
     show_final_info
 }
 
