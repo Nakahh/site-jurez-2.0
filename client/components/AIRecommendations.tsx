@@ -307,7 +307,7 @@ export function AIRecommendations({
                 : "text-amber-700"
             } transition-all`}
           >
-            <Home className="w-4 h-4 mr-2" />
+            <HomeIcon className="w-4 h-4 mr-2" />
             Imóveis Recomendados
           </Button>
           <Button
