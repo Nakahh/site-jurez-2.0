@@ -27,7 +27,7 @@ const Login = loadable(() => import("../pages/Login"), {
   fallback: <LoadingFallback />,
 });
 
-const Register = loadable(() => import("../pages/Register"), {
+const Register = loadable(() => import("../pages/Login"), {
   fallback: <LoadingFallback />,
 });
 
