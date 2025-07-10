@@ -128,7 +128,25 @@ export const createImovel: RequestHandler = async (req, res) => {
 
     const imovel = await prisma.imovel.create({
       data: {
-        ...dadosImovel,
+        titulo: dadosImovel.titulo,
+        descricao: dadosImovel.descricao,
+        tipo: dadosImovel.tipo,
+        finalidade: dadosImovel.finalidade,
+        preco: dadosImovel.preco,
+        area: dadosImovel.area,
+        quartos: dadosImovel.quartos,
+        banheiros: dadosImovel.banheiros,
+        vagas: dadosImovel.vagas,
+        endereco: dadosImovel.endereco,
+        bairro: dadosImovel.bairro,
+        cidade: dadosImovel.cidade,
+        estado: dadosImovel.estado,
+        cep: dadosImovel.cep,
+        latitude: dadosImovel.latitude,
+        longitude: dadosImovel.longitude,
+        fotos: dadosImovel.fotos,
+        status: dadosImovel.status,
+        destaque: dadosImovel.destaque,
         corretorId: req.user.userId,
       },
       include: {
