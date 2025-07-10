@@ -9,6 +9,7 @@ import * as imovelRoutes from "./routes/imoveis";
 import * as leadRoutes from "./routes/leads";
 import * as corretorRoutes from "./routes/corretor";
 import * as chatRoutes from "./routes/chat";
+import { handleWebhook } from "./routes/webhook";
 
 export function createServer() {
   const app = express();
