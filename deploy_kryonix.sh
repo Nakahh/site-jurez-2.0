@@ -86,7 +86,7 @@ check_root() {
     log "SUCCESS" "Executando como root ✓"
 }
 
-# Limpeza TOTAL do servidor (mantendo apenas Ubuntu)
+# Limpeza TOTAL do servidor
 clean_system_completely() {
     log "WARNING" "🧹 LIMPEZA TOTAL DO SERVIDOR (mantendo apenas Ubuntu)..."
     
@@ -94,16 +94,11 @@ clean_system_completely() {
     systemctl stop docker 2>/dev/null || true
     systemctl stop nginx 2>/dev/null || true
     systemctl stop apache2 2>/dev/null || true
-    systemctl stop mysql 2>/dev/null || true
-    systemctl stop postgresql 2>/dev/null || true
-    systemctl stop redis-server 2>/dev/null || true
     
     # Remover Docker e containers
     if command -v docker &> /dev/null; then
         log "INFO" "Removendo Docker e todos os containers..."
         docker system prune -af --volumes 2>/dev/null || true
-        docker network prune -f 2>/dev/null || true
-        docker volume prune -f 2>/dev/null || true
         apt remove -y docker docker-engine docker.io containerd runc docker-ce docker-ce-cli 2>/dev/null || true
         rm -rf /var/lib/docker /etc/docker 2>/dev/null || true
     fi
@@ -112,23 +107,13 @@ clean_system_completely() {
     apt remove -y --purge nginx apache2 mysql-server postgresql redis-server nodejs npm 2>/dev/null || true
     apt autoremove -y --purge 2>/dev/null || true
     
-    # Limpar diretórios do sistema
-    log "INFO" "Limpando diretórios do sistema..."
+    # Limpar diretórios
     rm -rf /opt/* /tmp/* /var/tmp/* 2>/dev/null || true
-    rm -rf /home/*/.[!.]* /root/.[!.]* 2>/dev/null || true
     rm -rf /var/www/* /etc/nginx /etc/apache2 2>/dev/null || true
-    rm -rf /var/lib/mysql /var/lib/postgresql 2>/dev/null || true
     
-    # Limpar logs antigos
-    find /var/log -type f -name "*.log" -delete 2>/dev/null || true
-    find /var/log -type f -name "*.log.*" -delete 2>/dev/null || true
-    
-    # Limpar cache e temporários
+    # Limpar cache
     apt clean
     rm -rf /var/cache/apt/archives/* 2>/dev/null || true
-    
-    # Matar processos órfãos
-    pkill -f "docker\|nginx\|apache\|mysql\|postgres\|redis\|node" 2>/dev/null || true
     
     log "SUCCESS" "Sistema completamente limpo!"
 }
@@ -140,11 +125,8 @@ update_system() {
     # Configurar timezone
     timedatectl set-timezone America/Sao_Paulo
     
-    # Atualizar lista de pacotes
-    apt update -qq
-    
-    # Upgrade do sistema
-    apt upgrade -y -qq
+    # Atualizar sistema
+    apt update -qq && apt upgrade -y -qq
     
     # Instalar dependências essenciais
     apt install -y -qq \
@@ -157,7 +139,7 @@ update_system() {
     log "SUCCESS" "Sistema Ubuntu atualizado!"
 }
 
-# Instalar Docker mais recente
+# Instalar Docker
 install_docker() {
     log "INSTALL" "🐳 Instalando Docker CE e Docker Compose..."
     
@@ -177,7 +159,6 @@ install_docker() {
     # Configurar Docker
     systemctl start docker
     systemctl enable docker
-    usermod -aG docker $USER 2>/dev/null || true
     
     # Verificar instalação
     docker_version=$(docker --version | awk '{print $3}' | sed 's/,//')
@@ -204,7 +185,7 @@ install_nodejs() {
     log "SUCCESS" "Node.js $node_version e npm $npm_version instalados!"
 }
 
-# Configurar firewall robusto
+# Configurar firewall
 setup_firewall() {
     log "INSTALL" "🔥 Configurando firewall UFW..."
     
@@ -249,17 +230,17 @@ setup_project() {
     cd "$PROJECT_DIR"
     git checkout "$GITHUB_BRANCH" 2>/dev/null || true
     
-    # Configurar git para auto-updates
+    # Configurar git
     git config pull.rebase false
     
     log "SUCCESS" "Projeto clonado com sucesso!"
 }
 
-# Criar Dockerfiles otimizados
+# Criar Dockerfiles otimizados (SEM NGINX - Traefik faz proxy)
 create_dockerfiles() {
     log "DEPLOY" "📦 Criando Dockerfiles otimizados..."
     
-        # Frontend Dockerfile (SEM NGINX - Traefik faz proxy)
+    # Frontend Dockerfile (SEM NGINX - Traefik faz proxy)
     cat > "$PROJECT_DIR/Dockerfile.frontend" << 'EOF'
 FROM node:18-alpine AS builder
 WORKDIR /app
@@ -292,52 +273,6 @@ EXPOSE 3000
 # Servir arquivos estáticos com SPA fallback
 CMD ["serve", "-s", "dist", "-l", "3000"]
 EOF
-server {
-    listen 80;
-    server_name _;
-    root /usr/share/nginx/html;
-    index index.html;
-    
-    # Gzip compression
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
-    
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "no-referrer-when-downgrade" always;
-    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
-    
-    # Cache settings
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-    
-    # API proxy
-    location /api {
-        proxy_pass http://backend:3001;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_connect_timeout 30s;
-        proxy_send_timeout 30s;
-        proxy_read_timeout 30s;
-    }
-    
-    # SPA fallback
-    location / {
-        try_files \$uri \$uri/ /index.html;
-    }
-}
-
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-EOF
 
     # Backend Dockerfile
     cat > "$PROJECT_DIR/Dockerfile.backend" << 'EOF'
@@ -349,7 +284,7 @@ RUN apk add --no-cache git python3 make g++ curl
 
 # Copiar arquivos de dependências
 COPY package*.json ./
-RUN npm ci --legacy-peer-deps
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
 # Copiar código fonte
 COPY . .
@@ -369,7 +304,7 @@ EXPOSE 3001
 CMD ["npm", "run", "start:server"]
 EOF
 
-    log "SUCCESS" "Dockerfiles criados!"
+    log "SUCCESS" "Dockerfiles criados (Frontend sem Nginx - Traefik faz proxy)!"
 }
 
 # Criar Docker Compose COMPLETO
@@ -468,7 +403,7 @@ services:
       - "traefik.http.routers.redis.tls.certresolver=letsencrypt"
       - "traefik.http.services.redis.loadbalancer.server.port=6379"
 
-  # Frontend (Site Principal)
+  # Frontend (Site Principal) - SEM NGINX
   frontend:
     build:
       context: .
@@ -486,7 +421,7 @@ services:
       - "traefik.http.routers.frontend.rule=Host(\`$DOMAIN1\`) || Host(\`www.$DOMAIN1\`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
-      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
 
   # Backend API
   backend:
@@ -706,36 +641,6 @@ services:
       - "traefik.http.routers.adminer.entrypoints=websecure"
       - "traefik.http.routers.adminer.tls.certresolver=letsencrypt"
       - "traefik.http.services.adminer.loadbalancer.server.port=8080"
-
-  # ChatGPT Proxy (exemplo)
-  chatgpt-proxy:
-    image: nginx:alpine
-    container_name: chatgpt-proxy
-    restart: unless-stopped
-    networks:
-      - traefik
-    volumes:
-      - ./nginx-chatgpt.conf:/etc/nginx/conf.d/default.conf:ro
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.chatgpt.rule=Host(\`chatgpt.$DOMAIN1\`) || Host(\`chatgpt.$DOMAIN2\`)"
-      - "traefik.http.routers.chatgpt.entrypoints=websecure"
-      - "traefik.http.routers.chatgpt.tls.certresolver=letsencrypt"
-      - "traefik.http.services.chatgpt.loadbalancer.server.port=80"
-
-  # Bot Service (placeholder)
-  bot-service:
-    image: nginx:alpine
-    container_name: bot-service
-    restart: unless-stopped
-    networks:
-      - traefik
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.bot.rule=Host(\`bot.$DOMAIN1\`) || Host(\`bot.$DOMAIN2\`)"
-      - "traefik.http.routers.bot.entrypoints=websecure"
-      - "traefik.http.routers.bot.tls.certresolver=letsencrypt"
-      - "traefik.http.services.bot.loadbalancer.server.port=80"
 EOF
 
     log "SUCCESS" "Docker Compose criado com todos os serviços!"
@@ -786,11 +691,9 @@ EOF
 import os
 import subprocess
 import json
-import hmac
-import hashlib
-from http.server import HTTPServer, BaseHTTPRequestHandler
 import threading
 import time
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 class WebhookHandler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -892,11 +795,6 @@ run_deployment() {
     docker-compose up -d n8n evolution-api minio grafana prometheus adminer
     sleep 20
     
-    # Etapa 5: Serviços placeholder
-    log "INFO" "Etapa 5: Serviços ChatGPT e Bot..."
-    docker-compose up -d chatgpt-proxy bot-service
-    sleep 10
-    
     log "SUCCESS" "Deploy completo finalizado!"
 }
 
@@ -905,7 +803,7 @@ verify_deployment() {
     log "INFO" "🔍 Verificando status dos serviços..."
     
     echo -e "\n${BOLD}📊 STATUS DOS CONTAINERS:${NC}"
-    docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "(traefik|postgres|redis|frontend|backend|portainer|n8n|minio|grafana|prometheus|adminer|evolution|chatgpt|bot)"
+    docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "(traefik|postgres|redis|frontend|backend|portainer|n8n|minio|grafana|prometheus|adminer|evolution)"
     
     echo -e "\n${BOLD}🌐 TESTANDO CONECTIVIDADE:${NC}"
     
@@ -937,7 +835,7 @@ create_credentials_file() {
 ##############################################################################
 
 🌐 DOMÍNIOS:
-━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📱 Site Principal: https://$DOMAIN1
 🏠 Portainer Principal: https://$DOMAIN2
@@ -953,9 +851,6 @@ create_credentials_file() {
 📈 Grafana: https://grafana.$DOMAIN1
 📊 Prometheus: https://prometheus.$DOMAIN1
 🗄️ Adminer: https://adminer.$DOMAIN1
-🤖 ChatGPT: https://chatgpt.$DOMAIN1
-🤖 Bot: https://bot.$DOMAIN1
-🔴 Redis: https://redis.$DOMAIN1
 
 📊 SERVIÇOS - DOMÍNIO 2 ($DOMAIN2):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -967,8 +862,6 @@ create_credentials_file() {
 📈 Grafana: https://grafana.$DOMAIN2
 📊 Prometheus: https://prometheus.$DOMAIN2
 🗄️ Adminer: https://adminer.$DOMAIN2
-🤖 ChatGPT: https://chatgpt.$DOMAIN2
-🤖 Bot: https://bot.$DOMAIN2
 
 🔑 CREDENCIAIS:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1045,10 +938,7 @@ minio.$DOMAIN1 → $SERVER_IP
 storage.$DOMAIN1 → $SERVER_IP
 grafana.$DOMAIN1 → $SERVER_IP
 prometheus.$DOMAIN1 → $SERVER_IP
-adminer.$DOMAIN1 �� $SERVER_IP
-chatgpt.$DOMAIN1 → $SERVER_IP
-bot.$DOMAIN1 → $SERVER_IP
-redis.$DOMAIN1 → $SERVER_IP
+adminer.$DOMAIN1 → $SERVER_IP
 
 $DOMAIN2 → $SERVER_IP
 www.$DOMAIN2 → $SERVER_IP
@@ -1060,10 +950,8 @@ storage.$DOMAIN2 → $SERVER_IP
 grafana.$DOMAIN2 → $SERVER_IP
 prometheus.$DOMAIN2 → $SERVER_IP
 adminer.$DOMAIN2 → $SERVER_IP
-chatgpt.$DOMAIN2 → $SERVER_IP
-bot.$DOMAIN2 → $SERVER_IP
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1110,14 +998,6 @@ show_final_info() {
     echo -e "${BOLD}${BLUE}🔄 AUTO-DEPLOY ATIVO:${NC}"
     echo -e "${GREEN}Qualquer push no GitHub fará deploy automático!${NC}"
     echo
-    
-    echo -e "${BOLD}${CYAN}📝 LOGS IMPORTANTES:${NC}"
-    echo -e "${GREEN}Instalação: tail -f /var/log/kryonix-ultra-install.log${NC}"
-    echo -e "${GREEN}Auto-Deploy: tail -f /var/log/auto-deploy.log${NC}"
-    echo -e "${GREEN}Webhook: journalctl -u github-webhook -f${NC}"
-    echo
-    
-    cat /root/KRYONIX_CREDENTIALS.txt
 }
 
 # Função principal
