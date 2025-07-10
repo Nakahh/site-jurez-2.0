@@ -27,7 +27,7 @@ export const useThrottle = <T extends (...args: any[]) => any>(
     () => throttle(callback, delay),
     [callback, delay],
   );
-  return throttledCallback as (...args: Parameters<T>) => void;
+  return throttledCallback;
 };
 
 // Memoized callback with dependency optimization
