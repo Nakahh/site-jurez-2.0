@@ -16,6 +16,7 @@ import {
   Sparkles,
   Calculator,
   Clock,
+  Home,
 } from "lucide-react";
 import { EnhancedPropertyCard } from "./EnhancedPropertyCard";
 
