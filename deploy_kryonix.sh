@@ -88,7 +88,13 @@ check_root() {
 
 # Limpeza TOTAL do servidor
 clean_system_completely() {
-    log "WARNING" "🧹 LIMPEZA TOTAL DO SERVIDOR (mantendo apenas Ubuntu)..."
+        log "WARNING" "🧹 LIMPEZA SEGURA DO SERVIDOR (mantendo Ubuntu + SSH)..."
+
+    # Backup das chaves SSH ANTES de qualquer limpeza
+    log "INFO" "🔐 Fazendo backup das chaves SSH..."
+    mkdir -p /tmp/ssh_backup 2>/dev/null || true
+    cp -r /home/ubuntu/.ssh /tmp/ssh_backup/ubuntu_ssh 2>/dev/null || true
+    cp -r /root/.ssh /tmp/ssh_backup/root_ssh 2>/dev/null || true
     
     # Parar todos os serviços
     systemctl stop docker 2>/dev/null || true
@@ -107,15 +113,42 @@ clean_system_completely() {
     apt remove -y --purge nginx apache2 mysql-server postgresql redis-server nodejs npm 2>/dev/null || true
     apt autoremove -y --purge 2>/dev/null || true
     
-    # Limpar diretórios
-    rm -rf /opt/* /tmp/* /var/tmp/* 2>/dev/null || true
+        # Limpar diret��rios (PRESERVANDO SSH backup)
+    find /opt -type f -delete 2>/dev/null || true
+    find /var/tmp -type f -delete 2>/dev/null || true
     rm -rf /var/www/* /etc/nginx /etc/apache2 2>/dev/null || true
+
+    # Limpar /tmp mas preservar backup SSH
+    find /tmp -name "ssh_backup" -prune -o -type f -delete 2>/dev/null || true
+
+    # Limpar arquivos de usuário EXCETO .ssh
+    find /home/ubuntu -maxdepth 1 -name ".*" -not -name ".ssh" -delete 2>/dev/null || true
+    find /root -maxdepth 1 -name ".*" -not -name ".ssh" -delete 2>/dev/null || true
+
+    # Restaurar chaves SSH se foram removidas
+    if [[ ! -d "/home/ubuntu/.ssh" ]] && [[ -d "/tmp/ssh_backup/ubuntu_ssh" ]]; then
+        log "INFO" "🔐 Restaurando chaves SSH do ubuntu..."
+        cp -r /tmp/ssh_backup/ubuntu_ssh /home/ubuntu/.ssh
+        chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+        chmod 700 /home/ubuntu/.ssh
+        chmod 600 /home/ubuntu/.ssh/* 2>/dev/null || true
+    fi
+
+    if [[ ! -d "/root/.ssh" ]] && [[ -d "/tmp/ssh_backup/root_ssh" ]]; then
+        log "INFO" "🔐 Restaurando chaves SSH do root..."
+        cp -r /tmp/ssh_backup/root_ssh /root/.ssh
+        chmod 700 /root/.ssh
+        chmod 600 /root/.ssh/* 2>/dev/null || true
+    fi
     
     # Limpar cache
     apt clean
     rm -rf /var/cache/apt/archives/* 2>/dev/null || true
     
-    log "SUCCESS" "Sistema completamente limpo!"
+        # Remover backup SSH
+    rm -rf /tmp/ssh_backup 2>/dev/null || true
+
+    log "SUCCESS" "Sistema limpo PRESERVANDO acesso SSH!"
 }
 
 # Atualizar sistema
