@@ -1654,6 +1654,7 @@ export default function AdminDashboard() {
                 icon: BarChart3,
                 color: "bg-blue-100 text-blue-600",
                 stats: "45 vendas este mês",
+                tipo: "vendas",
               },
               {
                 titulo: "Performance de Corretores",
