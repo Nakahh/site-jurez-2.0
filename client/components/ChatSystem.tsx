@@ -233,21 +233,7 @@ export function ChatSystem({
     // Notificar corretor sobre nova mensagem
     notifyNewMessage(selectedRoom.clientName, selectedRoom.propertyTitle);
 
-    // Simular notificação para outros sistemas
-    setTimeout(() => {
-      // Notificar assistente sobre mensagem não respondida
-      if (Math.random() > 0.5) {
-        addNotification({
-          type: "MENSAGEM_CHAT",
-          title: "Mensagem Não Respondida",
-          message: `Cliente ${selectedRoom.clientName} aguarda resposta há 5 minutos`,
-          priority: "MEDIUM",
-          userRole: "ASSISTENTE",
-          actionUrl: "/chat",
-          actionLabel: "Verificar Chat",
-        });
-      }
-    }, 5000); // Simular atraso de 5 segundos
+    // Notificação removida temporariamente - implementar sistema de notificações
 
     // Simular resposta automática
     setTimeout(() => {
