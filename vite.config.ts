@@ -2,46 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  server: {
-    host: "localhost",
-    port: 3000,
-    strictPort: true,
-    proxy: {
-      "/api": {
-        target: "http://localhost:3001",
-        changeOrigin: true,
-        secure: false,
-      },
-    },
-  },
-  build: {
-    outDir: "dist/spa",
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ["react", "react-dom"],
-          ui: [
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-popover",
-          ],
-          router: ["react-router-dom"],
-          query: ["@tanstack/react-query"],
-          charts: ["recharts"],
-          animation: ["framer-motion"],
-          forms: ["react-hook-form", "@hookform/resolvers"],
-          utils: ["lucide-react", "clsx", "tailwind-merge"],
-        },
-      },
-    },
-    target: "esnext",
-    minify: "esbuild",
-    sourcemap: false,
-    cssCodeSplit: true,
-    chunkSizeWarningLimit: 1000,
-  },
   plugins: [react()],
   resolve: {
     alias: {
@@ -49,19 +10,35 @@ export default defineConfig({
       "@shared": path.resolve(__dirname, "./shared"),
     },
   },
-  optimizeDeps: {
-    include: [
-      "react",
-      "react-dom",
-      "react-router-dom",
-      "@tanstack/react-query",
-      "framer-motion",
-      "lucide-react",
-    ],
-    exclude: ["@loadable/component"],
+  // Otimizações mobile
+  build: {
+    target: "es2015",
+    minify: "esbuild",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom"],
+          router: ["react-router-dom"],
+          ui: ["@radix-ui/react-dialog", "@radix-ui/react-select"],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
   },
-  esbuild: {
-    logOverride: { "this-is-undefined-in-esm": "silent" },
-    drop: ["console", "debugger"],
+  // Otimizações dev para mobile
+  server: {
+    port: 3000,
+    host: true,
+    cors: true,
+  },
+  // Preview otimizado
+  preview: {
+    port: 3000,
+    host: true,
+  },
+  // Otimizações de performance
+  optimizeDeps: {
+    include: ["react", "react-dom", "react-router-dom"],
+    exclude: [],
   },
 });

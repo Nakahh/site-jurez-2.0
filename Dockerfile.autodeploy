@@ -1,0 +1,62 @@
+# Dockerfile otimizado para auto-deploy
+# Siqueira Campos Imóveis
+
+FROM node:18-alpine
+
+# Instalar dependências do sistema
+RUN apk add --no-cache \
+    git \
+    bash \
+    curl \
+    rsync \
+    supervisor
+
+# Criar usuário para a aplicação
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+# Diretório de trabalho
+WORKDIR /app
+
+# Copiar arquivos de dependências
+COPY package*.json ./
+COPY tsconfig*.json ./
+
+# Instalar dependências
+RUN npm ci --production=false
+
+# Copiar código fonte
+COPY . .
+
+# Dar permissões aos scripts
+RUN chmod +x scripts/*.sh 2>/dev/null || true
+
+# Build da aplicação
+RUN npm run build
+
+# Configurar supervisor para auto-restart
+COPY supervisor.conf /etc/supervisor/conf.d/app.conf
+
+# Criar diretórios necessários
+RUN mkdir -p /var/log/supervisor /var/log
+
+# Mudar proprietário
+RUN chown -R nextjs:nodejs /app /var/log
+
+# Configurar Git (necessário para auto-deploy)
+RUN git config --global --add safe.directory /app
+RUN git config --global user.name "Auto Deploy"
+RUN git config --global user.email "deploy@siqueicampos.com.br"
+
+# Usuário não-root
+USER nextjs
+
+# Expor porta
+EXPOSE 3000 3001
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:3001/api/ping || exit 1
+
+# Comando de inicialização
+CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]

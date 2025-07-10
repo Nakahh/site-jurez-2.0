@@ -9,6 +9,7 @@ import * as imovelRoutes from "./routes/imoveis";
 import * as leadRoutes from "./routes/leads";
 import * as corretorRoutes from "./routes/corretor";
 import * as chatRoutes from "./routes/chat";
+import { handleWebhook } from "./routes/webhook";
 
 export function createServer() {
   const app = express();
@@ -73,6 +74,9 @@ export function createServer() {
     "/api/webhook/resposta-corretor",
     leadRoutes.webhookRespostaCorretor,
   );
+
+  // Webhook para auto-deploy do GitHub
+  app.post("/api/webhook/github", handleWebhook);
 
   // Rotas do corretor
   app.get(
