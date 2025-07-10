@@ -1410,7 +1410,100 @@ EOF
         cp -r server/* "$KRYONIX_DIR/project/backend/" 2>/dev/null || true
     fi
     
-    log "SUCCESS" "Projeto preparado para deploy!"
+        log "SUCCESS" "Projeto preparado para deploy!"
+}
+
+# Deploy final inteligente dos serviços
+intelligent_final_deploy() {
+    log "DEPLOY" "🚀 Iniciando deploy final inteligente dos serviços..."
+
+    cd "$KRYONIX_DIR" || {
+        log "ERROR" "Diretório Kryonix não encontrado!"
+        return 1
+    }
+
+    # Verificar se docker-compose.yml existe
+    if [ ! -f "docker-compose.yml" ]; then
+        log "ERROR" "docker-compose.yml não encontrado!"
+        return 1
+    fi
+
+    # Preparar senhas do Portainer
+    log "INSTALL" "⚙️  Preparando senhas criptografadas do Portainer..."
+    echo -n "$PORTAINER_PASS" | docker run --rm -i portainer/helper-reset-password > /tmp/portainer_password 2>/dev/null || true
+    echo -n "$PORTAINER_PASS" | docker run --rm -i portainer/helper-reset-password > /tmp/portainer_meuboot_password 2>/dev/null || true
+
+    # Deploy em etapas para maior confiabilidade
+    log "DEPLOY" "🔄 Deploy etapa 1: Infraestrutura base..."
+    docker-compose up -d traefik postgres redis 2>/dev/null || {
+        log "WARNING" "Deploy da infraestrutura falhou, tentando individual..."
+        docker-compose up -d traefik || log "WARNING" "Traefik falhou"
+        sleep 5
+        docker-compose up -d postgres || log "WARNING" "PostgreSQL falhou"
+        sleep 5
+        docker-compose up -d redis || log "WARNING" "Redis falhou"
+    }
+
+    # Aguardar infraestrutura ficar pronta
+    log "INFO" "⏳ Aguardando infraestrutura ficar pronta (30 segundos)..."
+    sleep 30
+
+    log "DEPLOY" "🔄 Deploy etapa 2: Aplicação principal..."
+    docker-compose up -d project-frontend project-backend 2>/dev/null || {
+        log "WARNING" "Deploy da aplicação falhou, tentando build..."
+        docker-compose build project-frontend project-backend
+        docker-compose up -d project-frontend project-backend
+    }
+
+    sleep 15
+
+    log "DEPLOY" "🔄 Deploy etapa 3: Serviços auxiliares..."
+    docker-compose up -d portainer-siqueira portainer-meuboot adminer 2>/dev/null || {
+        log "WARNING" "Deploy dos serviços auxiliares com problemas"
+    }
+
+    sleep 10
+
+    log "DEPLOY" "🔄 Deploy etapa 4: Monitoramento e automação..."
+    docker-compose up -d prometheus grafana n8n evolution-api minio 2>/dev/null || {
+        log "WARNING" "Deploy do monitoramento com problemas"
+    }
+
+    sleep 10
+
+    log "DEPLOY" "🔄 Deploy etapa 5: ChatGPT Stack..."
+    docker-compose up -d chatgpt-stack 2>/dev/null || {
+        log "WARNING" "Deploy do ChatGPT falhou - verifique OPENAI_API_KEY"
+    }
+
+    # Verificar status dos serviços
+    log "INFO" "🔍 Verificando status dos serviços..."
+    local services_running=0
+    local total_services=0
+
+    for service in traefik postgres redis project-frontend project-backend portainer-siqueira; do
+        ((total_services++))
+        if docker-compose ps -q "$service" 2>/dev/null | grep -q .; then
+            if [ "$(docker-compose ps -q "$service" | xargs docker inspect -f '{{.State.Status}}')" = "running" ]; then
+                log "SUCCESS" "   ✅ $service: rodando"
+                ((services_running++))
+            else
+                log "WARNING" "   ⚠️  $service: com problemas"
+            fi
+        else
+            log "ERROR" "   ❌ $service: não encontrado"
+        fi
+    done
+
+    log "INFO" "📊 Status: $services_running/$total_services serviços principais rodando"
+
+    if [ $services_running -ge 4 ]; then
+        log "SUCCESS" "✅ Deploy realizado com sucesso!"
+        return 0
+    else
+        log "WARNING" "⚠️  Deploy parcial - alguns serviços podem estar com problemas"
+        return 1
+    fi
 }
 
 # Criação do docker-compose inteligente
