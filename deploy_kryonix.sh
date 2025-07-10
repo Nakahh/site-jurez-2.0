@@ -1457,7 +1457,7 @@ intelligent_final_deploy() {
 
     sleep 15
 
-    log "DEPLOY" "�� Deploy etapa 3: Serviços auxiliares..."
+    log "DEPLOY" "🔄 Deploy etapa 3: Serviços auxiliares..."
     docker-compose up -d portainer-siqueira portainer-meuboot adminer 2>/dev/null || {
         log "WARNING" "Deploy dos serviços auxiliares com problemas"
     }
@@ -2352,7 +2352,7 @@ def update_project():
                                         log_message(f"Erro ao instalar dependencias: {npm_result.stderr}", "ERROR")
             
             # Rebuild e restart containers
-            log_message("���� Reconstruindo containers...")
+            log_message("🔄 Reconstruindo containers...")
             os.chdir(KRYONIX_DIR)
             
             # Rebuild apenas os containers do projeto
@@ -2776,6 +2776,86 @@ EOF
     echo "4. ✅ Conecte o Evolution API ao WhatsApp Business"
     echo "5. ✅ Configure o webhook no GitHub com a URL fornecida"
     echo "6. ✅ Monitore o sistema via Grafana"
+    echo
+}
+
+# Exibir links finais de acesso
+show_final_links() {
+    log "DEPLOY" "🔗 Links de acesso do sistema KRYONIX..."
+
+    echo
+    echo -e "${BOLD}${GREEN}##############################################################################${NC}"
+    echo -e "${BOLD}${GREEN}#                    🚀 KRYONIX DEPLOY CONCLUÍDO! 🚀                       #${NC}"
+    echo -e "${BOLD}${GREEN}##############################################################################${NC}"
+    echo
+
+    # Links principais
+    echo -e "${BOLD}${BLUE}📱 APLICAÇÃO PRINCIPAL:${NC}"
+    echo -e "   🏠 ${BOLD}Frontend:${NC} https://siqueicamposimoveis.com.br"
+    echo -e "   🏠 ${BOLD}Frontend (www):${NC} https://www.siqueicamposimoveis.com.br"
+    echo -e "   ⚙️  ${BOLD}Backend API:${NC} https://api.siqueicamposimoveis.com.br"
+    echo
+
+    # Gerenciamento
+    echo -e "${BOLD}${PURPLE}🛠️  GERENCIAMENTO:${NC}"
+    echo -e "   🐳 ${BOLD}Portainer (Principal):${NC} https://portainer.siqueicamposimoveis.com.br"
+    echo -e "      👤 Usuário: $PORTAINER_USER | 🔑 Senha: $PORTAINER_PASS"
+    echo -e "   🐳 ${BOLD}Portainer (MeuBoot):${NC} https://portainer.meuboot.site"
+    echo -e "      👤 Usuário: $PORTAINER_USER | 🔑 Senha: $PORTAINER_PASS"
+    echo -e "   🔀 ${BOLD}Traefik Dashboard:${NC} https://traefik.siqueicamposimoveis.com.br"
+    echo
+
+    # Automação e integração
+    echo -e "${BOLD}${CYAN}🤖 AUTOMAÇÃO E INTEGRAÇÃO:${NC}"
+    echo -e "   🔄 ${BOLD}N8N (Principal):${NC} https://n8n.siqueicamposimoveis.com.br"
+    echo -e "   🔄 ${BOLD}N8N (MeuBoot):${NC} https://n8n.meuboot.site"
+    echo -e "      👤 Usuário: kryonix | 🔑 Senha: $N8N_PASSWORD"
+    echo -e "   📱 ${BOLD}Evolution API:${NC} https://evolution.siqueicamposimoveis.com.br"
+    echo -e "   📱 ${BOLD}Evolution (MeuBoot):${NC} https://evo.meuboot.site"
+    echo
+
+    # IA e ChatBots
+    echo -e "${BOLD}${GREEN}🧠 INTELIGÊNCIA ARTIFICIAL:${NC}"
+    echo -e "   🤖 ${BOLD}ChatGPT Stack:${NC} https://chatgpt.siqueicamposimoveis.com.br"
+    echo -e "   🤖 ${BOLD}Bot Interface:${NC} https://bot.siqueicamposimoveis.com.br"
+    echo -e "      ⚠️  ${YELLOW}Configure OPENAI_API_KEY no docker-compose.yml${NC}"
+    echo
+
+    # Armazenamento
+    echo -e "${BOLD}${BLUE}📁 ARMAZENAMENTO:${NC}"
+    echo -e "   🗃️  ${BOLD}MinIO Console:${NC} https://minio.siqueicamposimoveis.com.br"
+    echo -e "   📡 ${BOLD}MinIO API:${NC} https://storage.siqueicamposimoveis.com.br"
+    echo -e "      👤 Usuário: kryonix_minio_admin | 🔑 Senha: $MINIO_PASSWORD"
+    echo
+
+    # Monitoramento
+    echo -e "${BOLD}${RED}📊 MONITORAMENTO:${NC}"
+    echo -e "   📈 ${BOLD}Grafana:${NC} https://grafana.siqueicamposimoveis.com.br"
+    echo -e "      👤 Usuário: admin | 🔑 Senha: $GRAFANA_PASSWORD"
+    echo -e "   📊 ${BOLD}Prometheus:${NC} https://prometheus.siqueicamposimoveis.com.br"
+    echo -e "   🗄️  ${BOLD}Adminer:${NC} https://adminer.siqueicamposimoveis.com.br"
+    echo
+
+    # Informações técnicas
+    echo -e "${BOLD}${CYAN}🔧 INFORMAÇÕES TÉCNICAS:${NC}"
+    echo -e "   🌐 ${BOLD}IP Servidor:${NC} $SERVER_IP"
+    echo -e "   🏗️  ${BOLD}Frontend Port:${NC} $FRONTEND_PORT"
+    echo -e "   ⚙️  ${BOLD}Backend Port:${NC} $BACKEND_PORT"
+    echo -e "   🗄️  ${BOLD}Prisma:${NC} $HAS_PRISMA"
+    echo -e "   📂 ${BOLD}Projeto:${NC} $PROJECT_DIR"
+    echo -e "   🐳 ${BOLD}Kryonix:${NC} $KRYONIX_DIR"
+    echo
+
+    # Comandos úteis
+    echo -e "${BOLD}${YELLOW}📋 COMANDOS ÚTEIS:${NC}"
+    echo -e "   🔍 Ver logs: ${BOLD}docker-compose -f $KRYONIX_DIR/docker-compose.yml logs -f [serviço]${NC}"
+    echo -e "   🔄 Restart: ${BOLD}docker-compose -f $KRYONIX_DIR/docker-compose.yml restart [serviço]${NC}"
+    echo -e "   📊 Status: ${BOLD}docker-compose -f $KRYONIX_DIR/docker-compose.yml ps${NC}"
+    echo -e "   🆕 Update: ${BOLD}cd $PROJECT_DIR && git pull${NC}"
+    echo
+
+    echo -e "${BOLD}${GREEN}✅ Sistema KRYONIX implantado com sucesso!${NC}"
+    echo -e "${BOLD}${GREEN}🎉 Acesse os links acima para começar a usar o sistema.${NC}"
     echo
 }
 
