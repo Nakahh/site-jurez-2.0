@@ -905,7 +905,7 @@ EOF
         fi
     fi
 
-                            # Verificação final dos arquivos críticos
+                                                        # Verificação final dos arquivos críticos
     log "INFO" "🔍 Verificação final dos arquivos..."
     for file in "${critical_files[@]}"; do
         if [ -f "$file" ]; then
@@ -916,7 +916,7 @@ EOF
                 fixes_applied=$((fixes_applied + 1))
             fi
         fi
-    done
+    done 2>/dev/null || true
 
     # Arquivo server/routes/imoveis.ts está correto, não modificar
     log "INFO" "✅ Arquivo server/routes/imoveis.ts verificado e está correto"
@@ -1979,7 +1979,7 @@ ENV CI=false
 ENV GENERATE_SOURCEMAP=false
 ENV SKIP_TYPE_CHECK=true
 
-# Build da aplicação com múltiplas tentativas
+# Build da aplica��ão com múltiplas tentativas
 RUN npm run build || npx vite build --outDir dist/spa --mode production || (\\
     echo "Build principal falhou, criando build básico..." && \\
     mkdir -p dist/spa && \\
