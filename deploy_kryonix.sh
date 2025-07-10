@@ -368,7 +368,7 @@ intelligent_firewall_setup() {
     # Reset completo
     ufw --force reset
     
-    # Configura��ões básicas
+    # Configurações básicas
     ufw default deny incoming
     ufw default allow outgoing
     
@@ -775,12 +775,12 @@ intelligent_code_fixes() {
         return 0
     }
 
-        # Correção específica do performance.ts
+            # Correção específica do performance.ts
     log "INFO" "🔧 Corrigindo performance.ts..."
     if [ -f "client/lib/performance.ts" ]; then
-        if ! check_file_basic "client/lib/performance.ts"; then
+        if ! check_file_basic "client/lib/performance.ts" 2>/dev/null; then
             log "WARNING" "   🔄 performance.ts com problemas, recriando arquivo..."
-            ((fixes_applied++))
+            fixes_applied=$((fixes_applied + 1))
             cat > "client/lib/performance.ts" << 'EOF'
 import { onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
 
