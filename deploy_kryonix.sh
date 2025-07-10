@@ -1911,64 +1911,111 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \\
 CMD ["nginx", "-g", "daemon off;"]
 EOF
 
-        # Dockerfile para Backend
-    cat > "$PROJECT_DIR/Dockerfile.backend" << 'EOF'
+                # Dockerfile para Backend MELHORADO
+    cat > "$PROJECT_DIR/Dockerfile.backend" << EOF
+# Backend para Projeto Siqueira Campos
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Instalar dependências do sistema
-RUN apk add --no-cache git python3 make g++ curl
+# Instalar dependências do sistema necessárias
+RUN apk add --no-cache git python3 make g++ curl bash
 
-# Copiar package files
+# Copiar package files primeiro para cache
 COPY package*.json ./
 
-# Instalar dependências
-RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+# Instalar dependências com configurações otimizadas
+RUN npm ci --legacy-peer-deps --production=false || npm install --legacy-peer-deps --production=false
 
 # Copiar código fonte
 COPY . .
 
 # Configurar Prisma se existir
-RUN if [ -f "prisma/schema.prisma" ]; then \
-        npx prisma generate || echo "Prisma generate failed"; \
+RUN if [ -f "prisma/schema.prisma" ]; then \\
+        echo "📦 Configurando Prisma..." && \\
+        npx prisma generate || echo "⚠️  Prisma generate failed"; \\
     fi
 
 # Build TypeScript se necessário
-RUN if [ -f "tsconfig.server.json" ]; then \
-        npx tsc --project tsconfig.server.json --skipLibCheck || echo "TypeScript compilation failed"; \
+RUN if [ -f "tsconfig.server.json" ]; then \\
+        echo "🔨 Compilando TypeScript..." && \\
+        npx tsc --project tsconfig.server.json --skipLibCheck || echo "⚠️  TypeScript compilation failed"; \\
     fi
 
-# Criar usuário não-root
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodeuser -u 1001 && \
+# Criar usuário não-root para segurança
+RUN addgroup -g 1001 -S nodejs && \\
+    adduser -S nodeuser -u 1001
+
+# Script de inicialização inteligente
+RUN cat > /app/start.sh << 'SCRIPT'
+#!/bin/bash
+set -e
+
+echo "🚀 Iniciando servidor backend Siqueira Campos..."
+echo "📍 Diretório: \$(pwd)"
+echo "👤 Usuário: \$(whoami)"
+
+# Aguardar banco de dados se necessário
+if [ "\$DATABASE_URL" ]; then
+    echo "⏳ Aguardando banco de dados..."
+
+    # Extrair host do DATABASE_URL
+    DB_HOST=\$(echo "\$DATABASE_URL" | sed -n 's/.*@\\([^:]*\\):.*/\\1/p')
+    if [ "\$DB_HOST" ]; then
+        timeout=60
+        while [ \$timeout -gt 0 ]; do
+            if nc -z "\$DB_HOST" 5432 2>/dev/null; then
+                echo "✅ Banco de dados conectado!"
+                break
+            fi
+            echo "⏳ Aguardando banco... (\$timeout segundos restantes)"
+            sleep 2
+            timeout=\$((timeout-2))
+        done
+    fi
+fi
+
+# Executar migrações Prisma se necessário
+if [ -f "/app/prisma/schema.prisma" ] && [ "\$DATABASE_URL" ]; then
+    echo "🗄️  Executando migrações Prisma..."
+    npx prisma migrate deploy || echo "⚠️  Migrations failed but continuing..."
+
+    # Seed se existir
+    if [ -f "/app/prisma/seed.ts" ] || [ -f "/app/prisma/seed.js" ]; then
+        echo "🌱 Executando seed..."
+        npm run db:seed || echo "⚠️  Seed failed but continuing..."
+    fi
+fi
+
+# Escolher método de inicialização
+if [ -f "/app/dist/server/start.js" ]; then
+    echo "🟢 Iniciando servidor compilado..."
+    node dist/server/start.js
+elif [ -f "/app/server/start.ts" ]; then
+    echo "🔵 Iniciando servidor TypeScript..."
+    npx tsx server/start.ts
+elif [ -f "/app/server/index.ts" ]; then
+    echo "🔵 Iniciando servidor TypeScript (index)..."
+    npx tsx server/index.ts
+else
+    echo "🟡 Iniciando com npm start..."
+    npm start
+fi
+SCRIPT
+
+# Dar permissões e propriedade
+RUN chmod +x /app/start.sh && \\
     chown -R nodeuser:nodejs /app
 
-# Script de inicialização
-RUN echo '#!/bin/sh' > /app/start.sh && \
-    echo 'set -e' >> /app/start.sh && \
-    echo 'echo "Iniciando servidor backend..."' >> /app/start.sh && \
-    echo 'if [ -f "/app/prisma/schema.prisma" ]; then' >> /app/start.sh && \
-    echo '    echo "Executando migrações Prisma..."' >> /app/start.sh && \
-    echo '    npx prisma migrate deploy || echo "Migrations failed"' >> /app/start.sh && \
-    echo 'fi' >> /app/start.sh && \
-    echo 'if [ -f "/app/dist/server/start.js" ]; then' >> /app/start.sh && \
-    echo '    echo "Iniciando servidor compilado..."' >> /app/start.sh && \
-    echo '    node dist/server/start.js' >> /app/start.sh && \
-    echo 'elif [ -f "/app/server/start.ts" ]; then' >> /app/start.sh && \
-    echo '    echo "Iniciando servidor TypeScript..."' >> /app/start.sh && \
-    echo '    npx tsx server/start.ts' >> /app/start.sh && \
-    echo 'else' >> /app/start.sh && \
-    echo '    echo "Iniciando com npm start..."' >> /app/start.sh && \
-    echo '    npm start' >> /app/start.sh && \
-    echo 'fi' >> /app/start.sh && \
-    chmod +x /app/start.sh && \
-    chown nodeuser:nodejs /app/start.sh
-
 USER nodeuser
-EXPOSE 3333
+EXPOSE $BACKEND_PORT
+
+# Healthcheck para monitoramento
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \\
+    CMD curl -f http://localhost:$BACKEND_PORT/api/ping || exit 1
 
 CMD ["/app/start.sh"]
+EOF
 
     log "SUCCESS" "Dockerfiles inteligentes criados!"
 }
