@@ -8,7 +8,7 @@
 set -euo pipefail
 
 # Configurações
-GITHUB_REPO="https://github.com/vitor-nakahh/site-jurez-2.0"
+GITHUB_REPO="https://github.com/Nakahh/site-jurez-2.0"
 GITHUB_BRANCH="main"
 PROJECT_DIR="/opt/site-jurez-2.0"
 DOMAIN1="siqueicamposimoveis.com.br"
@@ -666,7 +666,7 @@ const server = http.createServer((req, res) => {
         try {
             const payload = JSON.parse(body);
 
-            // Verificar se é push na branch main
+            // Verificar se �� push na branch main
             if (payload.ref === 'refs/heads/$GITHUB_BRANCH') {
                 console.log('🚀 Webhook recebido - iniciando deploy automático...');
 
