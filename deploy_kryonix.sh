@@ -601,7 +601,7 @@ services:
       - "traefik.http.services.n8n.loadbalancer.server.port=5678"
 
   evolution-api:
-    image: davidsongomes/evolution-api:latest
+        image: atendai/evolution-api:latest
     container_name: evolution-api
     restart: unless-stopped
     networks:
@@ -978,7 +978,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 ✅ Renovação automática dos certificados
 
 📝 LOGS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━
 📋 Instalação: tail -f /var/log/kryonix-ultra-install.log
 🔄 Auto-Deploy: tail -f /var/log/auto-deploy.log
 🐳 Docker: docker-compose logs -f
