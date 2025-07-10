@@ -302,7 +302,7 @@ class OptimizationManager {
           if (entry.isIntersecting) {
             const link = entry.target as HTMLAnchorElement;
             if (link.href && link.origin === window.location.origin) {
-              handleLinkInteraction({ target: link } as Event);
+              handleLinkInteraction({ target: link } as unknown as Event);
             }
           }
         });

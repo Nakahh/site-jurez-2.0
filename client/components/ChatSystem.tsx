@@ -94,7 +94,8 @@ export function ChatSystem({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const { notifyNewMessage, notifyVisitScheduled } = useNotificationActions();
+  const { notifyNewMessage, notifyVisitScheduled, addNotification } =
+    useNotificationActions();
 
   useEffect(() => {
     // Simular carregamento de salas de chat
@@ -236,7 +237,6 @@ export function ChatSystem({
     setTimeout(() => {
       // Notificar assistente sobre mensagem não respondida
       if (Math.random() > 0.5) {
-        const { addNotification } = useNotificationActions();
         addNotification({
           type: "MENSAGEM_CHAT",
           title: "Mensagem Não Respondida",

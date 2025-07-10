@@ -174,7 +174,7 @@ export default function AssistenteDashboard() {
   const handleConfirmarVisita = (visitaId: string) => {
     setAgendamentos((prev) =>
       prev.map((agend) =>
-        agend.id === visitaId ? { ...agend, status: "CONFIRMADA" } : agend,
+        agend.id === visitaId ? { ...agend, status: "CONFIRMADO" } : agend,
       ),
     );
     toast({
@@ -258,7 +258,7 @@ export default function AssistenteDashboard() {
   const handleConfirmarAgendamento = (agendId: string) => {
     setAgendamentos((prev) =>
       prev.map((agend) =>
-        agend.id === agendId ? { ...agend, status: "CONFIRMADA" } : agend,
+        agend.id === agendId ? { ...agend, status: "CONFIRMADO" } : agend,
       ),
     );
     alert("Agendamento confirmado!");
@@ -2158,7 +2158,7 @@ export default function AssistenteDashboard() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="DISPONIVEL">
-                              Disponível
+                              Dispon��vel
                             </SelectItem>
                             <SelectItem value="RESERVADO">Reservado</SelectItem>
                             <SelectItem value="VENDIDO">Vendido</SelectItem>
