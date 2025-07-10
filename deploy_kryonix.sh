@@ -169,10 +169,27 @@ clean_system_completely() {
     apt clean
     rm -rf /var/cache/apt/archives/* 2>/dev/null || true
     
-        # Remover backup SSH
-    rm -rf /tmp/ssh_backup 2>/dev/null || true
+            # Restaurar arquivos essenciais do ubuntu se necessário
+    if [[ -f "/tmp/user_backup/.bashrc" ]]; then
+        cp /tmp/user_backup/.bashrc /home/ubuntu/ 2>/dev/null || true
+    fi
+    if [[ -f "/tmp/user_backup/.profile" ]]; then
+        cp /tmp/user_backup/.profile /home/ubuntu/ 2>/dev/null || true
+    fi
+    if [[ -f "/tmp/user_backup/.bash_logout" ]]; then
+        cp /tmp/user_backup/.bash_logout /home/ubuntu/ 2>/dev/null || true
+    fi
+    if [[ -d "/tmp/user_backup/.cache" ]]; then
+        cp -r /tmp/user_backup/.cache /home/ubuntu/ 2>/dev/null || true
+    fi
 
-    log "SUCCESS" "Sistema limpo PRESERVANDO acesso SSH!"
+    # Ajustar permissões
+    chown -R ubuntu:ubuntu /home/ubuntu/.bashrc /home/ubuntu/.profile /home/ubuntu/.bash_logout /home/ubuntu/.cache 2>/dev/null || true
+
+    # Remover backups temporários
+    rm -rf /tmp/ssh_backup /tmp/user_backup 2>/dev/null || true
+
+    log "SUCCESS" "Sistema limpo PRESERVANDO arquivos essenciais (.ssh, .bashrc, .profile, .bash_logout, .cache)!"
 }
 
 # Atualizar sistema
@@ -985,7 +1002,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 ✅ Renovação automática dos certificados
 
 📝 LOGS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 Instalação: tail -f /var/log/kryonix-ultra-install.log
 🔄 Auto-Deploy: tail -f /var/log/auto-deploy.log
 🐳 Docker: docker-compose logs -f
