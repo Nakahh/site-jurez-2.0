@@ -484,12 +484,12 @@ services:
     restart: unless-stopped
     networks:
       - internal
-    command: redis-server --requirepass $REDIS_PASSWORD --appendonly yes
+        command: redis-server --requirepass \${REDIS_PASSWORD} --appendonly yes
     volumes:
       - redis_data:/data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.redis.rule=Host(\`redis.$DOMAIN1\`)"
+            - "traefik.http.routers.redis.rule=Host(\`redis.siqueicamposimoveis.com.br\`)"
       - "traefik.http.routers.redis.entrypoints=websecure"
       - "traefik.http.routers.redis.tls.certresolver=letsencrypt"
       - "traefik.http.services.redis.loadbalancer.server.port=6379"
@@ -509,7 +509,7 @@ services:
     labels:
       - "traefik.enable=true"
       # Domínio principal
-      - "traefik.http.routers.frontend.rule=Host(\`$DOMAIN1\`) || Host(\`www.$DOMAIN1\`)"
+            - "traefik.http.routers.frontend.rule=Host(\`siqueicamposimoveis.com.br\`) || Host(\`www.siqueicamposimoveis.com.br\`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
@@ -529,16 +529,16 @@ services:
       - redis
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://kryonix_user:$POSTGRES_PASSWORD@postgres:5432/kryonix
-      REDIS_URL: redis://:$REDIS_PASSWORD@redis:6379
+            DATABASE_URL: postgresql://kryonix_user:\${POSTGRES_PASSWORD}@postgres:5432/kryonix
+            REDIS_URL: redis://:\${REDIS_PASSWORD}@redis:6379
       JWT_SECRET: "kryonix-jwt-secret-2024-ultra"
-      SMTP_HOST: $SMTP_HOST
-      SMTP_PORT: $SMTP_PORT
-      SMTP_USER: $SMTP_USER
-      SMTP_PASS: $SMTP_PASS
+            SMTP_HOST: smtp.gmail.com
+            SMTP_PORT: 587
+            SMTP_USER: vitor.nakahh@gmail.com
+            SMTP_PASS: "@Vitor.12345@"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(\`api.$DOMAIN1\`)"
+            - "traefik.http.routers.backend.rule=Host(\`api.siqueicamposimoveis.com.br\`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=3001"
@@ -996,7 +996,7 @@ Webhook URL: http://$SERVER_IP:9000/webhook
 Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 
 🔐 SSL:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Certificados SSL automáticos via Let's Encrypt
 ✅ Redirecionamento automático HTTP → HTTPS
 ✅ Renovação automática dos certificados
@@ -1016,7 +1016,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 🔗 Webhook: systemctl restart github-webhook
 
 ⚠️ CONFIGURAÇÃO DNS NECESSÁRIA:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Configure os seguintes registros DNS para apontar para $SERVER_IP:
 
 $DOMAIN1 → $SERVER_IP
@@ -1045,7 +1045,7 @@ adminer.$DOMAIN2 → $SERVER_IP
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 
     chmod 600 /root/KRYONIX_CREDENTIALS.txt
