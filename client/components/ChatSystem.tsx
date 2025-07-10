@@ -237,7 +237,6 @@ export function ChatSystem({
     setTimeout(() => {
       // Notificar assistente sobre mensagem não respondida
       if (Math.random() > 0.5) {
-        const { addNotification } = useNotificationActions();
         addNotification({
           type: "MENSAGEM_CHAT",
           title: "Mensagem Não Respondida",
