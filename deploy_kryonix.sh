@@ -573,7 +573,7 @@ services:
     labels:
       - "traefik.enable=true"
       # Domínio principal
-                  - "traefik.http.routers.portainer-main.rule=Host(\`$DOMAIN2\`) || Host(\`www.$DOMAIN2\`)"
+                        - "traefik.http.routers.portainer-main.rule=Host(\`$DOMAIN2\`) || Host(\`www.$DOMAIN2\`)"
       - "traefik.http.routers.portainer-main.entrypoints=websecure"
       - "traefik.http.routers.portainer-main.tls.certresolver=letsencrypt"
       - "traefik.http.routers.portainer-main.service=portainer-meuboot"
@@ -926,7 +926,7 @@ create_credentials_file() {
 ##############################################################################
 
 🌐 DOMÍNIOS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
+━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
 
 📱 Site Principal: https://$DOMAIN1
 🏠 Portainer Principal: https://$DOMAIN2
@@ -948,7 +948,7 @@ create_credentials_file() {
 📊 Portainer: https://portainer.$DOMAIN2 (mesma stack do domínio 1)
 🤖 N8N: https://n8n.$DOMAIN2
 📱 Evolution API: https://evolution.$DOMAIN2
-�� MinIO Console: https://minio.$DOMAIN2
+💾 MinIO Console: https://minio.$DOMAIN2
 📦 MinIO API: https://storage.$DOMAIN2
 📈 Grafana: https://grafana.$DOMAIN2
 📊 Prometheus: https://prometheus.$DOMAIN2
@@ -1013,7 +1013,7 @@ Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 🔄 Restart: cd /opt/site-jurez-2.0 && docker-compose restart
 📊 Status: docker ps
 🗑️ Limpar: docker system prune -af
-��� Webhook: systemctl restart github-webhook
+🔗 Webhook: systemctl restart github-webhook
 
 ⚠️ CONFIGURAÇÃO DNS NECESSÁRIA:
 ━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1042,7 +1042,7 @@ grafana.$DOMAIN2 → $SERVER_IP
 prometheus.$DOMAIN2 → $SERVER_IP
 adminer.$DOMAIN2 → $SERVER_IP
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━
 Arquivo criado em: $(date)
 Sistema instalado por: Kryonix Ultra Deploy v3.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
