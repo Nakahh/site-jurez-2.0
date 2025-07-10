@@ -69,7 +69,7 @@ show_banner() {
     echo "#               Sistema Completo com SSL + Auto-Deploy                      #"
     echo "##############################################################################"
     echo -e "${NC}"
-    echo -e "${BLUE}🌐 Domínio 1: ${BOLD}$DOMAIN1${NC} ${BLUE}(Site principal + Todos serviços)${NC}"
+    echo -e "${BLUE}🌐 Dom��nio 1: ${BOLD}$DOMAIN1${NC} ${BLUE}(Site principal + Todos serviços)${NC}"
     echo -e "${BLUE}🌐 Domínio 2: ${BOLD}$DOMAIN2${NC} ${BLUE}(Portainer + Stacks idênticas)${NC}"
     echo -e "${YELLOW}📡 IP do Servidor: ${BOLD}$SERVER_IP${NC}"
     echo -e "${GREEN}🔐 SSL Automático via Let's Encrypt${NC}"
@@ -555,7 +555,7 @@ services:
       - portainer_data_siqueira:/data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.portainer-siqueira.rule=Host(\`portainer.$DOMAIN1\`)"
+            - "traefik.http.routers.portainer-siqueira.rule=Host(\`portainer.siqueicamposimoveis.com.br\`)"
       - "traefik.http.routers.portainer-siqueira.entrypoints=websecure"
       - "traefik.http.routers.portainer-siqueira.tls.certresolver=letsencrypt"
       - "traefik.http.services.portainer-siqueira.loadbalancer.server.port=9000"
@@ -573,12 +573,12 @@ services:
     labels:
       - "traefik.enable=true"
       # Domínio principal
-      - "traefik.http.routers.portainer-main.rule=Host(\`$DOMAIN2\`) || Host(\`www.$DOMAIN2\`)"
+            - "traefik.http.routers.portainer-main.rule=Host(\`meuboot.site\`) || Host(\`www.meuboot.site\`)"
       - "traefik.http.routers.portainer-main.entrypoints=websecure"
       - "traefik.http.routers.portainer-main.tls.certresolver=letsencrypt"
       - "traefik.http.routers.portainer-main.service=portainer-meuboot"
       # Subdomínio
-      - "traefik.http.routers.portainer-sub.rule=Host(\`portainer.$DOMAIN2\`)"
+            - "traefik.http.routers.portainer-sub.rule=Host(\`portainer.meuboot.site\`)"
       - "traefik.http.routers.portainer-sub.entrypoints=websecure"
       - "traefik.http.routers.portainer-sub.tls.certresolver=letsencrypt"
       - "traefik.http.routers.portainer-sub.service=portainer-meuboot"
@@ -597,22 +597,22 @@ services:
     environment:
       N8N_BASIC_AUTH_ACTIVE: true
       N8N_BASIC_AUTH_USER: admin
-      N8N_BASIC_AUTH_PASSWORD: $N8N_PASSWORD
+            N8N_BASIC_AUTH_PASSWORD: \${N8N_PASSWORD}
       DB_TYPE: postgresdb
       DB_POSTGRESDB_HOST: postgres
       DB_POSTGRESDB_PORT: 5432
       DB_POSTGRESDB_DATABASE: kryonix
       DB_POSTGRESDB_USER: kryonix_user
-      DB_POSTGRESDB_PASSWORD: $POSTGRES_PASSWORD
-      N8N_HOST: n8n.$DOMAIN1
+            DB_POSTGRESDB_PASSWORD: \${POSTGRES_PASSWORD}
+            N8N_HOST: n8n.siqueicamposimoveis.com.br
       N8N_PROTOCOL: https
       NODE_ENV: production
-      WEBHOOK_URL: https://n8n.$DOMAIN1
+            WEBHOOK_URL: https://n8n.siqueicamposimoveis.com.br
     volumes:
       - n8n_data:/home/node/.n8n
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.n8n.rule=Host(\`n8n.$DOMAIN1\`) || Host(\`n8n.$DOMAIN2\`)"
+            - "traefik.http.routers.n8n.rule=Host(\`n8n.siqueicamposimoveis.com.br\`) || Host(\`n8n.meuboot.site\`)"
       - "traefik.http.routers.n8n.entrypoints=websecure"
       - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
       - "traefik.http.services.n8n.loadbalancer.server.port=5678"
@@ -626,7 +626,7 @@ services:
       - traefik
       - internal
     environment:
-      AUTHENTICATION_API_KEY: $EVOLUTION_PASSWORD
+            AUTHENTICATION_API_KEY: \${EVOLUTION_PASSWORD}
       AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES: true
       QRCODE_LIMIT: 5
       WEBSOCKET_ENABLED: true
@@ -637,7 +637,7 @@ services:
       - evolution_data:/evolution/instances
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.evolution.rule=Host(\`evolution.$DOMAIN1\`) || Host(\`evolution.$DOMAIN2\`)"
+            - "traefik.http.routers.evolution.rule=Host(\`evolution.siqueicamposimoveis.com.br\`) || Host(\`evolution.meuboot.site\`)"
       - "traefik.http.routers.evolution.entrypoints=websecure"
       - "traefik.http.routers.evolution.tls.certresolver=letsencrypt"
       - "traefik.http.services.evolution.loadbalancer.server.port=8080"
@@ -991,7 +991,7 @@ create_credentials_file() {
    Pass: $SMTP_PASS
 
 🔄 AUTO-DEPLOY:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Webhook URL: http://$SERVER_IP:9000/webhook
 Qualquer push no GitHub branch 'main' irá fazer deploy automático!
 
