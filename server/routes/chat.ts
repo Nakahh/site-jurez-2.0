@@ -96,11 +96,13 @@ export const chat: RequestHandler = async (req, res) => {
         data: [
           {
             conteudo: mensagem,
-            remetente: usuarioId,
+            tipo: "TEXTO",
+            remetenteId: usuarioId,
           },
           {
             conteudo: resposta,
-            remetente: "IA",
+            tipo: "TEXTO",
+            remetenteId: "sistema", // We'll need to handle this properly
           },
         ],
       });
