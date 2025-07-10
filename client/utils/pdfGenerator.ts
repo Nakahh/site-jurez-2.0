@@ -27,9 +27,9 @@ export class ModernPDFGenerator {
   private doc: jsPDF;
   private logoUrl =
     "https://cdn.builder.io/api/v1/assets/f2a517b8d4884b66a8a5c1be8bd00feb/siqueira-campos-para-fundo-claro-6b4bbf?format=webp&width=200";
-  private primaryColor = [139, 69, 19]; // Brown theme
-  private secondaryColor = [245, 158, 11]; // Amber
-  private textColor = [55, 65, 81]; // Gray-700
+  private primaryColor: [number, number, number] = [139, 69, 19]; // Brown theme
+  private secondaryColor: [number, number, number] = [245, 158, 11]; // Amber
+  private textColor: [number, number, number] = [55, 65, 81]; // Gray-700
 
   constructor(options: PDFGeneratorOptions) {
     this.doc = new jsPDF({
