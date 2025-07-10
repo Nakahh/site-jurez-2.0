@@ -903,7 +903,7 @@ EOF
         fi
     fi
 
-                        # Verificaç��o final dos arquivos críticos
+                        # Verificação final dos arquivos críticos
     log "INFO" "🔍 Verificação final dos arquivos..."
     for file in "${critical_files[@]}" 2>/dev/null || true; do
         if [ -f "$file" ]; then
@@ -1046,10 +1046,12 @@ fix_typescript_build_errors() {
         sed -i '/const { addNotification } = useNotificationActions();/d' "client/components/ChatSystem.tsx" 2>/dev/null || true
     fi
 
-    log "SUCCESS" "Correcoes TypeScript aplicadas!"
+        log "SUCCESS" "Correcoes TypeScript aplicadas!"
+
+    return 0
 }
 
-# Aplicar correções espec��ficas para build
+# Aplicar correções específicas para build
 apply_build_fixes() {
     log "INSTALL" "Aplicando correcoes especificas para build..."
 
