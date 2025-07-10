@@ -2388,7 +2388,7 @@ export default function AdminDashboard() {
                         type="text"
                         className="w-full p-3 border rounded-md"
                         placeholder="74223-030"
-                        maxLength="9"
+                        maxLength={9}
                       />
                     </div>
                   </div>
@@ -2658,7 +2658,7 @@ export default function AdminDashboard() {
                   onClick={() => {
                     // Aqui você implementaria a lógica de salvamento
                     alert(
-                      "🎉 Imóvel criado com sucesso!\n\nTodas as informações foram salvas:\n• Dados básicos\n• Localização\n• Características\n• Amenidades\n• Fotos\n• Configurações\n\nO imóvel já está disponível no sistema!",
+                      "🎉 Imóvel criado com sucesso!\n\nTodas as informações foram salvas:\n• Dados básicos\n• Localizaç��o\n• Características\n• Amenidades\n• Fotos\n• Configurações\n\nO imóvel já está disponível no sistema!",
                     );
                     setShowNewPropertyModal(false);
                   }}
@@ -2691,7 +2691,7 @@ export default function AdminDashboard() {
       {showNewUserModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-card p-6 rounded-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-bold mb-4">Novo Usuário</h3>
+            <h3 className="text-lg font-bold mb-4">Novo Usu��rio</h3>
             <div className="space-y-4 mb-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Nome</label>
