@@ -46,11 +46,6 @@ export default defineConfig({
   // Otimizações de performance
   optimizeDeps: {
     include: ["react", "react-dom", "react-router-dom"],
-    exclude: ["next-themes"],
-  },
-
-  // Configurações para resolver warnings do next-themes
-  define: {
-    global: "globalThis",
+    exclude: [],
   },
 });
