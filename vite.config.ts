@@ -30,6 +30,13 @@ export default defineConfig({
     port: 3000,
     host: true,
     cors: true,
+    proxy: {
+      "/api": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   // Preview otimizado
   preview: {
