@@ -1,345 +1,422 @@
 #!/bin/bash
 
 #==============================================================================
-# 🏠 SIQUEIRA CAMPOS IMÓVEIS - INFRAESTRUTURA AUTOMATIZADA
-# Script de deploy completo com Traefik, Docker Swarm e SSL automático
+# 🏠 SIQUEIRA CAMPOS IMÓVEIS - INFRAESTRUTURA PROFISSIONAL
+# Script de Deploy Automatizado com Design Moderno
 # Desenvolvido por: Kryonix - Vitor Jayme Fernandes Ferreira
+# Versão: 3.0.0 Enterprise
 #==============================================================================
 
-set -e
+set -euo pipefail
+IFS=$'\n\t'
 
-# Cores para output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-WHITE='\033[1;37m'
-NC='\033[0m' # No Color
+# ========================= CONFIGURAÇÕES GLOBAIS ===========================
 
-# Emojis
-SUCCESS="✅"
-ERROR="❌"
-WARNING="⚠️"
-INFO="📋"
-ROCKET="🚀"
-GEAR="⚙️"
-LOCK="🔐"
-CLEAN="🧹"
-NETWORK="🌐"
+# Cores e estilos
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly PURPLE='\033[0;35m'
+readonly CYAN='\033[0;36m'
+readonly WHITE='\033[1;37m'
+readonly BOLD='\033[1m'
+readonly DIM='\033[2m'
+readonly NC='\033[0m'
 
-# Banner
-echo -e "${CYAN}"
-cat << "EOF"
+# Emojis e símbolos
+readonly SUCCESS="✅"
+readonly ERROR="❌"
+readonly WARNING="⚠️"
+readonly INFO="📋"
+readonly ROCKET="🚀"
+readonly GEAR="⚙️"
+readonly LOCK="🔐"
+readonly CLEAN="🧹"
+readonly NETWORK="🌐"
+readonly BUILDING="🏗️"
+readonly CHART="📊"
+readonly BELL="🔔"
+
+# Configurações do projeto
+readonly REPO_URL="https://github.com/Nakahh/site-jurez-2.0"
+readonly PROJECT_NAME="siqueira-campos-imoveis"
+readonly MAIN_DOMAIN="siqueicamposimoveis.com.br"
+readonly SECONDARY_DOMAIN="meuboot.site"
+readonly EMAIL="SiqueiraCamposImoveisGoiania@gmail.com"
+
+# Senhas geradas aleatoriamente
+readonly WEBHOOK_SECRET=$(openssl rand -hex 32)
+readonly POSTGRES_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
+readonly REDIS_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
+readonly N8N_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
+readonly GRAFANA_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
+readonly MINIO_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
+readonly EVOLUTION_KEY=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
+readonly JWT_SECRET=$(openssl rand -base64 64)
+
+# Logs e arquivos
+readonly LOG_DIR="/var/log/kryonix-deploy"
+readonly MAIN_LOG="$LOG_DIR/deploy.log"
+readonly ERROR_LOG="$LOG_DIR/error.log"
+readonly SSL_LOG="$LOG_DIR/ssl-status.log"
+readonly REPORT_FILE="/opt/deploy-report.log"
+readonly PASSWORD_FILE="/opt/senhas-sistema.txt"
+
+# Criar diretório de logs
+mkdir -p "$LOG_DIR"
+
+# ========================= FUNÇÕES DE DESIGN MODERNO ========================
+
+show_banner() {
+    clear
+    echo -e "${CYAN}${BOLD}"
+    cat << 'EOF'
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
-║   🏠 SIQUEIRA CAMPOS IMÓVEIS - INFRAESTRUTURA AUTOMATIZADA                  ║
+║   🏠 SIQUEIRA CAMPOS IMÓVEIS - DEPLOY ENTERPRISE v3.0.0                     ║
 ║                                                                              ║
-║   Deploy completo com:                                                       ║
-║   • Traefik Proxy Reverso + SSL Let's Encrypt                              ║
-║   • Docker Swarm com Portainer                                              ║
-║   • GitHub Webhook + Auto Deploy                                            ║
-║   • PostgreSQL + N8N + Evolution API                                        ║
-║   • Monitoramento + Relatórios                                              ║
+║   ┌─────────────────────────────────────────────────────────────────────┐    ║
+║   │  • Servidor de 24GB RAM - Produção                                 │    ║
+║   │  • Traefik Proxy Reverso + SSL Let's Encrypt                       │    ║
+║   │  • Docker Swarm + Portainer Management                             │    ║
+║   │  • GitHub Auto-Deploy + Webhook                                    │    ║
+║   │  • PostgreSQL + Redis + N8N + Evolution API                       │    ║
+║   │  • Monitoramento + Logs + Diagnóstico Automático                  │    ║
+║   └─────────────────────────────────────────────────────────────────────┘    ║
 ║                                                                              ║
-║   Desenvolvido por: Kryonix (Vitor Jayme)                                   ║
+║   Desenvolvido por: Kryonix (Vitor Jayme Fernandes Ferreira)                ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 EOF
-echo -e "${NC}"
-
-# Configurações globais
-REPO_URL="https://github.com/Nakahh/site-jurez-2.0"
-PROJECT_NAME="siqueira-campos-imoveis"
-MAIN_DOMAIN="siqueicamposimoveis.com.br"
-SECONDARY_DOMAIN="meuboot.site"
-WEBHOOK_SECRET=$(openssl rand -hex 32)
-POSTGRES_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
-REDIS_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
-N8N_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
-GRAFANA_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
-MINIO_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
-EVOLUTION_KEY=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
-
-# Logs
-LOG_FILE="/var/log/install-infra.log"
-exec 1> >(tee -a $LOG_FILE)
-exec 2> >(tee -a $LOG_FILE >&2)
-
-#==============================================================================
-# 🧪 1. VERIFICAÇÃO INICIAL E LEITURA DO PROJETO
-#==============================================================================
+    echo -e "${NC}"
+    
+    echo -e "${WHITE}${BOLD}🎯 DOMÍNIOS CONFIGURADOS:${NC}"
+    echo -e "   ${BLUE}• $MAIN_DOMAIN${NC} ${DIM}(Site Imobiliário)${NC}"
+    echo -e "   ${PURPLE}• $SECONDARY_DOMAIN${NC} ${DIM}(Painel de Controle)${NC}"
+    echo ""
+}
 
 log_step() {
-    echo -e "\n${BLUE}${INFO} $1${NC}"
+    local step="$1"
+    local description="$2"
+    echo -e "\n${BLUE}${BOLD}${INFO} [$step]${NC} ${WHITE}$description${NC}" | tee -a "$MAIN_LOG"
 }
 
 log_success() {
-    echo -e "${GREEN}${SUCCESS} $1${NC}"
+    local message="$1"
+    echo -e "${GREEN}${SUCCESS} $message${NC}" | tee -a "$MAIN_LOG"
 }
 
 log_error() {
-    echo -e "${RED}${ERROR} $1${NC}"
+    local message="$1"
+    echo -e "${RED}${ERROR} $message${NC}" | tee -a "$ERROR_LOG"
+    printf '\a'  # Som de erro
 }
 
 log_warning() {
-    echo -e "${YELLOW}${WARNING} $1${NC}"
+    local message="$1"
+    echo -e "${YELLOW}${WARNING} $message${NC}" | tee -a "$MAIN_LOG"
 }
 
-check_root() {
+show_progress() {
+    local current=$1
+    local total=$2
+    local operation="$3"
+    local percent=$((current * 100 / total))
+    local completed=$((current * 50 / total))
+    local remaining=$((50 - completed))
+    
+    printf "\r${CYAN}${BOLD}$operation${NC} ["
+    printf "%*s" $completed | tr ' ' '█'
+    printf "%*s" $remaining | tr ' ' '░'
+    printf "] ${WHITE}%d%%${NC}" $percent
+    
+    if [ $current -eq $total ]; then
+        echo -e " ${GREEN}${SUCCESS}${NC}"
+    fi
+}
+
+check_requirements() {
+    log_step "01" "Verificando requisitos do sistema..."
+    
+    # Verificar se é root
     if [[ $EUID -ne 0 ]]; then
         log_error "Este script deve ser executado como root (sudo)"
         exit 1
     fi
-}
-
-check_domains() {
-    log_step "Verificando DNS dos domínios..."
     
-    DOMAINS=("$MAIN_DOMAIN" "$SECONDARY_DOMAIN")
-    for domain in "${DOMAINS[@]}"; do
-        if dig +short "$domain" | grep -q .; then
-            log_success "Domínio $domain configurado corretamente"
-        else
-            log_warning "Domínio $domain pode não estar configurado corretamente"
-        fi
-    done
-}
-
-read_project_structure() {
-    log_step "Analisando estrutura do projeto GitHub..."
-    
-    # Criar diretório temporário para clone
-    mkdir -p /tmp/project-analysis
-    cd /tmp/project-analysis
-    
-    # Clone shallow do repositório
-    git clone --depth 1 "$REPO_URL" project 2>/dev/null || {
-        log_error "Erro ao clonar repositório $REPO_URL"
-        log_error "Verifique se o repositório está acessível"
+    # Verificar sistema operacional
+    if ! command -v apt-get &> /dev/null; then
+        log_error "Este script é compatível apenas com Ubuntu/Debian"
         exit 1
-    }
-    
-    cd project
-    
-    # Análise da estrutura
-    log_success "Projeto clonado com sucesso"
-    echo "📊 Estrutura identificada:"
-    echo "   • Frontend: React + TypeScript + Vite"
-    echo "   • Backend: Express + Node.js + Prisma"
-    echo "   • Banco: PostgreSQL (SQLite em dev)"
-    echo "   • Build: npm run build"
-    echo "   • Porta frontend: 5173"
-    echo "   • Porta backend: 3001"
-    
-    # Verificar package.json
-    if [[ -f package.json ]]; then
-        echo "   • Scripts disponíveis:"
-        cat package.json | jq -r '.scripts | to_entries[] | "     - \(.key): \(.value)"' 2>/dev/null || {
-            echo "     - Análise de scripts não disponível"
-        }
     fi
     
-    cd /
-    rm -rf /tmp/project-analysis
+    # Verificar RAM
+    local ram_gb=$(free -g | awk '/^Mem:/{print $2}')
+    if [ "$ram_gb" -lt 8 ]; then
+        log_warning "RAM disponível: ${ram_gb}GB (recomendado: 24GB)"
+    else
+        log_success "RAM disponível: ${ram_gb}GB ✓"
+    fi
+    
+    # Verificar DNS
+    for domain in "$MAIN_DOMAIN" "$SECONDARY_DOMAIN"; do
+        if dig +short "$domain" | grep -q .; then
+            log_success "DNS configurado para $domain ✓"
+        else
+            log_warning "Verificar DNS para $domain"
+        fi
+    done
+    
+    log_success "Verificação de requisitos concluída"
 }
 
-#==============================================================================
-# 🧹 2. RESET CONTROLADO DO SERVIDOR
-#==============================================================================
+analyze_project() {
+    log_step "02" "Analisando projeto GitHub..."
+    
+    # Criar diretório temporário
+    local temp_dir="/tmp/project-analysis-$$"
+    mkdir -p "$temp_dir"
+    cd "$temp_dir"
+    
+    # Clone do repositório
+    if git clone --depth 1 "$REPO_URL" project 2>/dev/null; then
+        cd project
+        
+        # Análise da estrutura
+        echo -e "${CHART} ${WHITE}Estrutura identificada:${NC}"
+        echo "   • Frontend: React 18 + TypeScript + Vite"
+        echo "   • Backend: Express + Node.js + Prisma"
+        echo "   • Banco: PostgreSQL (SQLite em dev)"
+        echo "   • Porta dev: 3000 (frontend) + 3001 (backend)"
+        
+        # Verificar scripts
+        if [ -f package.json ]; then
+            echo "   • Build: npm run build"
+            echo "   • Start: npm start"
+            echo "   • Deploy: Docker + Webhook"
+        fi
+        
+        log_success "Projeto analisado com sucesso"
+    else
+        log_error "Erro ao acessar repositório $REPO_URL"
+        exit 1
+    fi
+    
+    # Cleanup
+    cd /
+    rm -rf "$temp_dir"
+}
+
+# ========================= LIMPEZA CONTROLADA ===============================
 
 controlled_cleanup() {
-    log_step "Iniciando reset controlado do servidor..."
-    
-    # Parar serviços Docker
-    log_step "Parando serviços Docker..."
-    systemctl stop docker 2>/dev/null || true
+    log_step "03" "Executando limpeza controlada do servidor..."
     
     # Backup das chaves SSH
-    log_step "Fazendo backup das chaves SSH..."
-    mkdir -p /tmp/ssh-backup
-    cp -r /root/.ssh /tmp/ssh-backup/ 2>/dev/null || true
-    cp -r /home/*/.ssh /tmp/ssh-backup/ 2>/dev/null || true
+    log_step "03.1" "Fazendo backup das chaves SSH..."
+    local ssh_backup="/tmp/ssh-backup-$$"
+    mkdir -p "$ssh_backup"
+    cp -r /root/.ssh "$ssh_backup/" 2>/dev/null || true
+    find /home -name ".ssh" -exec cp -r {} "$ssh_backup/" \; 2>/dev/null || true
     
-    # Limpeza Docker completa
-    log_step "Removendo containers, imagens e volumes Docker..."
-    docker system prune -af --volumes 2>/dev/null || true
+    # Parar Docker Swarm e serviços
+    log_step "03.2" "Parando serviços Docker..."
+    systemctl stop docker 2>/dev/null || true
     docker swarm leave --force 2>/dev/null || true
     
-    # Limpeza de diretórios de sistema
-    log_step "Limpando diretórios de aplicações anteriores..."
-    rm -rf /opt/app* /opt/docker* /opt/traefik* /opt/portainer* 2>/dev/null || true
-    rm -rf /srv/docker* /srv/app* 2>/dev/null || true
+    # Limpeza Docker completa
+    log_step "03.3" "Removendo containers e volumes..."
+    docker system prune -af --volumes 2>/dev/null || true
     
-    # Preservar sistema e SSH
-    log_step "Restaurando chaves SSH..."
-    cp -r /tmp/ssh-backup/.ssh /root/ 2>/dev/null || true
+    # Limpeza de diretórios
+    local cleanup_dirs=(
+        "/opt/app*"
+        "/opt/docker*"
+        "/opt/traefik*"
+        "/opt/portainer*"
+        "/srv/docker*"
+        "/srv/app*"
+    )
+    
+    for dir in "${cleanup_dirs[@]}"; do
+        rm -rf $dir 2>/dev/null || true
+    done
+    
+    # Restaurar SSH
+    log_step "03.4" "Restaurando chaves SSH..."
+    cp -r "$ssh_backup/.ssh" /root/ 2>/dev/null || true
     chmod 700 /root/.ssh 2>/dev/null || true
     chmod 600 /root/.ssh/* 2>/dev/null || true
+    rm -rf "$ssh_backup"
     
-    # Limpeza de logs antigos
-    find /var/log -name "*.log" -mtime +7 -delete 2>/dev/null || true
-    
-    log_success "Reset controlado concluído - Sistema preservado, aplicações removidas"
+    log_success "Limpeza controlada concluída"
 }
 
-#==============================================================================
-# ⚙️ 3. INSTALAÇÃO DE DEPENDÊNCIAS BÁSICAS
-#==============================================================================
+# ========================= INSTALAÇÃO DE DEPENDÊNCIAS =======================
 
 install_dependencies() {
-    log_step "Atualizando sistema e instalando dependências..."
+    log_step "04" "Instalando dependências do sistema..."
+    
+    local deps=(
+        "curl" "wget" "unzip" "jq" "git" "htop" "nano" "vim"
+        "build-essential" "software-properties-common" 
+        "apt-transport-https" "ca-certificates" "gnupg" 
+        "lsb-release" "openssl" "dnsutils" "fail2ban" "ufw"
+    )
     
     # Atualizar sistema
-    apt update && apt upgrade -y
+    show_progress 1 4 "Atualizando sistema"
+    apt update -qq && apt upgrade -y -qq
     
-    # Instalar dependências essenciais
-    apt install -y \
-        curl \
-        wget \
-        unzip \
-        jq \
-        git \
-        htop \
-        nano \
-        vim \
-        build-essential \
-        software-properties-common \
-        apt-transport-https \
-        ca-certificates \
-        gnupg \
-        lsb-release \
-        openssl \
-        dnsutils \
-        fail2ban \
-        ufw
+    # Instalar dependências
+    show_progress 2 4 "Instalando pacotes"
+    apt install -y "${deps[@]}" > /dev/null 2>&1
     
-    log_success "Dependências básicas instaladas"
+    show_progress 3 4 "Configurando fail2ban"
+    systemctl enable fail2ban > /dev/null 2>&1
+    systemctl start fail2ban > /dev/null 2>&1
+    
+    show_progress 4 4 "Configuração concluída"
+    
+    log_success "Dependências instaladas"
 }
 
 install_docker() {
-    log_step "Instalando Docker e Docker Compose..."
+    log_step "05" "Instalando Docker Enterprise..."
     
     # Remover versões antigas
+    show_progress 1 5 "Removendo versões antigas"
     apt remove -y docker docker-engine docker.io containerd runc 2>/dev/null || true
     
-    # Adicionar repositório oficial Docker
+    # Adicionar repositório
+    show_progress 2 5 "Adicionando repositório Docker"
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
     
-    apt update
-    apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    show_progress 3 5 "Instalando Docker"
+    apt update -qq
+    apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin > /dev/null 2>&1
     
-    # Iniciar Docker
-    systemctl enable docker
-    systemctl start docker
+    show_progress 4 5 "Configurando serviços"
+    systemctl enable docker > /dev/null 2>&1
+    systemctl start docker > /dev/null 2>&1
     
-    # Verificar instalação
-    docker --version
-    docker compose version
+    show_progress 5 5 "Verificando instalação"
+    docker --version > /dev/null
+    docker compose version > /dev/null
     
-    log_success "Docker instalado e configurado"
+    log_success "Docker instalado: $(docker --version | cut -d' ' -f3 | cut -d',' -f1)"
 }
 
 install_nodejs() {
-    log_step "Instalando Node.js LTS..."
+    log_step "06" "Instalando Node.js LTS..."
     
-    # NodeSource repository
-    curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
-    apt install -y nodejs
+    show_progress 1 3 "Adicionando repositório NodeSource"
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - > /dev/null 2>&1
     
-    # Instalar yarn globalmente
-    npm install -g yarn pm2
+    show_progress 2 3 "Instalando Node.js"
+    apt install -y nodejs > /dev/null 2>&1
     
-    # Verificar instalação
-    node --version
-    npm --version
+    show_progress 3 3 "Instalando ferramentas globais"
+    npm install -g yarn pm2 > /dev/null 2>&1
     
-    log_success "Node.js LTS instalado"
+    local node_version=$(node --version)
+    local npm_version=$(npm --version)
+    log_success "Node.js instalado: $node_version (npm: $npm_version)"
 }
 
 install_postgresql() {
-    log_step "Instalando PostgreSQL (apenas em $SECONDARY_DOMAIN)..."
+    log_step "07" "Configurando PostgreSQL..."
     
-    # Identificar se é o servidor secundário
-    if [[ $(hostname -f) == *"$SECONDARY_DOMAIN"* ]] || [[ $(hostname -I | xargs) == *"meuboot"* ]]; then
-        apt install -y postgresql postgresql-contrib
-        systemctl enable postgresql
-        systemctl start postgresql
+    # Verificar se deve instalar PostgreSQL
+    local current_ip=$(hostname -I | awk '{print $1}')
+    
+    show_progress 1 4 "Verificando localização do servidor"
+    
+    # Instalar PostgreSQL apenas se for o servidor principal
+    if [[ $(hostname -f) == *"$SECONDARY_DOMAIN"* ]] || [[ "$current_ip" == *"10.0"* ]]; then
+        show_progress 2 4 "Instalando PostgreSQL"
+        apt install -y postgresql postgresql-contrib > /dev/null 2>&1
         
-        # Configurar usuário postgres
-        sudo -u postgres psql -c "ALTER USER postgres PASSWORD '$POSTGRES_PASSWORD';"
+        show_progress 3 4 "Configurando usuário"
+        systemctl enable postgresql > /dev/null 2>&1
+        systemctl start postgresql > /dev/null 2>&1
+        sudo -u postgres psql -c "ALTER USER postgres PASSWORD '$POSTGRES_PASSWORD';" > /dev/null 2>&1
         
+        show_progress 4 4 "PostgreSQL configurado"
         log_success "PostgreSQL instalado no servidor $SECONDARY_DOMAIN"
     else
-        log_success "PostgreSQL não instalado (não é servidor $SECONDARY_DOMAIN)"
+        show_progress 4 4 "PostgreSQL não necessário neste servidor"
+        log_success "PostgreSQL configurado via container"
     fi
 }
 
 configure_firewall() {
-    log_step "Configurando firewall UFW..."
+    log_step "08" "Configurando firewall UFW..."
     
     # Reset UFW
-    ufw --force reset
+    show_progress 1 6 "Resetando configurações"
+    ufw --force reset > /dev/null 2>&1
     
     # Políticas padrão
-    ufw default deny incoming
-    ufw default allow outgoing
+    show_progress 2 6 "Configurando políticas"
+    ufw default deny incoming > /dev/null 2>&1
+    ufw default allow outgoing > /dev/null 2>&1
     
     # Portas essenciais
-    ufw allow 22          # SSH
-    ufw allow 80          # HTTP
-    ufw allow 443         # HTTPS
+    show_progress 3 6 "Liberando portas essenciais"
+    ufw allow 22/tcp > /dev/null 2>&1  # SSH
+    ufw allow 80/tcp > /dev/null 2>&1  # HTTP
+    ufw allow 443/tcp > /dev/null 2>&1 # HTTPS
     
-    # Portas dos serviços
-    ufw allow 5432        # PostgreSQL
-    ufw allow 8080        # Evolution API / App
-    ufw allow 9000        # Portainer
-    ufw allow 8000        # Aplicações
-    ufw allow 3000        # Apps Node.js
-    ufw allow 3306        # MySQL (se necessário)
-    ufw allow 1880        # Node-RED / N8N
-    ufw allow 5678        # N8N
+    # Portas de serviços
+    show_progress 4 6 "Liberando portas de serviços"
+    local service_ports=(5432 8080 9000 8000 3000 3306 1880 5678)
+    for port in "${service_ports[@]}"; do
+        ufw allow "$port"/tcp > /dev/null 2>&1
+    done
     
-    # Ativar UFW
-    ufw --force enable
+    show_progress 5 6 "Ativando firewall"
+    ufw --force enable > /dev/null 2>&1
     
-    # Mostrar status
-    ufw status numbered
-    
-    log_success "Firewall configurado e ativo"
+    show_progress 6 6 "Firewall configurado"
+    log_success "UFW ativo com $(ufw status numbered | grep -c ALLOW) regras"
 }
 
-#==============================================================================
-# 🌐 4. TRAEFIK COM PROXY REVERSO E SSL AUTOMÁTICO
-#==============================================================================
+# ========================= DOCKER SWARM E TRAEFIK ===========================
 
 setup_docker_swarm() {
-    log_step "Configurando Docker Swarm..."
+    log_step "09" "Configurando Docker Swarm..."
     
-    # Inicializar swarm se não existir
+    show_progress 1 4 "Inicializando Swarm"
     if ! docker node ls &>/dev/null; then
-        docker swarm init
-        log_success "Docker Swarm inicializado"
-    else
-        log_success "Docker Swarm já estava ativo"
+        docker swarm init > /dev/null 2>&1
     fi
     
-    # Criar redes
+    show_progress 2 4 "Criando redes"
     docker network create --driver overlay --attachable traefik-public 2>/dev/null || true
     docker network create --driver overlay --attachable app-network 2>/dev/null || true
     
-    log_success "Redes Docker Swarm criadas"
+    show_progress 3 4 "Verificando nós"
+    local nodes=$(docker node ls --format "table {{.Hostname}}\t{{.Status}}" | grep -c Ready)
+    
+    show_progress 4 4 "Swarm configurado"
+    log_success "Docker Swarm ativo com $nodes nó(s)"
 }
 
 create_traefik_config() {
-    log_step "Criando configuração do Traefik..."
+    log_step "10" "Criando configuração do Traefik..."
     
-    mkdir -p /opt/traefik
+    mkdir -p /opt/traefik/{certificates,config}
     
-    # Configuração dinâmica do Traefik
-    cat > /opt/traefik/traefik.yml << 'EOF'
+    # Configuração principal do Traefik
+    cat > /opt/traefik/config/traefik.yml << 'EOF'
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
 api:
   dashboard: true
   debug: true
@@ -362,6 +439,7 @@ providers:
     swarmMode: true
     exposedByDefault: false
     network: traefik-public
+    watch: true
   file:
     filename: /etc/traefik/dynamic.yml
     watch: true
@@ -373,58 +451,66 @@ certificatesResolvers:
       storage: /certificates/acme.json
       httpChallenge:
         entryPoint: web
+      caServer: https://acme-v02.api.letsencrypt.org/directory
 
 log:
   level: INFO
+  format: json
 
-accessLog: {}
+accessLog:
+  format: json
 
 metrics:
   prometheus:
     addEntryPointsLabels: true
     addServicesLabels: true
+    addRoutersLabels: true
 EOF
 
     # Configuração dinâmica
-    cat > /opt/traefik/dynamic.yml << 'EOF'
+    cat > /opt/traefik/config/dynamic.yml << EOF
 http:
   routers:
     api:
-      rule: "Host(`traefik.meuboot.site`)"
+      rule: "Host(\`traefik.$SECONDARY_DOMAIN\`)"
       service: "api@internal"
       tls:
         certResolver: "letsencrypt"
       middlewares:
         - "auth"
+        - "secureHeaders"
         
   middlewares:
     auth:
       basicAuth:
         users:
-          - "admin:$2y$10$2.OTg1R8qZ0j9w8zD8F4DuVNqh7h3r.0q2zQj8w3D8F4DuVNqh7h3r"
+          - "admin:\$2y\$10\$2.OTg1R8qZ0j9w8zD8F4DuVNqh7h3r.0q2zQj8w3D8F4DuVNqh7h3r"
     
     secureHeaders:
       headers:
-        accessControlAllowMethods:
-          - GET
-          - OPTIONS
-          - PUT
-        accessControlAllowOriginList:
-          - "https://siqueicamposimoveis.com.br"
-          - "https://meuboot.site"
-        accessControlMaxAge: 100
-        hostsProxyHeaders:
-          - "X-Forwarded-Host"
-        referrerPolicy: "same-origin"
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+        customResponseHeaders:
+          X-Robots-Tag: "noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex"
+          server: ""
         sslRedirect: true
-        forceSTSHeader: true
         stsSeconds: 31536000
         stsIncludeSubdomains: true
         stsPreload: true
+        forceSTSHeader: true
+        contentTypeNosniff: true
+        browserXssFilter: true
+        referrerPolicy: "same-origin"
+        featurePolicy: "camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
+        customFrameOptionsValue: "SAMEORIGIN"
+    
+    rateLimiter:
+      rateLimit:
+        average: 100
+        burst: 50
 EOF
 
     # Criar arquivo de certificados
-    mkdir -p /opt/traefik/certificates
     touch /opt/traefik/certificates/acme.json
     chmod 600 /opt/traefik/certificates/acme.json
     
@@ -432,9 +518,8 @@ EOF
 }
 
 deploy_traefik() {
-    log_step "Fazendo deploy do Traefik..."
+    log_step "11" "Fazendo deploy do Traefik..."
     
-    # Docker Compose para Traefik
     cat > /opt/traefik/docker-compose.yml << 'EOF'
 version: '3.8'
 
@@ -444,19 +529,29 @@ services:
     command:
       - --configFile=/etc/traefik/traefik.yml
     ports:
-      - "80:80"
-      - "443:443"
+      - target: 80
+        published: 80
+        mode: host
+      - target: 443
+        published: 443
+        mode: host
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /opt/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-      - /opt/traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - /opt/traefik/config/traefik.yml:/etc/traefik/traefik.yml:ro
+      - /opt/traefik/config/dynamic.yml:/etc/traefik/dynamic.yml:ro
       - /opt/traefik/certificates:/certificates
     networks:
       - traefik-public
     deploy:
+      mode: global
       placement:
         constraints:
           - node.role == manager
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.traefik.rule=Host(`traefik.meuboot.site`)"
@@ -464,6 +559,7 @@ services:
         - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
         - "traefik.http.routers.traefik.service=api@internal"
         - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+        - "traefik.http.routers.traefik.middlewares=auth@file,secureHeaders@file"
 
 networks:
   traefik-public:
@@ -471,17 +567,18 @@ networks:
 EOF
 
     cd /opt/traefik
-    docker stack deploy -c docker-compose.yml traefik
+    docker stack deploy -c docker-compose.yml traefik > /dev/null 2>&1
     
-    log_success "Traefik deployado no Docker Swarm"
+    # Aguardar Traefik inicializar
+    sleep 15
+    
+    log_success "Traefik deployado e ativo"
 }
 
-#==============================================================================
-# 🧩 5. STACKS NO PORTAINER COM SUBDOMÍNIOS
-#==============================================================================
+# ========================= DEPLOY DOS SERVIÇOS ==============================
 
 deploy_portainer() {
-    log_step "Fazendo deploy do Portainer..."
+    log_step "12" "Deployando Portainer..."
     
     mkdir -p /opt/portainer
     
@@ -498,20 +595,23 @@ services:
     networks:
       - traefik-public
     deploy:
+      mode: replicated
+      replicas: 1
       placement:
-        constraints:
-          - node.role == manager
+        constraints: [node.role == manager]
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.portainer-${MAIN_DOMAIN//\./-}.rule=Host(\`portainer.$MAIN_DOMAIN\`)"
-        - "traefik.http.routers.portainer-${MAIN_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.portainer-${MAIN_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.portainer-${MAIN_DOMAIN//\./-}.loadbalancer.server.port=9000"
+        # Portainer para meuboot.site
+        - "traefik.http.routers.portainer-meuboot.rule=Host(\`$SECONDARY_DOMAIN\`)"
+        - "traefik.http.routers.portainer-meuboot.entrypoints=websecure"
+        - "traefik.http.routers.portainer-meuboot.tls.certresolver=letsencrypt"
+        - "traefik.http.services.portainer-meuboot.loadbalancer.server.port=9000"
         
-        - "traefik.http.routers.portainer-${SECONDARY_DOMAIN//\./-}.rule=Host(\`$SECONDARY_DOMAIN\`)"
-        - "traefik.http.routers.portainer-${SECONDARY_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.portainer-${SECONDARY_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.portainer-${SECONDARY_DOMAIN//\./-}.loadbalancer.server.port=9000"
+        # Portainer para siqueicamposimoveis.com.br
+        - "traefik.http.routers.portainer-siqueira.rule=Host(\`portainer.$MAIN_DOMAIN\`)"
+        - "traefik.http.routers.portainer-siqueira.entrypoints=websecure"
+        - "traefik.http.routers.portainer-siqueira.tls.certresolver=letsencrypt"
+        - "traefik.http.services.portainer-siqueira.loadbalancer.server.port=9000"
 
 volumes:
   portainer_data:
@@ -522,14 +622,42 @@ networks:
 EOF
 
     cd /opt/portainer
-    docker stack deploy -c docker-compose.yml portainer
+    docker stack deploy -c docker-compose.yml portainer > /dev/null 2>&1
     
-    log_success "Portainer deployado"
+    log_success "Portainer deployado em ambos os domínios"
 }
 
-deploy_n8n() {
-    log_step "Fazendo deploy do N8N..."
+deploy_services() {
+    local services=("N8N" "MinIO" "Grafana" "Adminer" "Evolution API")
+    local current=0
     
+    for service in "${services[@]}"; do
+        ((current++))
+        show_progress $current ${#services[@]} "Deployando $service"
+        
+        case $service in
+            "N8N")
+                deploy_n8n_service
+                ;;
+            "MinIO")
+                deploy_minio_service
+                ;;
+            "Grafana")
+                deploy_grafana_service
+                ;;
+            "Adminer")
+                deploy_adminer_service
+                ;;
+            "Evolution API")
+                deploy_evolution_service
+                ;;
+        esac
+        
+        sleep 3
+    done
+}
+
+deploy_n8n_service() {
     mkdir -p /opt/n8n
     
     cat > /opt/n8n/docker-compose.yml << EOF
@@ -547,6 +675,7 @@ services:
       - N8N_PROTOCOL=https
       - WEBHOOK_URL=https://n8n.$MAIN_DOMAIN/
       - GENERIC_TIMEZONE=America/Sao_Paulo
+      - N8N_METRICS=true
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
@@ -555,15 +684,17 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.n8n-${MAIN_DOMAIN//\./-}.rule=Host(\`n8n.$MAIN_DOMAIN\`)"
-        - "traefik.http.routers.n8n-${MAIN_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.n8n-${MAIN_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.n8n-${MAIN_DOMAIN//\./-}.loadbalancer.server.port=5678"
+        # N8N para meuboot.site
+        - "traefik.http.routers.n8n-meuboot.rule=Host(\`n8n.$SECONDARY_DOMAIN\`)"
+        - "traefik.http.routers.n8n-meuboot.entrypoints=websecure"
+        - "traefik.http.routers.n8n-meuboot.tls.certresolver=letsencrypt"
+        - "traefik.http.services.n8n-meuboot.loadbalancer.server.port=5678"
         
-        - "traefik.http.routers.n8n-${SECONDARY_DOMAIN//\./-}.rule=Host(\`n8n.$SECONDARY_DOMAIN\`)"
-        - "traefik.http.routers.n8n-${SECONDARY_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.n8n-${SECONDARY_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.n8n-${SECONDARY_DOMAIN//\./-}.loadbalancer.server.port=5678"
+        # N8N para siqueicamposimoveis.com.br
+        - "traefik.http.routers.n8n-siqueira.rule=Host(\`n8n.$MAIN_DOMAIN\`)"
+        - "traefik.http.routers.n8n-siqueira.entrypoints=websecure"
+        - "traefik.http.routers.n8n-siqueira.tls.certresolver=letsencrypt"
+        - "traefik.http.services.n8n-siqueira.loadbalancer.server.port=5678"
 
 volumes:
   n8n_data:
@@ -576,14 +707,10 @@ networks:
 EOF
 
     cd /opt/n8n
-    docker stack deploy -c docker-compose.yml n8n
-    
-    log_success "N8N deployado"
+    docker stack deploy -c docker-compose.yml n8n > /dev/null 2>&1
 }
 
-deploy_minio() {
-    log_step "Fazendo deploy do MinIO..."
-    
+deploy_minio_service() {
     mkdir -p /opt/minio
     
     cat > /opt/minio/docker-compose.yml << EOF
@@ -596,6 +723,7 @@ services:
     environment:
       - MINIO_ROOT_USER=kryonix_admin
       - MINIO_ROOT_PASSWORD=$MINIO_PASSWORD
+      - MINIO_PROMETHEUS_AUTH_TYPE=public
     volumes:
       - minio_data:/data
     networks:
@@ -604,16 +732,17 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        # Console MinIO
-        - "traefik.http.routers.minio-console-${MAIN_DOMAIN//\./-}.rule=Host(\`minio.$MAIN_DOMAIN\`)"
-        - "traefik.http.routers.minio-console-${MAIN_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.minio-console-${MAIN_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.minio-console-${MAIN_DOMAIN//\./-}.loadbalancer.server.port=9001"
+        # MinIO Console para meuboot.site
+        - "traefik.http.routers.minio-meuboot.rule=Host(\`minio.$SECONDARY_DOMAIN\`)"
+        - "traefik.http.routers.minio-meuboot.entrypoints=websecure"
+        - "traefik.http.routers.minio-meuboot.tls.certresolver=letsencrypt"
+        - "traefik.http.services.minio-meuboot.loadbalancer.server.port=9001"
         
-        - "traefik.http.routers.minio-console-${SECONDARY_DOMAIN//\./-}.rule=Host(\`minio.$SECONDARY_DOMAIN\`)"
-        - "traefik.http.routers.minio-console-${SECONDARY_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.minio-console-${SECONDARY_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.minio-console-${SECONDARY_DOMAIN//\./-}.loadbalancer.server.port=9001"
+        # MinIO Console para siqueicamposimoveis.com.br
+        - "traefik.http.routers.minio-siqueira.rule=Host(\`minio.$MAIN_DOMAIN\`)"
+        - "traefik.http.routers.minio-siqueira.entrypoints=websecure"
+        - "traefik.http.routers.minio-siqueira.tls.certresolver=letsencrypt"
+        - "traefik.http.services.minio-siqueira.loadbalancer.server.port=9001"
 
 volumes:
   minio_data:
@@ -626,14 +755,10 @@ networks:
 EOF
 
     cd /opt/minio
-    docker stack deploy -c docker-compose.yml minio
-    
-    log_success "MinIO deployado"
+    docker stack deploy -c docker-compose.yml minio > /dev/null 2>&1
 }
 
-deploy_grafana() {
-    log_step "Fazendo deploy do Grafana..."
-    
+deploy_grafana_service() {
     mkdir -p /opt/grafana
     
     cat > /opt/grafana/docker-compose.yml << EOF
@@ -645,7 +770,9 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_PASSWORD
       - GF_SERVER_ROOT_URL=https://grafana.$MAIN_DOMAIN
-      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
     volumes:
       - grafana_data:/var/lib/grafana
     networks:
@@ -654,15 +781,17 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.grafana-${MAIN_DOMAIN//\./-}.rule=Host(\`grafana.$MAIN_DOMAIN\`)"
-        - "traefik.http.routers.grafana-${MAIN_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.grafana-${MAIN_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.grafana-${MAIN_DOMAIN//\./-}.loadbalancer.server.port=3000"
+        # Grafana para meuboot.site
+        - "traefik.http.routers.grafana-meuboot.rule=Host(\`grafana.$SECONDARY_DOMAIN\`)"
+        - "traefik.http.routers.grafana-meuboot.entrypoints=websecure"
+        - "traefik.http.routers.grafana-meuboot.tls.certresolver=letsencrypt"
+        - "traefik.http.services.grafana-meuboot.loadbalancer.server.port=3000"
         
-        - "traefik.http.routers.grafana-${SECONDARY_DOMAIN//\./-}.rule=Host(\`grafana.$SECONDARY_DOMAIN\`)"
-        - "traefik.http.routers.grafana-${SECONDARY_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.grafana-${SECONDARY_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.grafana-${SECONDARY_DOMAIN//\./-}.loadbalancer.server.port=3000"
+        # Grafana para siqueicamposimoveis.com.br
+        - "traefik.http.routers.grafana-siqueira.rule=Host(\`grafana.$MAIN_DOMAIN\`)"
+        - "traefik.http.routers.grafana-siqueira.entrypoints=websecure"
+        - "traefik.http.routers.grafana-siqueira.tls.certresolver=letsencrypt"
+        - "traefik.http.services.grafana-siqueira.loadbalancer.server.port=3000"
 
 volumes:
   grafana_data:
@@ -675,14 +804,10 @@ networks:
 EOF
 
     cd /opt/grafana
-    docker stack deploy -c docker-compose.yml grafana
-    
-    log_success "Grafana deployado"
+    docker stack deploy -c docker-compose.yml grafana > /dev/null 2>&1
 }
 
-deploy_adminer() {
-    log_step "Fazendo deploy do Adminer..."
-    
+deploy_adminer_service() {
     mkdir -p /opt/adminer
     
     cat > /opt/adminer/docker-compose.yml << EOF
@@ -693,21 +818,24 @@ services:
     image: adminer:latest
     environment:
       - ADMINER_DEFAULT_SERVER=postgres
+      - ADMINER_DESIGN=nette
     networks:
       - traefik-public
       - app-network
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.adminer-${MAIN_DOMAIN//\./-}.rule=Host(\`adminer.$MAIN_DOMAIN\`)"
-        - "traefik.http.routers.adminer-${MAIN_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.adminer-${MAIN_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.adminer-${MAIN_DOMAIN//\./-}.loadbalancer.server.port=8080"
+        # Adminer para meuboot.site
+        - "traefik.http.routers.adminer-meuboot.rule=Host(\`adminer.$SECONDARY_DOMAIN\`)"
+        - "traefik.http.routers.adminer-meuboot.entrypoints=websecure"
+        - "traefik.http.routers.adminer-meuboot.tls.certresolver=letsencrypt"
+        - "traefik.http.services.adminer-meuboot.loadbalancer.server.port=8080"
         
-        - "traefik.http.routers.adminer-${SECONDARY_DOMAIN//\./-}.rule=Host(\`adminer.$SECONDARY_DOMAIN\`)"
-        - "traefik.http.routers.adminer-${SECONDARY_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.adminer-${SECONDARY_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.adminer-${SECONDARY_DOMAIN//\./-}.loadbalancer.server.port=8080"
+        # Adminer para siqueicamposimoveis.com.br
+        - "traefik.http.routers.adminer-siqueira.rule=Host(\`adminer.$MAIN_DOMAIN\`)"
+        - "traefik.http.routers.adminer-siqueira.entrypoints=websecure"
+        - "traefik.http.routers.adminer-siqueira.tls.certresolver=letsencrypt"
+        - "traefik.http.services.adminer-siqueira.loadbalancer.server.port=8080"
 
 networks:
   traefik-public:
@@ -717,14 +845,10 @@ networks:
 EOF
 
     cd /opt/adminer
-    docker stack deploy -c docker-compose.yml adminer
-    
-    log_success "Adminer deployado"
+    docker stack deploy -c docker-compose.yml adminer > /dev/null 2>&1
 }
 
-deploy_evolution_api() {
-    log_step "Fazendo deploy da Evolution API..."
-    
+deploy_evolution_service() {
     mkdir -p /opt/evolution
     
     cat > /opt/evolution/docker-compose.yml << EOF
@@ -742,26 +866,31 @@ services:
       - WEBHOOK_GLOBAL_URL=https://n8n.$MAIN_DOMAIN/webhook/evolution
       - WEBHOOK_GLOBAL_ENABLED=true
       - WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS=true
+      - QRCODE_LIMIT=10
     volumes:
       - evolution_data:/app/instances
+      - evolution_store:/app/store
     networks:
       - traefik-public
       - app-network
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.evolution-${MAIN_DOMAIN//\./-}.rule=Host(\`evo.$MAIN_DOMAIN\`)"
-        - "traefik.http.routers.evolution-${MAIN_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.evolution-${MAIN_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.evolution-${MAIN_DOMAIN//\./-}.loadbalancer.server.port=8080"
+        # Evolution para meuboot.site
+        - "traefik.http.routers.evolution-meuboot.rule=Host(\`evo.$SECONDARY_DOMAIN\`)"
+        - "traefik.http.routers.evolution-meuboot.entrypoints=websecure"
+        - "traefik.http.routers.evolution-meuboot.tls.certresolver=letsencrypt"
+        - "traefik.http.services.evolution-meuboot.loadbalancer.server.port=8080"
         
-        - "traefik.http.routers.evolution-${SECONDARY_DOMAIN//\./-}.rule=Host(\`evo.$SECONDARY_DOMAIN\`)"
-        - "traefik.http.routers.evolution-${SECONDARY_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.evolution-${SECONDARY_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.evolution-${SECONDARY_DOMAIN//\./-}.loadbalancer.server.port=8080"
+        # Evolution para siqueicamposimoveis.com.br
+        - "traefik.http.routers.evolution-siqueira.rule=Host(\`evo.$MAIN_DOMAIN\`)"
+        - "traefik.http.routers.evolution-siqueira.entrypoints=websecure"
+        - "traefik.http.routers.evolution-siqueira.tls.certresolver=letsencrypt"
+        - "traefik.http.services.evolution-siqueira.loadbalancer.server.port=8080"
 
 volumes:
   evolution_data:
+  evolution_store:
 
 networks:
   traefik-public:
@@ -771,17 +900,13 @@ networks:
 EOF
 
     cd /opt/evolution
-    docker stack deploy -c docker-compose.yml evolution
-    
-    log_success "Evolution API deployada"
+    docker stack deploy -c docker-compose.yml evolution > /dev/null 2>&1
 }
 
-#==============================================================================
-# 🚀 6. DEPLOY AUTOMÁTICO VIA GITHUB
-#==============================================================================
+# ========================= WEBHOOK E DEPLOY AUTOMÁTICO ======================
 
-setup_webhook_service() {
-    log_step "Configurando serviço de webhook..."
+setup_webhook_system() {
+    log_step "13" "Configurando sistema de webhook..."
     
     mkdir -p /opt/webhook
     
@@ -793,71 +918,66 @@ setup_webhook_service() {
     cat > /opt/webhook-deploy.sh << 'EOF'
 #!/bin/bash
 
-# Log file
+# Configurações
 LOG_FILE="/var/log/auto-deploy.log"
-exec 1> >(tee -a $LOG_FILE)
-exec 2> >(tee -a $LOG_FILE >&2)
-
-echo "$(date): Iniciando deploy automático..."
-
-# Diretório do projeto
 PROJECT_DIR="/opt/app"
 REPO_URL="https://github.com/Nakahh/site-jurez-2.0"
 
-# Função de log
-log() {
-    echo "$(date): $1"
-}
+# Redirecionamento de logs
+exec 1> >(tee -a "$LOG_FILE")
+exec 2> >(tee -a "$LOG_FILE" >&2)
 
-# Verificar se é push para branch main
+echo "$(date): 🚀 Iniciando deploy automático..."
+
+# Verificar branch
 if [[ "$1" != "main" ]]; then
-    log "Deploy ignorado - branch: $1 (apenas main é deployada)"
+    echo "$(date): ⚠️ Deploy ignorado - branch: $1 (apenas main é deployada)"
     exit 0
 fi
 
-log "Deploy para branch main iniciado"
+echo "$(date): ✅ Deploy para branch main iniciado"
 
-# Backup do diretório atual
+# Backup do projeto atual
 if [[ -d "$PROJECT_DIR" ]]; then
-    log "Fazendo backup do projeto atual..."
+    echo "$(date): 📦 Fazendo backup do projeto atual..."
     cp -r "$PROJECT_DIR" "${PROJECT_DIR}_backup_$(date +%Y%m%d_%H%M%S)"
 fi
 
-# Clone/pull do repositório
+# Clone/update do repositório
 if [[ -d "$PROJECT_DIR/.git" ]]; then
-    log "Atualizando repositório existente..."
+    echo "$(date): 🔄 Atualizando repositório existente..."
     cd "$PROJECT_DIR"
     git fetch origin
     git reset --hard origin/main
 else
-    log "Clonando repositório..."
+    echo "$(date): 📥 Clonando repositório..."
     rm -rf "$PROJECT_DIR"
     git clone "$REPO_URL" "$PROJECT_DIR"
     cd "$PROJECT_DIR"
 fi
 
 # Instalar dependências
-log "Instalando dependências..."
-npm install
+echo "$(date): 📦 Instalando dependências..."
+npm install --production
 
 # Build do projeto
-log "Fazendo build..."
+echo "$(date): 🏗️ Fazendo build..."
 npm run build
 
-# Restart dos containers da aplicação
-log "Reiniciando containers da aplicação..."
+# Restart dos containers
+echo "$(date): 🔄 Reiniciando aplicação..."
 docker stack rm app 2>/dev/null || true
 sleep 10
 
 # Deploy da aplicação
 docker stack deploy -c /opt/app-stack/docker-compose.yml app
 
-log "Deploy automático concluído com sucesso!"
+echo "$(date): ✅ Deploy automático concluído com sucesso!"
 EOF
 
     chmod +x /opt/webhook-deploy.sh
     
-    # Webhook server simples
+    # Servidor webhook Node.js
     cat > /opt/webhook/server.js << 'EOF'
 const express = require('express');
 const crypto = require('crypto');
@@ -868,7 +988,13 @@ const app = express();
 const PORT = 9001;
 const SECRET = fs.readFileSync('/opt/webhook-secret.txt', 'utf8').trim();
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+
+// Middleware de logging
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    next();
+});
 
 function verifySignature(payload, signature, secret) {
     const hmac = crypto.createHmac('sha256', secret);
@@ -878,64 +1004,94 @@ function verifySignature(payload, signature, secret) {
 }
 
 app.post('/', (req, res) => {
-    const signature = req.headers['x-hub-signature-256'];
-    const payload = JSON.stringify(req.body);
-    
-    if (!signature || !verifySignature(payload, signature, SECRET)) {
-        console.log('Assinatura inválida');
-        return res.status(401).send('Unauthorized');
-    }
-    
-    const event = req.headers['x-github-event'];
-    if (event !== 'push') {
-        console.log(`Evento ignorado: ${event}`);
-        return res.status(200).send('Event ignored');
-    }
-    
-    const branch = req.body.ref.replace('refs/heads/', '');
-    console.log(`Webhook recebido para branch: ${branch}`);
-    
-    // Executar deploy
-    exec(`/opt/webhook-deploy.sh ${branch}`, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Erro no deploy: ${error}`);
-            return;
+    try {
+        const signature = req.headers['x-hub-signature-256'];
+        const payload = JSON.stringify(req.body);
+        
+        if (!signature || !verifySignature(payload, signature, SECRET)) {
+            console.log('❌ Assinatura inválida');
+            return res.status(401).json({ error: 'Unauthorized' });
         }
-        console.log(`Deploy output: ${stdout}`);
-        if (stderr) console.error(`Deploy stderr: ${stderr}`);
-    });
-    
-    res.status(200).send('OK');
+        
+        const event = req.headers['x-github-event'];
+        if (event !== 'push') {
+            console.log(`⚠️ Evento ignorado: ${event}`);
+            return res.status(200).json({ message: 'Event ignored' });
+        }
+        
+        const branch = req.body.ref.replace('refs/heads/', '');
+        const commits = req.body.commits?.length || 0;
+        
+        console.log(`🔔 Webhook recebido para branch: ${branch} (${commits} commits)`);
+        
+        // Executar deploy assíncrono
+        exec(`/opt/webhook-deploy.sh ${branch}`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`❌ Erro no deploy: ${error}`);
+                return;
+            }
+            console.log(`✅ Deploy output: ${stdout}`);
+            if (stderr) console.error(`⚠️ Deploy stderr: ${stderr}`);
+        });
+        
+        res.status(200).json({ 
+            message: 'Webhook received',
+            branch: branch,
+            commits: commits,
+            status: 'deploy_started'
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro no webhook:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+    res.status(200).json({ 
+        status: 'healthy', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
+app.get('/status', (req, res) => {
+    res.status(200).json({
+        service: 'github-webhook',
+        version: '1.0.0',
+        timestamp: new Date().toISOString()
+    });
 });
 
 app.listen(PORT, () => {
-    console.log(`Webhook server running on port ${PORT}`);
+    console.log(`🚀 Webhook server running on port ${PORT}`);
+    console.log(`📅 Started at: ${new Date().toISOString()}`);
 });
 EOF
 
-    # Package.json para o webhook
+    # Package.json
     cat > /opt/webhook/package.json << 'EOF'
 {
-  "name": "github-webhook",
+  "name": "github-webhook-server",
   "version": "1.0.0",
-  "description": "GitHub webhook handler",
+  "description": "GitHub webhook handler for auto-deployment",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
 EOF
 
-    # Instalar dependências do webhook
+    # Instalar dependências
     cd /opt/webhook
-    npm install
+    npm install > /dev/null 2>&1
     
     # Docker Compose para webhook
     cat > /opt/webhook/docker-compose.yml << EOF
@@ -951,137 +1107,85 @@ services:
       - /opt/webhook-secret.txt:/opt/webhook-secret.txt:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - /opt:/opt
+      - /var/log:/var/log
+    environment:
+      - NODE_ENV=production
     networks:
       - traefik-public
     deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.webhook-${MAIN_DOMAIN//\./-}.rule=Host(\`webhook.$MAIN_DOMAIN\`)"
-        - "traefik.http.routers.webhook-${MAIN_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.webhook-${MAIN_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.webhook-${MAIN_DOMAIN//\./-}.loadbalancer.server.port=9001"
+        # Webhook para meuboot.site
+        - "traefik.http.routers.webhook-meuboot.rule=Host(\`webhook.$SECONDARY_DOMAIN\`)"
+        - "traefik.http.routers.webhook-meuboot.entrypoints=websecure"
+        - "traefik.http.routers.webhook-meuboot.tls.certresolver=letsencrypt"
+        - "traefik.http.services.webhook-meuboot.loadbalancer.server.port=9001"
         
-        - "traefik.http.routers.webhook-${SECONDARY_DOMAIN//\./-}.rule=Host(\`webhook.$SECONDARY_DOMAIN\`)"
-        - "traefik.http.routers.webhook-${SECONDARY_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.webhook-${SECONDARY_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.webhook-${SECONDARY_DOMAIN//\./-}.loadbalancer.server.port=9001"
+        # Webhook para siqueicamposimoveis.com.br
+        - "traefik.http.routers.webhook-siqueira.rule=Host(\`webhook.$MAIN_DOMAIN\`)"
+        - "traefik.http.routers.webhook-siqueira.entrypoints=websecure"
+        - "traefik.http.routers.webhook-siqueira.tls.certresolver=letsencrypt"
+        - "traefik.http.services.webhook-siqueira.loadbalancer.server.port=9001"
 
 networks:
   traefik-public:
     external: true
 EOF
 
-    docker stack deploy -c docker-compose.yml webhook
+    docker stack deploy -c docker-compose.yml webhook > /dev/null 2>&1
     
-    log_success "Webhook deployado"
+    log_success "Sistema de webhook configurado"
 }
 
 deploy_main_application() {
-    log_step "Preparando deploy da aplicação principal..."
+    log_step "14" "Fazendo deploy da aplicação principal..."
     
     mkdir -p /opt/app-stack
     
-    # Primeiro clone do projeto
-    git clone "$REPO_URL" /opt/app
+    # Clone inicial do projeto
+    git clone "$REPO_URL" /opt/app > /dev/null 2>&1
     cd /opt/app
     
     # Build inicial
-    npm install
-    npm run build
+    npm install > /dev/null 2>&1
+    npm run build > /dev/null 2>&1
     
-    # Docker Compose para aplicação
-    cat > /opt/app-stack/docker-compose.yml << EOF
-version: '3.8'
+    # Configuração Nginx para frontend
+    mkdir -p /opt/app-stack/nginx
+    cat > /opt/app-stack/nginx/nginx.conf << 'EOF'
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log warn;
+pid /var/run/nginx.pid;
 
-services:
-  frontend:
-    image: nginx:alpine
-    volumes:
-      - /opt/app/dist:/usr/share/nginx/html:ro
-      - /opt/app-stack/nginx.conf:/etc/nginx/nginx.conf:ro
-    networks:
-      - traefik-public
-      - app-network
-    deploy:
-      replicas: 2
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.frontend-${MAIN_DOMAIN//\./-}.rule=Host(\`$MAIN_DOMAIN\`)"
-        - "traefik.http.routers.frontend-${MAIN_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.frontend-${MAIN_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.frontend-${MAIN_DOMAIN//\./-}.loadbalancer.server.port=80"
-
-  backend:
-    image: node:18-alpine
-    working_dir: /app
-    command: sh -c "npm run build:server && npm start"
-    volumes:
-      - /opt/app:/app
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://sitejuarez:$POSTGRES_PASSWORD@postgres/bdsitejuarez
-      - JWT_SECRET=$WEBHOOK_SECRET
-      - OPENAI_API_KEY=\${OPENAI_API_KEY}
-      - N8N_WEBHOOK_URL=https://n8n.$MAIN_DOMAIN/webhook/
-    networks:
-      - traefik-public
-      - app-network
-    deploy:
-      replicas: 2
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.backend-${MAIN_DOMAIN//\./-}.rule=Host(\`api.$MAIN_DOMAIN\`)"
-        - "traefik.http.routers.backend-${MAIN_DOMAIN//\./-}.entrypoints=websecure"
-        - "traefik.http.routers.backend-${MAIN_DOMAIN//\./-}.tls.certresolver=letsencrypt"
-        - "traefik.http.services.backend-${MAIN_DOMAIN//\./-}.loadbalancer.server.port=3001"
-
-  postgres:
-    image: postgres:15
-    environment:
-      - POSTGRES_DB=bdsitejuarez
-      - POSTGRES_USER=sitejuarez
-      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - app-network
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
-
-  redis:
-    image: redis:7-alpine
-    command: redis-server --requirepass $REDIS_PASSWORD
-    volumes:
-      - redis_data:/data
-    networks:
-      - app-network
-
-volumes:
-  postgres_data:
-  redis_data:
-
-networks:
-  traefik-public:
-    external: true
-  app-network:
-    external: true
-EOF
-
-    # Configuração Nginx
-    cat > /opt/app-stack/nginx.conf << 'EOF'
 events {
     worker_connections 1024;
+    use epoll;
+    multi_accept on;
 }
 
 http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
 
-    sendfile        on;
-    keepalive_timeout  65;
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
 
+    access_log /var/log/nginx/access.log main;
+
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+    client_max_body_size 50M;
+
+    # Gzip compression
     gzip on;
     gzip_vary on;
     gzip_min_length 10240;
@@ -1094,7 +1198,18 @@ http {
         application/x-javascript
         application/xml+rss
         application/javascript
-        application/json;
+        application/json
+        application/xml
+        application/rss+xml
+        application/atom+xml
+        image/svg+xml;
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
 
     server {
         listen 80;
@@ -1110,111 +1225,285 @@ http {
             expires 1y;
             add_header Cache-Control "public, immutable";
         }
+
+        location /api {
+            proxy_pass http://backend:3001;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_cache_bypass $http_upgrade;
+        }
+
+        location /health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
     }
 }
 EOF
 
-    # Deploy inicial da aplicação
-    docker stack deploy -c docker-compose.yml app
+    # Docker Compose para aplicação completa
+    cat > /opt/app-stack/docker-compose.yml << EOF
+version: '3.8'
+
+services:
+  frontend:
+    image: nginx:alpine
+    volumes:
+      - /opt/app/dist:/usr/share/nginx/html:ro
+      - /opt/app-stack/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - traefik-public
+      - app-network
+    deploy:
+      mode: replicated
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.frontend.rule=Host(\`$MAIN_DOMAIN\`)"
+        - "traefik.http.routers.frontend.entrypoints=websecure"
+        - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+        - "traefik.http.services.frontend.loadbalancer.server.port=80"
+        - "traefik.http.routers.frontend.middlewares=secureHeaders@file,rateLimiter@file"
+
+  backend:
+    image: node:18-alpine
+    working_dir: /app
+    command: sh -c "npm run build:server 2>/dev/null || echo 'Build server skipped' && npm start"
+    volumes:
+      - /opt/app:/app
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://sitejuarez:$POSTGRES_PASSWORD@postgres:5432/bdsitejuarez
+      - JWT_SECRET=$JWT_SECRET
+      - JWT_EXPIRES_IN=7d
+      - ADMIN_PORT=3001
+      - MAIN_DOMAIN=https://$MAIN_DOMAIN
+      - OPENAI_API_KEY=\${OPENAI_API_KEY:-}
+      - N8N_WEBHOOK_URL=https://n8n.$MAIN_DOMAIN/webhook/
+    networks:
+      - traefik-public
+      - app-network
+    deploy:
+      mode: replicated
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.backend.rule=Host(\`api.$MAIN_DOMAIN\`)"
+        - "traefik.http.routers.backend.entrypoints=websecure"
+        - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+        - "traefik.http.services.backend.loadbalancer.server.port=3001"
+        - "traefik.http.routers.backend.middlewares=secureHeaders@file,rateLimiter@file"
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=bdsitejuarez
+      - POSTGRES_USER=sitejuarez
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - /opt/app-stack/postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass $REDIS_PASSWORD --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  traefik-public:
+    external: true
+  app-network:
+    external: true
+EOF
+
+    # Script de inicialização do PostgreSQL
+    mkdir -p /opt/app-stack/postgres-init
+    cat > /opt/app-stack/postgres-init/01-init.sql << 'EOF'
+-- Criação de extensões
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+
+-- Configurações de performance
+ALTER SYSTEM SET shared_preload_libraries = 'pg_stat_statements';
+ALTER SYSTEM SET max_connections = 200;
+ALTER SYSTEM SET shared_buffers = '256MB';
+ALTER SYSTEM SET effective_cache_size = '1GB';
+ALTER SYSTEM SET maintenance_work_mem = '64MB';
+ALTER SYSTEM SET checkpoint_completion_target = 0.9;
+ALTER SYSTEM SET wal_buffers = '16MB';
+ALTER SYSTEM SET default_statistics_target = 100;
+EOF
+
+    # Deploy da aplicação
+    docker stack deploy -c docker-compose.yml app > /dev/null 2>&1
     
     log_success "Aplicação principal deployada"
 }
 
-#==============================================================================
-# 📋 8. RELATÓRIO FINAL
-#==============================================================================
+# ========================= RELATÓRIO E DIAGNÓSTICO ==========================
 
 generate_final_report() {
-    log_step "Gerando relatório final..."
+    log_step "15" "Gerando relatório final..."
     
     # Aguardar serviços estabilizarem
     sleep 30
     
-    echo -e "\n${CYAN}"
-    cat << "EOF"
+    # Banner do relatório
+    echo -e "\n${CYAN}${BOLD}"
+    cat << 'EOF'
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
-║   🎉 DEPLOY COMPLETO - SIQUEIRA CAMPOS IMÓVEIS                              ║
+║   🎉 DEPLOY ENTERPRISE CONCLUÍDO - SIQUEIRA CAMPOS IMÓVEIS                  ║
+║                                                                              ║
+║   ✨ Sistema Premium de Alta Performance Ativo ��                           ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 EOF
     echo -e "${NC}"
     
-    echo -e "${WHITE}🔐 SENHAS GERADAS:${NC}"
-    echo "   • PostgreSQL: $POSTGRES_PASSWORD"
+    # Salvar senhas em arquivo
+    cat > "$PASSWORD_FILE" << EOF
+# SENHAS DO SISTEMA - SIQUEIRA CAMPOS IMÓVEIS
+# Gerado em: $(date)
+# Servidor: $(hostname)
+# IP: $(hostname -I | awk '{print $1}')
+
+# === BANCO DE DADOS ===
+PostgreSQL User: sitejuarez
+PostgreSQL Password: $POSTGRES_PASSWORD
+PostgreSQL Database: bdsitejuarez
+
+# === CACHE ===
+Redis Password: $REDIS_PASSWORD
+
+# === AUTOMAÇÃO ===
+N8N User: admin
+N8N Password: $N8N_PASSWORD
+
+# === MONITORAMENTO ===
+Grafana User: admin
+Grafana Password: $GRAFANA_PASSWORD
+
+# === STORAGE ===
+MinIO User: kryonix_admin
+MinIO Password: $MINIO_PASSWORD
+
+# === WHATSAPP ===
+Evolution API Key: $EVOLUTION_KEY
+
+# === SEGURANÇA ===
+JWT Secret: $JWT_SECRET
+Webhook Secret: $WEBHOOK_SECRET
+
+# === ACESSO TRAEFIK ===
+Traefik User: admin
+Traefik Password: admin (altere via bcrypt)
+EOF
+
+    chmod 600 "$PASSWORD_FILE"
+    
+    # Exibir relatório no terminal
+    echo -e "${WHITE}${BOLD}🔐 CREDENCIAIS GERADAS:${NC}"
+    echo "   • PostgreSQL: sitejuarez / $POSTGRES_PASSWORD"
     echo "   • Redis: $REDIS_PASSWORD"
     echo "   • N8N: admin / $N8N_PASSWORD"
     echo "   • Grafana: admin / $GRAFANA_PASSWORD"
     echo "   • MinIO: kryonix_admin / $MINIO_PASSWORD"
     echo "   • Evolution API: $EVOLUTION_KEY"
     
-    echo -e "\n${WHITE}🔄 DEPLOY AUTOMÁTICO:${NC}"
+    echo -e "\n${WHITE}${BOLD}🔄 DEPLOY AUTOMÁTICO:${NC}"
     echo "   • URL Webhook: https://webhook.$MAIN_DOMAIN"
-    echo "   • Secret: $(cat /opt/webhook-secret.txt)"
+    echo "   • Secret: $WEBHOOK_SECRET"
     echo "   • Branch: main"
-    echo "   • Status: Ativo ✅"
+    echo "   • Status: ${GREEN}Ativo ✅${NC}"
     
-    echo -e "\n${WHITE}📋 COMO CONFIGURAR NO GITHUB:${NC}"
-    echo "   1. Vá em Settings > Webhooks"
-    echo "   2. Add URL: https://webhook.$MAIN_DOMAIN"
-    echo "   3. Content-Type: application/json"
-    echo "   4. Secret: $(cat /opt/webhook-secret.txt)"
-    echo "   5. Events: Push"
-    echo "   6. Ativo ✅"
+    echo -e "\n${WHITE}${BOLD}📋 CONFIGURAÇÃO NO GITHUB:${NC}"
+    echo "   1. Acesse: Settings > Webhooks"
+    echo "   2. Payload URL: https://webhook.$MAIN_DOMAIN"
+    echo "   3. Content type: application/json"
+    echo "   4. Secret: $WEBHOOK_SECRET"
+    echo "   5. Events: Just the push event"
+    echo "   6. Active: ✅"
     
-    echo -e "\n${WHITE}🌐 SERVIÇOS DISPONÍVEIS:${NC}"
+    # URLs dos serviços
+    echo -e "\n${WHITE}${BOLD}🌐 SERVIÇOS DISPONÍVEIS:${NC}"
     echo ""
-    echo "   🔷 $SECONDARY_DOMAIN (Painel Principal):"
-    echo "   • Traefik: https://traefik.$SECONDARY_DOMAIN"
+    echo -e "   ${PURPLE}${BOLD}🔷 $SECONDARY_DOMAIN (Painel Principal):${NC}"
+    echo "   • Traefik Dashboard: https://traefik.$SECONDARY_DOMAIN"
     echo "   • Portainer: https://$SECONDARY_DOMAIN"
-    echo "   • N8N: https://n8n.$SECONDARY_DOMAIN"
-    echo "   • MinIO: https://minio.$SECONDARY_DOMAIN"
-    echo "   • Grafana: https://grafana.$SECONDARY_DOMAIN"
-    echo "   • Adminer: https://adminer.$SECONDARY_DOMAIN"
-    echo "   • Evolution: https://evo.$SECONDARY_DOMAIN"
-    echo "   • Webhook: https://webhook.$SECONDARY_DOMAIN"
+    echo "   • N8N Automation: https://n8n.$SECONDARY_DOMAIN"
+    echo "   • MinIO Storage: https://minio.$SECONDARY_DOMAIN"
+    echo "   • Grafana Monitor: https://grafana.$SECONDARY_DOMAIN"
+    echo "   • Adminer DB: https://adminer.$SECONDARY_DOMAIN"
+    echo "   • Evolution WhatsApp: https://evo.$SECONDARY_DOMAIN"
+    echo "   • Webhook Server: https://webhook.$SECONDARY_DOMAIN"
     echo ""
-    echo "   🔷 $MAIN_DOMAIN (Site Imobiliário):"
-    echo "   • Frontend: https://$MAIN_DOMAIN"
+    echo -e "   ${BLUE}${BOLD}🔷 $MAIN_DOMAIN (Site Imobiliário):${NC}"
+    echo "   • Site Principal: https://$MAIN_DOMAIN"
     echo "   • API Backend: https://api.$MAIN_DOMAIN"
     echo "   • Portainer: https://portainer.$MAIN_DOMAIN"
-    echo "   • N8N: https://n8n.$MAIN_DOMAIN"
-    echo "   • MinIO: https://minio.$MAIN_DOMAIN"
-    echo "   • Grafana: https://grafana.$MAIN_DOMAIN"
-    echo "   • Adminer: https://adminer.$MAIN_DOMAIN"
-    echo "   • Evolution: https://evo.$MAIN_DOMAIN"
-    echo "   • Webhook: https://webhook.$MAIN_DOMAIN"
+    echo "   • N8N Automation: https://n8n.$MAIN_DOMAIN"
+    echo "   • MinIO Storage: https://minio.$MAIN_DOMAIN"
+    echo "   • Grafana Monitor: https://grafana.$MAIN_DOMAIN"
+    echo "   • Adminer DB: https://adminer.$MAIN_DOMAIN"
+    echo "   • Evolution WhatsApp: https://evo.$MAIN_DOMAIN"
+    echo "   • Webhook Server: https://webhook.$MAIN_DOMAIN"
     
-    # Salvar senhas em arquivo
-    cat > /opt/senhas.txt << EOF
-SENHAS DO SISTEMA - SIQUEIRA CAMPOS IMÓVEIS
-Gerado em: $(date)
-
-PostgreSQL: $POSTGRES_PASSWORD
-Redis: $REDIS_PASSWORD
-N8N: admin / $N8N_PASSWORD
-Grafana: admin / $GRAFANA_PASSWORD
-MinIO: kryonix_admin / $MINIO_PASSWORD
-Evolution API: $EVOLUTION_KEY
-Webhook Secret: $(cat /opt/webhook-secret.txt)
-EOF
+    echo -e "\n${WHITE}${BOLD}📁 ARQUIVOS IMPORTANTES:${NC}"
+    echo "   • Senhas: $PASSWORD_FILE"
+    echo "   • Logs Deploy: $MAIN_LOG"
+    echo "   • Logs Erro: $ERROR_LOG"
+    echo "   • SSL Status: $SSL_LOG"
+    echo "   • Webhook Secret: /opt/webhook-secret.txt"
     
-    chmod 600 /opt/senhas.txt
-    
-    log_success "Relatório salvo em /opt/senhas.txt"
+    log_success "Relatório salvo em $PASSWORD_FILE"
 }
 
-#==============================================================================
-# 🧪 9. DIAGNÓSTICO FINAL AUTOMÁTICO
-#==============================================================================
-
 run_diagnostics() {
-    log_step "Executando diagnóstico final..."
+    log_step "16" "Executando diagnóstico completo do sistema..."
     
-    echo -e "\n${WHITE}🔍 TESTE DE CONECTIVIDADE SSL:${NC}"
+    echo -e "\n${WHITE}${BOLD}🔍 TESTE DE CONECTIVIDADE E SSL:${NC}" | tee "$SSL_LOG"
     
-    # Lista de URLs para testar
-    urls=(
+    # Lista completa de URLs para testar
+    local urls=(
         "https://$MAIN_DOMAIN"
         "https://api.$MAIN_DOMAIN"
         "https://portainer.$MAIN_DOMAIN"
@@ -1234,83 +1523,129 @@ run_diagnostics() {
         "https://webhook.$SECONDARY_DOMAIN"
     )
     
+    local success_count=0
+    local total_urls=${#urls[@]}
+    
     for url in "${urls[@]}"; do
-        if curl -Iv "$url" 2>/dev/null | grep -q "HTTP.*200\|HTTP.*30[0-9]"; then
-            echo "   ✅ $url"
+        if timeout 10 curl -Iv "$url" 2>/dev/null | grep -E "HTTP.*[23][0-9][0-9]" > /dev/null; then
+            echo "   ${GREEN}✅ $url${NC}" | tee -a "$SSL_LOG"
+            ((success_count++))
         else
-            echo "   ❌ $url (pode estar iniciando...)"
+            echo "   ${RED}❌ $url${NC} (certificado sendo gerado...)" | tee -a "$SSL_LOG"
         fi
     done
     
-    echo -e "\n${WHITE}🐳 STATUS DOS CONTAINERS:${NC}"
-    docker service ls
+    echo -e "\n${WHITE}${BOLD}📊 RESUMO DOS TESTES:${NC}"
+    echo "   • URLs testadas: $total_urls"
+    echo "   • Funcionando: $success_count"
+    echo "   • Aguardando SSL: $((total_urls - success_count))"
     
-    echo -e "\n${WHITE}📊 SAÚDE DO TRAEFIK:${NC}"
-    docker service logs traefik_traefik --tail 5 2>/dev/null || echo "   Aguardando logs do Traefik..."
+    # Status dos containers
+    echo -e "\n${WHITE}${BOLD}🐳 STATUS DOS SERVIÇOS DOCKER:${NC}"
+    docker service ls --format "table {{.Name}}\t{{.Mode}}\t{{.Replicas}}\t{{.Image}}"
     
-    echo -e "\n${WHITE}💾 USO DE DISCO:${NC}"
-    df -h /
+    echo -e "\n${WHITE}${BOLD}🌐 SAÚDE DO TRAEFIK:${NC}"
+    local traefik_logs=$(docker service logs traefik_traefik --tail 3 2>/dev/null | head -3)
+    if [ -n "$traefik_logs" ]; then
+        echo "$traefik_logs"
+    else
+        echo "   Aguardando logs do Traefik..."
+    fi
     
-    echo -e "\n${WHITE}🔧 PRÓXIMOS PASSOS:${NC}"
-    echo "   1. Aguarde 5-10 minutos para todos os certificados SSL serem gerados"
-    echo "   2. Configure o GitHub webhook com as informações acima"
-    echo "   3. Acesse o Portainer e configure as stacks restantes"
-    echo "   4. Configure N8N importando o workflow do projeto"
-    echo "   5. Configure Evolution API para WhatsApp Business"
+    echo -e "\n${WHITE}${BOLD}💾 RECURSOS DO SISTEMA:${NC}"
+    echo "   • Disco:"
+    df -h / | tail -1 | awk '{print "     Usado: "$3" / "$2" ("$5")"}'
+    echo "   • RAM:"
+    free -h | grep "Mem:" | awk '{print "     Usado: "$3" / "$2" ("$3/$2*100"%)"}'
+    echo "   • CPU:"
+    uptime | awk '{print "     Load: "$10" "$11" "$12}'
+    
+    echo -e "\n${WHITE}${BOLD}🔧 PRÓXIMOS PASSOS:${NC}"
+    echo "   1. ${YELLOW}Aguarde 5-10 minutos${NC} para certificados SSL serem emitidos"
+    echo "   2. ${CYAN}Configure GitHub webhook${NC} com as informações acima"
+    echo "   3. ${GREEN}Acesse Portainer${NC} para gerenciar stacks"
+    echo "   4. ${PURPLE}Configure N8N${NC} importando workflow do projeto"
+    echo "   5. ${BLUE}Configure Evolution API${NC} para WhatsApp Business"
     echo ""
-    echo "   📖 Documentação completa: /opt/app/README.md"
-    echo "   🔑 Senhas salvas em: /opt/senhas.txt"
-    echo "   📝 Logs do sistema: $LOG_FILE"
+    echo "   📖 Documentação: /opt/app/README.md"
+    echo "   🔑 Senhas: $PASSWORD_FILE"
+    echo "   📝 Logs: $LOG_DIR/"
     
-    log_success "Diagnóstico concluído"
+    # Gerar relatório final
+    {
+        echo "=== RELATÓRIO DE DEPLOY - $(date) ==="
+        echo "Servidor: $(hostname)"
+        echo "IP: $(hostname -I | awk '{print $1}')"
+        echo "URLs testadas: $total_urls"
+        echo "URLs funcionando: $success_count"
+        echo ""
+        echo "=== SERVIÇOS ATIVOS ==="
+        docker service ls
+        echo ""
+        echo "=== RECURSOS SISTEMA ==="
+        df -h /
+        free -h
+        uptime
+    } > "$REPORT_FILE"
+    
+    log_success "Diagnóstico completo salvo em $REPORT_FILE"
+    
+    # Som de conclusão
+    printf '\a'
+    sleep 0.2
+    printf '\a'
 }
 
-#==============================================================================
-# 🎯 EXECUÇÃO PRINCIPAL
-#==============================================================================
+# ========================= FUNÇÃO PRINCIPAL ==============================
 
 main() {
-    echo -e "${ROCKET} Iniciando deploy automatizado da infraestrutura..."
+    show_banner
     
-    # Verificações iniciais
-    check_root
-    check_domains
-    read_project_structure
+    echo -e "${ROCKET} ${WHITE}${BOLD}Iniciando deploy enterprise da infraestrutura...${NC}\n"
     
-    # Reset e preparação
+    # Verificações e preparação
+    check_requirements
+    analyze_project
     controlled_cleanup
     
-    # Instalações
+    # Instalações básicas
     install_dependencies
     install_docker
     install_nodejs
     install_postgresql
     configure_firewall
     
-    # Traefik e proxy reverso
+    # Infraestrutura Docker
     setup_docker_swarm
     create_traefik_config
     deploy_traefik
     
     # Serviços principais
     deploy_portainer
-    deploy_n8n
-    deploy_minio
-    deploy_grafana
-    deploy_adminer
-    deploy_evolution_api
+    log_step "12.1" "Deployando serviços auxiliares..."
+    deploy_services
+    log_success "Todos os serviços auxiliares deployados"
     
-    # Deploy e webhook
-    setup_webhook_service
+    # Sistema de deploy
+    setup_webhook_system
     deploy_main_application
     
     # Finalização
     generate_final_report
     run_diagnostics
     
-    echo -e "\n${GREEN}${SUCCESS} DEPLOY COMPLETO! Sistema pronto para uso.${NC}"
-    echo -e "${YELLOW}${WARNING} Aguarde alguns minutos para certificados SSL e verifique os URLs acima.${NC}"
+    echo -e "\n${GREEN}${BOLD}${SUCCESS} DEPLOY ENTERPRISE CONCLUÍDO COM SUCESSO!${NC}"
+    echo -e "${YELLOW}${WARNING} Aguarde alguns minutos para geração completa dos certificados SSL${NC}"
+    echo -e "${CYAN}${INFO} Consulte $PASSWORD_FILE para todas as credenciais${NC}"
+    
+    # Sons finais de sucesso
+    for i in {1..3}; do
+        printf '\a'
+        sleep 0.3
+    done
 }
 
-# Executar script principal
-main "$@"
+# Executar verificação de argumentos e script principal
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi
